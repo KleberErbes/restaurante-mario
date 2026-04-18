@@ -1,30 +1,62 @@
-// ========== DADOS ==========
-const CARDAPIO = {
-  acompanhamentos: [
-    "Arroz branco","Macarrão espaguete","Aipim com bacon","Nhoque","Purê de batata doce",
-    "Feijão","Batata frita","Calabresa acebolada","Farofa","Batata palha"
-  ],
-  carnes: [
-    "Língua bovina ao molho","Sassami à milanesa","Bife acebolado"
-  ],
-  saladas: [
-    "Beterraba","Vinagrete","Cenoura","Chuchu","Pepino",
-    "Alface","Repolho ralado","Tomate com pepino",
-    "Maionese","Macarronese"
-  ],
-  sobremesas: [
-    "Sagu com molho branco","Pudim de chocolate",
-    "Pudim de morango","Pudim de baunilha","Manjar de coco"
-  ]
-};
+// ========== GOOGLE SHEETS ==========
+const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=csv';
 
-const WHATSAPP_NUMBER = "554733752227"; // <-- Substitua pelo número real
+const WHATSAPP_NUMBER = "554733752227";
 
 let cart = [];
 let selectedSize = 'media';
 let selAcomp = [];
 let selCarne = [];
 let selSalada = [];
+
+// CARDAPIO global (preenchido pelo Sheets)
+let CARDAPIO = {
+  acompanhamentos: [],
+  carnes: [],
+  saladas: [],
+  sobremesas: []
+};
+
+// ========== CARREGAR CARDÁPIO DO GOOGLE SHEETS ==========
+async function carregarCardapio() {
+  try {
+    const res = await fetch(SHEETS_URL);
+    const csv = await res.text();
+
+    // Resetar
+    CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
+
+    const linhas = csv.split('\n').slice(1); // pula cabeçalho
+    linhas.forEach(linha => {
+      if (!linha.trim()) return;
+      const partes = linha.split(',');
+      const categoria = partes[0].trim().replace(/"/g, '').toLowerCase();
+      const item = partes.slice(1).join(',').trim().replace(/"/g, '');
+      if (!item) return;
+      if (categoria === 'acompanhamentos' || categoria === 'acompanhamento') CARDAPIO.acompanhamentos.push(item);
+      else if (categoria === 'carnes' || categoria === 'carne') CARDAPIO.carnes.push(item);
+      else if (categoria === 'saladas' || categoria === 'salada') CARDAPIO.saladas.push(item);
+      else if (categoria === 'sobremesas' || categoria === 'sobremesa') CARDAPIO.sobremesas.push(item);
+    });
+
+    buildCardapio();
+    buildGrids();
+    updatePrecoPersonalizada();
+
+  } catch (e) {
+    console.error('Erro ao carregar cardápio do Google Sheets:', e);
+    // Fallback: cardápio padrão caso falhe
+    CARDAPIO = {
+      acompanhamentos: ["Arroz branco","Feijão","Macarrão espaguete","Aipim com bacon"],
+      carnes: ["Carne do dia"],
+      saladas: ["Salada da casa"],
+      sobremesas: ["Sobremesa do dia"]
+    };
+    buildCardapio();
+    buildGrids();
+    updatePrecoPersonalizada();
+  }
+}
 
 // ========== NAVEGAÇÃO ==========
 function showSection(id, btn) {
@@ -52,7 +84,6 @@ function goToCardapio() {
 
 // ========== CARDÁPIO ==========
 function buildCardapio() {
-  // Versão flat para uso legado (cardapioDia se existir)
   const flat = document.getElementById('cardapioDia');
   if (flat) {
     flat.innerHTML = '';
@@ -64,7 +95,6 @@ function buildCardapio() {
     });
   }
 
-  // Versão organizada para a aba Cardápio do Dia
   const grupos = [
     { id: 'listaAcomp',     items: CARDAPIO.acompanhamentos, cls: 'tag-acomp' },
     { id: 'listaCarne',     items: CARDAPIO.carnes,          cls: 'tag-carne' },
@@ -83,7 +113,6 @@ function buildCardapio() {
     });
   });
 
-  // Caixinha do cardápio dentro da aba Marmitas
   const cpgGrupos = [
     { id: 'cpgAcomp',     items: CARDAPIO.acompanhamentos, cls: 'tag-acomp' },
     { id: 'cpgCarne',     items: CARDAPIO.carnes,          cls: 'tag-carne' },
@@ -112,6 +141,7 @@ function buildGrids() {
 
 function buildGrid(containerId, items, type) {
   const div = document.getElementById(containerId);
+  if (!div) return;
   div.innerHTML = '';
   items.forEach(item => {
     const chip = document.createElement('button');
@@ -181,6 +211,7 @@ function changeQty(size, delta) {
   qtyPadrao[size] = Math.max(1, qtyPadrao[size] + delta);
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = qtyPadrao[size];
 }
+
 function addPadrao(size) {
   const precoUnit = size === 'media' ? 25 : 27;
   const label = size === 'media' ? 'Média' : 'Grande';
@@ -190,7 +221,6 @@ function addPadrao(size) {
   for (let i = 0; i < qty; i++) {
     cart.push({ tipo: `Marmita Padrão ${label}`, desc, preco: precoUnit });
   }
-  // Resetar quantidade para 1
   qtyPadrao[size] = 1;
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = '1';
   updateCart();
@@ -208,7 +238,6 @@ function addPersonalizada() {
   const preco = base + extras * 2;
   const label = selectedSize === 'media' ? 'Média' : 'Grande';
 
-  // Formatar carnes
   const carnesDesc = selCarne.length > 0
     ? selCarne.map(c => `3x pedaços ${c}`).join(', ')
     : '';
@@ -296,6 +325,4 @@ function enviarWhatsApp() {
 }
 
 // ========== INIT ==========
-buildCardapio();
-buildGrids();
-updatePrecoPersonalizada();
+carregarCardapio();
