@@ -13,7 +13,9 @@
 <header>
   <div class="header-top">
     <div class="logo">
-      <div class="logo-icon">🍽️</div>
+      <div class="logo-icon">
+  <img src="logo.jpeg" alt="Logo Restaurante do Mário">
+</div>
       <div>
         <h1>Restaurante do Mário</h1>
         <span class="logo-sub">Tradição &amp; Sabor Desde 1997.</span>
@@ -89,7 +91,6 @@
   <p class="subtitle">Tudo o que preparamos hoje com carinho!</p>
 
   <div class="cardapio-grid">
-    <!-- Linha 1: Acompanhamentos + Carnes -->
     <div class="cardapio-col">
       <div class="cardapio-box box-acomp">
         <div class="cardapio-box-title">🍚 Acompanhamentos</div>
@@ -102,7 +103,6 @@
         <div class="cardapio-box-list" id="listaCarne"></div>
       </div>
     </div>
-    <!-- Linha 2: Saladas + Sobremesas -->
     <div class="cardapio-col">
       <div class="cardapio-box box-salada">
         <div class="cardapio-box-title">🥗 Saladas</div>
@@ -161,7 +161,7 @@
     </div>
   </div>
 
-  <!-- Cardápio do Dia (caixinha organizada) -->
+  <!-- Cardápio do Dia -->
   <div class="cardapio-pedidos-box">
     <div class="cardapio-pedidos-title">📋 Cardápio do Dia</div>
     <div class="cardapio-pedidos-grid">
@@ -237,7 +237,7 @@
       </button>
     </div>
 
-    <div class="section-label">Acompanhamentos <span style="font-weight:400;color:#aaa;font-size:0.88rem;">(máx. 5 — acima disso +R$2,00 cada)</span></div>
+    <div class="section-label">Acompanhamentos <span style="font-weight:400;color:#aaa;font-size:0.88rem;">(máx. 5 — acima disso +R$4,00 cada)</span></div>
     <div class="counter-info" id="acompCounter">Selecionados: 0 / 5</div>
     <div class="itens-grid" id="acompGrid"></div>
 
@@ -245,7 +245,8 @@
     <div class="counter-info" id="carneCounter">Selecionados: 0 / 3</div>
     <div class="itens-grid" id="carneGrid"></div>
 
-    <div class="section-label">Salada <span style="font-weight:400;color:#aaa;font-size:0.88rem;">(opcional)</span></div>
+    <div class="section-label">Salada <span style="font-weight:400;color:#aaa;font-size:0.88rem;">(máx. 3 — +R$2,00 cada)</span></div>
+    <div class="counter-info" id="saladaCounter">Selecionadas: 0 / 3</div>
     <div class="itens-grid" id="saladaGrid"></div>
 
     <div class="preco-personalizada">
@@ -296,14 +297,110 @@
     </div>
     <div class="pagamentos">
       <strong>💳 Formas de Pagamento</strong>
-      Pix · Cartão · ÚtilCard · VRCard
+      Pix · Cartão · ÚtilCard · VRCard · Sodexo
     </div>
-    <button class="whatsapp-btn" onclick="enviarWhatsApp()">
+    <button class="whatsapp-btn" onclick="abrirModalNome()">
       📲 Enviar Pedido pelo WhatsApp
     </button>
   </div>
 </div>
 
+<!-- ===================== MODAL NOME DO CLIENTE ===================== -->
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalNome()"></div>
+<div class="modal-nome" id="modalNome">
+  <h3>👤 Qual é o seu nome?</h3>
+  <p>Para identificarmos seu pedido.</p>
+  <input
+    type="text"
+    id="inputNomeCliente"
+    placeholder="Digite seu nome..."
+    maxlength="60"
+    onkeydown="if(event.key==='Enter') confirmarPedido()"
+  />
+  <div class="modal-btns">
+    <button class="modal-btn-cancelar" onclick="fecharModalNome()">Cancelar</button>
+    <button class="modal-btn-confirmar" onclick="confirmarPedido()">Confirmar e Enviar 📲</button>
+  </div>
+</div>
+
+<!-- ===================== ESTILOS DO MODAL ===================== -->
+<style>
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1100;
+}
+.modal-overlay.open { display: block; }
+
+.modal-nome {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  z-index: 1200;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  text-align: center;
+}
+.modal-nome.open { display: block; }
+
+.modal-nome h3 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+  color: #222;
+}
+.modal-nome p {
+  font-size: 0.88rem;
+  color: #888;
+  margin-bottom: 18px;
+}
+.modal-nome input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+.modal-nome input:focus { border-color: #8B0000; }
+
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.modal-btn-cancelar {
+  flex: 1;
+  padding: 11px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.modal-btn-confirmar {
+  flex: 2;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: #25D366;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-btn-confirmar:hover { background: #1ebe5d; }
+</style>
 
 </body>
 </html>

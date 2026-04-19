@@ -1,5 +1,8 @@
-// ========== GOOGLE SHEETS ==========
+// ========== GOOGLE SHEETS (Cardápio) ==========
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=csv';
+
+// ========== COLE AQUI A URL DO SEU APPS SCRIPT ==========
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmzkXOJPdrAIrg5WFu-r91O8lZQbCvkGBzriRB-j7eSllrKPGYCeROAKI7zGixj4/exec';
 
 const WHATSAPP_NUMBER = "554733752227";
 
@@ -9,7 +12,6 @@ let selAcomp = [];
 let selCarne = [];
 let selSalada = [];
 
-// CARDAPIO global (preenchido pelo Sheets)
 let CARDAPIO = {
   acompanhamentos: [],
   carnes: [],
@@ -23,10 +25,9 @@ async function carregarCardapio() {
     const res = await fetch(SHEETS_URL);
     const csv = await res.text();
 
-    // Resetar
     CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
 
-    const linhas = csv.split('\n').slice(1); // pula cabeçalho
+    const linhas = csv.split('\n').slice(1);
     linhas.forEach(linha => {
       if (!linha.trim()) return;
       const partes = linha.split(',');
@@ -44,8 +45,7 @@ async function carregarCardapio() {
     updatePrecoPersonalizada();
 
   } catch (e) {
-    console.error('Erro ao carregar cardápio do Google Sheets:', e);
-    // Fallback: cardápio padrão caso falhe
+    console.error('Erro ao carregar cardápio:', e);
     CARDAPIO = {
       acompanhamentos: ["Arroz branco","Feijão","Macarrão espaguete","Aipim com bacon"],
       carnes: ["Carne do dia"],
@@ -163,7 +163,9 @@ function toggleItem(chip, type, item) {
       selAcomp.push(item);
       chip.classList.add('selected');
     }
-    document.getElementById('acompCounter').textContent = `Selecionados: ${selAcomp.length} / 5`;
+    const extras = Math.max(0, selAcomp.length - 5);
+    const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${(extras * 4).toFixed(0)})` : '';
+    document.getElementById('acompCounter').textContent = `Selecionados: ${selAcomp.length} / 5${extraInfo}`;
     if (selAcomp.length > 5) {
       document.getElementById('acompCounter').classList.add('warn');
     } else {
@@ -184,9 +186,11 @@ function toggleItem(chip, type, item) {
       selSalada = selSalada.filter(i => i !== item);
       chip.classList.remove('selected-salada');
     } else {
+      if (selSalada.length >= 3) { alert('Máximo de 3 saladas!'); return; }
       selSalada.push(item);
       chip.classList.add('selected-salada');
     }
+    document.getElementById('saladaCounter').textContent = `Selecionadas: ${selSalada.length} / 3${selSalada.length > 0 ? ` (+R$${(selSalada.length * 2).toFixed(0)})` : ''}`;
   }
   updatePrecoPersonalizada();
 }
@@ -199,9 +203,9 @@ function selectSize(size) {
 }
 
 function updatePrecoPersonalizada() {
-  let base = selectedSize === 'media' ? 25 : 27;
-  const extras = Math.max(0, selAcomp.length - 5);
-  const total = base + (extras * 2);
+  const base = selectedSize === 'media' ? 25 : 27;
+  const extrasAcomp = Math.max(0, selAcomp.length - 5);
+  const total = base + (extrasAcomp * 4) + (selSalada.length * 2);
   document.getElementById('precoPersonalizada').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
 }
 
@@ -212,15 +216,23 @@ function changeQty(size, delta) {
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = qtyPadrao[size];
 }
 
+// ========== MARMITA PADRÃO ==========
 function addPadrao(size) {
   const precoUnit = size === 'media' ? 25 : 27;
   const label = size === 'media' ? 'Média' : 'Grande';
   const qty = qtyPadrao[size];
   const carneDesc = CARDAPIO.carnes.map(c => `1x pedaço ${c}`).join(' / ');
   const desc = `Arroz branco, Feijão, Macarrão espaguete, Aipim com bacon, ${carneDesc}`;
+
   for (let i = 0; i < qty; i++) {
-    cart.push({ tipo: `Marmita Padrão ${label}`, desc, preco: precoUnit });
+    cart.push({
+      tipo: `Marmita Padrão ${label}`,
+      desc,
+      descPlanilha: '', // em branco na planilha
+      preco: precoUnit
+    });
   }
+
   qtyPadrao[size] = 1;
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = '1';
   updateCart();
@@ -234,22 +246,21 @@ function addPersonalizada() {
     return;
   }
   const base = selectedSize === 'media' ? 25 : 27;
-  const extras = Math.max(0, selAcomp.length - 5);
-  const preco = base + extras * 2;
+  const extrasAcomp = Math.max(0, selAcomp.length - 5);
+  const preco = base + (extrasAcomp * 4) + (selSalada.length * 2);
   const label = selectedSize === 'media' ? 'Média' : 'Grande';
 
-  const carnesDesc = selCarne.length > 0
-    ? selCarne.map(c => `3x pedaços ${c}`).join(', ')
-    : '';
-
-  const acompDesc = selAcomp.length > 0 ? selAcomp.join(', ') : '';
+  const carnesDesc = selCarne.length > 0 ? selCarne.map(c => `1x pedaço ${c}`).join(', ') : '';
+  const acompDesc  = selAcomp.length  > 0 ? selAcomp.join(', ') : '';
   const saladaDesc = selSalada.length > 0 ? 'Salada: ' + selSalada.join(', ') : '';
 
   const parts = [acompDesc, carnesDesc, saladaDesc].filter(Boolean);
+  const descCompleta = parts.join(' | ');
 
   cart.push({
     tipo: `Marmita Personalizada ${label}`,
-    desc: parts.join(' | '),
+    desc: descCompleta,
+    descPlanilha: descCompleta, // aparece na planilha
     preco
   });
 
@@ -265,6 +276,7 @@ function clearPersonalizada() {
   buildGrids();
   document.getElementById('acompCounter').textContent = 'Selecionados: 0 / 5';
   document.getElementById('carneCounter').textContent = 'Selecionados: 0 / 3';
+  document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
   document.getElementById('acompCounter').classList.remove('warn');
   updatePrecoPersonalizada();
 }
@@ -310,16 +322,61 @@ function toggleCart() {
   overlay.classList.toggle('open');
 }
 
-// ========== WHATSAPP ==========
-function enviarWhatsApp() {
+// ========== MODAL NOME DO CLIENTE ==========
+function abrirModalNome() {
   if (cart.length === 0) { alert('Carrinho vazio!'); return; }
-  let msg = '🍽️ *Pedido — Restaurante do Mário*\n\n';
-  let total = 0;
+  document.getElementById('inputNomeCliente').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modalNome').classList.add('open');
+  setTimeout(() => document.getElementById('inputNomeCliente').focus(), 100);
+}
+
+function fecharModalNome() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('modalNome').classList.remove('open');
+}
+
+function confirmarPedido() {
+  const nome = document.getElementById('inputNomeCliente').value.trim();
+  if (!nome) {
+    alert('Por favor, digite seu nome antes de continuar.');
+    document.getElementById('inputNomeCliente').focus();
+    return;
+  }
+  fecharModalNome();
+  enviarWhatsApp(nome);
+}
+
+// ========== WHATSAPP + GOOGLE DRIVE ==========
+function enviarWhatsApp(nomeCliente) {
+  if (cart.length === 0) { alert('Carrinho vazio!'); return; }
+
+  const total = cart.reduce((sum, item) => sum + item.preco, 0);
+
+  // ── Salva no Google Drive ──
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      nomeCliente,
+      itens: cart.map(item => ({
+        tipo: item.tipo,
+        desc: item.descPlanilha,
+        preco: item.preco
+      })),
+      total: total.toFixed(2)
+    })
+  }).catch(err => console.warn('Erro ao salvar no Drive:', err));
+
+  // ── Monta mensagem do WhatsApp ──
+  let msg = `🍽️ *Pedido — Restaurante do Mário*\n`;
+  msg += `👤 *Cliente: ${nomeCliente}*\n\n`;
   cart.forEach((item, i) => {
-    total += item.preco;
     msg += `*${i + 1}. ${item.tipo}*\n${item.desc}\nR$ ${item.preco.toFixed(2).replace('.', ',')}\n\n`;
   });
-  msg += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
+  msg += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
