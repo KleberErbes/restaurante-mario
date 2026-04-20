@@ -7,15 +7,18 @@
 <link rel="stylesheet" href="style.css">
 <script src="script.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-
 </head>
 <body>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast" class="toast" aria-live="polite"></div>
+
 <header>
   <div class="header-top">
     <div class="logo">
       <div class="logo-icon">
-  <img src="logo.jpeg" alt="Logo Restaurante do Mário">
-</div>
+        <img src="logo.jpeg" alt="Logo Restaurante do Mário">
+      </div>
       <div>
         <h1>Restaurante do Mário</h1>
         <span class="logo-sub">Tradição &amp; Sabor Desde 1997.</span>
@@ -25,14 +28,15 @@
       <div class="header-info">
         <span>📍 BR 280 Km 82 — Nº 515</span>
         <span>📞 (47) 3375-2227</span>
+        <span id="statusBadge" class="status-badge" style="display:none;"></span>
       </div>
-      <button class="cart-btn" onclick="toggleCart()">
+      <button class="cart-btn" id="cartBtnHeader" onclick="toggleCart()" aria-label="Abrir carrinho">
         🛒 Carrinho
         <span class="cart-count" id="cartCount">0</span>
       </button>
     </div>
   </div>
-  <nav>
+  <nav role="navigation" aria-label="Menu principal">
     <button class="active" onclick="showSection('inicio', this)">Início</button>
     <button onclick="showSection('cardapio-dia-sec', this)">Cardápio do Dia</button>
     <button onclick="showSection('pedidos', this)">Marmitas</button>
@@ -41,7 +45,7 @@
 </header>
 
 <!-- ===================== HERO / INÍCIO ===================== -->
-<section id="inicio" class="active" style="padding:0;max-width:100%;">
+<section id="inicio" class="active">
   <div class="hero">
     <div>
       <div class="hero-badge">Comida Caseira de Verdade</div>
@@ -54,12 +58,11 @@
     </div>
   </div>
 
-  <!-- BUFFET LIVRE abaixo do hero -->
+  <!-- BUFFET LIVRE -->
   <div class="buffet-home">
     <div class="buffet-home-inner">
       <h2 class="buffet-home-title">Buffet Livre</h2>
       <p class="buffet-home-sub">Venha nos visitar e saboreie o melhor da culinária caseira!</p>
-
       <div class="buffet-grid">
         <div class="buffet-card">
           <h3>Segunda a Sexta</h3>
@@ -72,7 +75,6 @@
           <p>Especial de sábado com ainda mais opções no balcão!</p>
         </div>
       </div>
-
       <div class="horario-card">
         <div class="horario-icon">🕐</div>
         <div>
@@ -89,7 +91,6 @@
 <section id="cardapio-dia-sec">
   <h2>Cardápio do Dia</h2>
   <p class="subtitle">Tudo o que preparamos hoje com carinho!</p>
-
   <div class="cardapio-grid">
     <div class="cardapio-col">
       <div class="cardapio-box box-acomp">
@@ -118,40 +119,12 @@
   </div>
 </section>
 
-<!-- ===================== BUFFET ===================== -->
-<section id="buffet" style="display:none;padding:48px 32px;max-width:900px;margin:0 auto;">
-  <h2>Buffet por Quilo</h2>
-  <p class="subtitle">Venha nos visitar e saboreie o melhor da culinária caseira!</p>
-
-  <div class="buffet-grid">
-    <div class="buffet-card">
-      <h3>Segunda a Sexta</h3>
-      <div class="buffet-price"><span>R$</span> 38,00</div>
-      <p>Prato feito com capricho, cardápio variado todo dia!</p>
-    </div>
-    <div class="buffet-card">
-      <h3>Sábado</h3>
-      <div class="buffet-price"><span>R$</span> 40,00</div>
-      <p>Especial de sábado com ainda mais opções no balcão!</p>
-    </div>
-  </div>
-
-  <div class="horario-card">
-    <div class="horario-icon">🕥</div>
-    <div>
-      <h3>Horário de Funcionamento</h3>
-      <p>10h30 às 14h00</p>
-      <small>Segunda a Sábado</small>
-    </div>
-  </div>
-</section>
-
 <!-- ===================== PEDIDOS ===================== -->
-  <section id="pedidos">
+<section id="pedidos">
   <h2>Pedir Marmitas</h2>
   <p class="subtitle">Escolha a opção ideal para você!</p>
 
-      <!-- Banner Marmita a Quilo -->
+  <!-- Banner Marmita a Quilo -->
   <div class="kilo-banner">
     <h3>Também temos Marmita a Quilo!</h3>
     <div class="kilo-options">
@@ -160,8 +133,8 @@
       <div class="kilo-tag">Somente Salada <span>R$ 44,90/kg</span></div>
     </div>
   </div>
-  
-  <!-- Cardápio do Dia -->
+
+  <!-- Cardápio do Dia (resumo) -->
   <div class="cardapio-pedidos-box">
     <div class="cardapio-pedidos-title">📋 Cardápio do Dia</div>
     <div class="cardapio-pedidos-grid">
@@ -197,9 +170,9 @@
         <li>3x pedaços — Carne do dia</li>
       </ul>
       <div class="qty-selector">
-        <button class="qty-btn" onclick="changeQty('media', -1)">−</button>
+        <button class="qty-btn" onclick="changeQty('media', -1)" aria-label="Diminuir quantidade">−</button>
         <span class="qty-value" id="qtyMedia">1</span>
-        <button class="qty-btn" onclick="changeQty('media', 1)">+</button>
+        <button class="qty-btn" onclick="changeQty('media', 1)" aria-label="Aumentar quantidade">+</button>
       </div>
       <button class="btn-add" onclick="addPadrao('media')">+ Adicionar ao Carrinho</button>
     </div>
@@ -214,9 +187,9 @@
         <li>3x pedaços — Carne do dia</li>
       </ul>
       <div class="qty-selector">
-        <button class="qty-btn" onclick="changeQty('grande', -1)">−</button>
+        <button class="qty-btn" onclick="changeQty('grande', -1)" aria-label="Diminuir quantidade">−</button>
         <span class="qty-value" id="qtyGrande">1</span>
-        <button class="qty-btn" onclick="changeQty('grande', 1)">+</button>
+        <button class="qty-btn" onclick="changeQty('grande', 1)" aria-label="Aumentar quantidade">+</button>
       </div>
       <button class="btn-add" onclick="addPadrao('grande')">+ Adicionar ao Carrinho</button>
     </div>
@@ -237,7 +210,7 @@
       </button>
     </div>
 
-    <div class="section-label">Acompanhamentos <span style="font-weight:400;color:#aaa;font-size:0.88rem;">(máx. 5 — acima disso +R$4,00 cada)</span></div>
+    <div class="section-label">Acompanhamentos <span style="font-weight:400;color:#aaa;font-size:0.88rem;">(máx. 5 — acima +R$4,00 cada)</span></div>
     <div class="counter-info" id="acompCounter">Selecionados: 0 / 5</div>
     <div class="itens-grid" id="acompGrid"></div>
 
@@ -267,12 +240,12 @@
     <h3>Restaurante do Mário</h3>
     <p><strong>BR-280, Km 82, Nº 515</strong></p>
     <p>Anexo ao Posto Ipiranga</p>
-    <div class="badge">🕥 Seg a Sáb: 10h30 às 14h00</div>
+    <div class="badge">🕐 Seg a Sáb: 10h30 às 14h00</div>
     <div class="map-embed">
       🗺️ BR-280, Km 82 — Posto Ipiranga<br>
       <small style="font-weight:400;">Abra o Google Maps para navegar</small>
       <br>
-      <a href="https://maps.app.goo.gl/yGuFPHiz4SvZrHfB9" target="_blank"
+      <a href="https://maps.app.goo.gl/yGuFPHiz4SvZrHfB9" target="_blank" rel="noopener noreferrer"
          style="margin-top:10px;background:var(--verde);color:#fff;padding:8px 20px;border-radius:8px;text-decoration:none;font-size:0.92rem;">
         Abrir no Google Maps
       </a>
@@ -280,15 +253,15 @@
   </div>
 </section>
 
-<!-- ===================== CART ===================== -->
-<div class="overlay" id="overlay" onclick="toggleCart()"></div>
-<div class="cart-panel" id="cartPanel">
+<!-- ===================== OVERLAY + CART ===================== -->
+<div class="overlay" id="overlay" onclick="toggleCart()" role="presentation"></div>
+<div class="cart-panel" id="cartPanel" role="dialog" aria-label="Carrinho de compras">
   <div class="cart-header">
     <h2>🛒 Meu Carrinho</h2>
-    <button class="close-cart" onclick="toggleCart()">✕</button>
+    <button class="close-cart" onclick="toggleCart()" aria-label="Fechar carrinho">✕</button>
   </div>
   <div class="cart-items" id="cartItems">
-    <p class="cart-empty">Seu carrinho está vazio.</p>
+    <p class="cart-empty">🛒 Seu carrinho está vazio.</p>
   </div>
   <div class="cart-footer">
     <div class="cart-total">
@@ -306,8 +279,8 @@
 </div>
 
 <!-- ===================== MODAL NOME DO CLIENTE ===================== -->
-<div class="modal-overlay" id="modalOverlay" onclick="fecharModalNome()"></div>
-<div class="modal-nome" id="modalNome">
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalNome()" role="presentation"></div>
+<div class="modal-nome" id="modalNome" role="dialog" aria-label="Identificação do cliente" aria-modal="true">
   <h3>👤 Qual é o seu nome?</h3>
   <p>Para identificarmos seu pedido.</p>
   <input
@@ -315,6 +288,7 @@
     id="inputNomeCliente"
     placeholder="Digite seu nome..."
     maxlength="60"
+    autocomplete="given-name"
     onkeydown="if(event.key==='Enter') confirmarPedido()"
   />
   <div class="modal-btns">
@@ -322,85 +296,6 @@
     <button class="modal-btn-confirmar" onclick="confirmarPedido()">Confirmar e Enviar 📲</button>
   </div>
 </div>
-
-<!-- ===================== ESTILOS DO MODAL ===================== -->
-<style>
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 1100;
-}
-.modal-overlay.open { display: block; }
-
-.modal-nome {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px 28px 24px;
-  z-index: 1200;
-  width: 90%;
-  max-width: 380px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-  text-align: center;
-}
-.modal-nome.open { display: block; }
-
-.modal-nome h3 {
-  font-size: 1.3rem;
-  margin-bottom: 6px;
-  color: #222;
-}
-.modal-nome p {
-  font-size: 0.88rem;
-  color: #888;
-  margin-bottom: 18px;
-}
-.modal-nome input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  outline: none;
-  box-sizing: border-box;
-  transition: border 0.2s;
-}
-.modal-nome input:focus { border-color: #8B0000; }
-
-.modal-btns {
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-}
-.modal-btn-cancelar {
-  flex: 1;
-  padding: 11px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  background: #fff;
-  color: #666;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-.modal-btn-confirmar {
-  flex: 2;
-  padding: 11px;
-  border: none;
-  border-radius: 10px;
-  background: #25D366;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.modal-btn-confirmar:hover { background: #1ebe5d; }
-</style>
 
 </body>
 </html>
