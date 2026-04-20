@@ -49,7 +49,7 @@ function parseCSVLine(line) {
   return result;
 }
 
-// Toast de feedback (substitui alert)
+// Toast de feedback 
 function showToast(msg, tipo = 'sucesso') {
   const existing = document.getElementById('toast');
   if (existing) existing.remove();
@@ -320,8 +320,8 @@ function addPadrao(size) {
 
   // Descrição correta: lista todos os itens padrão + carne do dia
   const carneDesc = CARDAPIO.carnes.length > 0
-    ? `3x pedaços — ${CARDAPIO.carnes[0]}`
-    : '3x pedaços — Carne do dia';
+    ? `3x pedaços : ${CARDAPIO.carnes.join(', ')}`
+    : '1x pedaços — Carne do dia';
 
   const desc = `Arroz branco, Feijão, Macarrão, Aipim com bacon | ${carneDesc}`;
 
