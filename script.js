@@ -250,7 +250,14 @@ function addPersonalizada() {
   const preco = base + (extrasAcomp * 4) + (selSalada.length * 2);
   const label = selectedSize === 'media' ? 'Média' : 'Grande';
 
-  const carnesDesc = selCarne.length > 0 ? selCarne.map(c => `3x pedaços ${c}`).join(', ') : '';
+ let carnesDesc = '';
+if (selCarne.length === 1) {
+  carnesDesc = `3x pedaços ${selCarne[0]}`;
+} else if (selCarne.length === 2) {
+  carnesDesc = `2x pedaços ${selCarne[0]}, 1x pedaço ${selCarne[1]}`;
+} else if (selCarne.length === 3) {
+  carnesDesc = `1x pedaço ${selCarne[0]}, 1x pedaço ${selCarne[1]}, 1x pedaço ${selCarne[2]}`;
+}
   const acompDesc  = selAcomp.length  > 0 ? selAcomp.join(', ') : '';
   const saladaDesc = selSalada.length > 0 ? 'Salada: ' + selSalada.join(', ') : '';
 
