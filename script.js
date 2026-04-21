@@ -26,6 +26,7 @@ let CARDAPIO = {
 };
 
 let qtyPadrao = { media: 1, grande: 1 };
+let diaFechado = false; // true quando a data de hoje está marcada como fechado na planilha
 
 // ========== UTILITÁRIOS ==========
 
@@ -49,7 +50,7 @@ function parseCSVLine(line) {
   return result;
 }
 
-// Toast de feedback 
+// Toast de feedback (substitui alert)
 function showToast(msg, tipo = 'sucesso') {
   const existing = document.getElementById('toast');
   if (existing) existing.remove();
@@ -86,19 +87,44 @@ function verificarHorario() {
   const badge = document.getElementById('statusBadge');
   if (!badge) return;
 
-  const diaUtil = DIAS_FUNCIONAMENTO.includes(diaSemana);
+  const diaUtil = DIAS_FUNCIONAMENTO.includes(diaSemana) && !diaFechado;
+  let aceitaPedidos = false;
 
-  if (diaUtil && min >= HORARIO_PEDIDOS && min < HORARIO_ABERTURA) {
+  if (diaFechado) {
+    badge.className = 'status-badge status-fechado';
+    badge.innerHTML = '🔴 Fechado hoje';
+  } else if (diaUtil && min >= HORARIO_PEDIDOS && min < HORARIO_ABERTURA) {
     badge.className = 'status-badge status-pedidos';
     badge.innerHTML = '🟡 Disponível para pedidos de marmita';
+    aceitaPedidos = true;
   } else if (diaUtil && min >= HORARIO_ABERTURA && min < HORARIO_FECHAMENTO) {
     badge.className = 'status-badge status-aberto';
     badge.innerHTML = '🟢 Aberto agora';
+    aceitaPedidos = true;
   } else {
     badge.className = 'status-badge status-fechado';
     badge.innerHTML = '🔴 Fechado agora';
   }
+
   badge.style.display = 'inline-flex';
+  atualizarBotoesEnvio(aceitaPedidos);
+}
+
+// Habilita ou desabilita todos os botões de pedido
+function atualizarBotoesEnvio(aceitaPedidos) {
+  const btnWhatsapp = document.querySelector('.whatsapp-btn');
+  const btnsAdd = document.querySelectorAll('.btn-add');
+  const btnCart = document.getElementById('cartBtnHeader');
+
+  if (aceitaPedidos) {
+    if (btnWhatsapp) { btnWhatsapp.disabled = false; btnWhatsapp.classList.remove('btn-disabled'); }
+    btnsAdd.forEach(b => { b.disabled = false; b.classList.remove('btn-disabled'); });
+    if (btnCart)     { btnCart.disabled = false; btnCart.classList.remove('btn-disabled'); }
+  } else {
+    if (btnWhatsapp) { btnWhatsapp.disabled = true; btnWhatsapp.classList.add('btn-disabled'); }
+    btnsAdd.forEach(b => { b.disabled = true; b.classList.add('btn-disabled'); });
+    if (btnCart)     { btnCart.disabled = true; btnCart.classList.add('btn-disabled'); }
+  }
 }
 
 // ========== CARREGAR CARDÁPIO DO GOOGLE SHEETS ==========
@@ -109,6 +135,7 @@ async function carregarCardapio() {
     const csv = await res.text();
 
     CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
+    const dataHoje = hojeFormatada();
 
     const linhas = csv.split('\n').slice(1);
     linhas.forEach(linha => {
@@ -117,6 +144,13 @@ async function carregarCardapio() {
       const categoria = partes[0].toLowerCase();
       const item = partes.slice(1).join(',').trim().replace(/^"|"$/g, '');
       if (!item) return;
+
+      if (categoria === 'fechado') {
+        // Normaliza a data vinda da planilha e compara com hoje
+        if (item.trim() === dataHoje) diaFechado = true;
+        return;
+      }
+
       if (categoria === 'acompanhamentos' || categoria === 'acompanhamento') CARDAPIO.acompanhamentos.push(item);
       else if (categoria === 'carnes' || categoria === 'carne') CARDAPIO.carnes.push(item);
       else if (categoria === 'saladas' || categoria === 'salada') CARDAPIO.saladas.push(item);
@@ -139,6 +173,15 @@ async function carregarCardapio() {
     buildGrids();
     updatePrecoPersonalizada();
   }
+}
+
+// Retorna a data de hoje no formato DD/MM/AAAA
+function hojeFormatada() {
+  const d = new Date();
+  const dia  = String(d.getDate()).padStart(2, '0');
+  const mes  = String(d.getMonth() + 1).padStart(2, '0');
+  const ano  = d.getFullYear();
+  return `${dia}/${mes}/${ano}`;
 }
 
 function mostrarSkeletons() {
@@ -320,8 +363,8 @@ function addPadrao(size) {
 
   // Descrição correta: lista todos os itens padrão + carne do dia
   const carneDesc = CARDAPIO.carnes.length > 0
-    ? `3x pedaços : ${CARDAPIO.carnes.join(', ')}`
-    : '1x pedaços — Carne do dia';
+    ? `3x pedaços — ${CARDAPIO.carnes[0]}`
+    : '3x pedaços — Carne do dia';
 
   const desc = `Arroz branco, Feijão, Macarrão, Aipim com bacon | ${carneDesc}`;
 

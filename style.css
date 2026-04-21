@@ -21,6 +21,17 @@ body {
   min-height: 100vh;
 }
 
+/* ===================== BOTÕES DESABILITADOS (fora do horário) ===================== */
+.btn-disabled,
+.btn-add:disabled,
+.whatsapp-btn:disabled,
+.cart-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  filter: grayscale(40%);
+}
+
 /* ===================== TOAST ===================== */
 .toast {
   position: fixed;
