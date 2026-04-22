@@ -396,8 +396,11 @@ function removeItem(i) {
 function toggleCart() {
   const panel = document.getElementById('cartPanel');
   const overlay = document.getElementById('overlay');
+  const aviso = document.getElementById('avisoBalcao');
   panel.classList.toggle('open');
   overlay.classList.toggle('open');
+  // Esconde o aviso quando o carrinho estiver aberto
+  if (aviso) aviso.classList.toggle('hidden-by-cart', panel.classList.contains('open'));
 }
 
 // ========== MODAL NOME DO CLIENTE ==========
