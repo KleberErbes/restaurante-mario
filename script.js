@@ -1,21 +1,15 @@
 // ========== GOOGLE SHEETS (Cardápio) ==========
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=csv';
 
-// ========== APPS SCRIPT URL ==========
+// ========== COLE AQUI A URL DO SEU APPS SCRIPT ==========
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmzkXOJPdrAIrg5WFu-r91O8lZQbCvkGBzriRB-j7eSllrKPGYCeROAKI7zGixj4/exec';
 
 const WHATSAPP_NUMBER = "554733752227";
 
-// Horário de funcionamento
-const HORARIO_PEDIDOS    = 8 * 60;       // 08:00 — início pedidos marmita
-const HORARIO_ABERTURA   = 10 * 60 + 30; // 10:30 — buffet abre
-const HORARIO_FECHAMENTO = 14 * 60;      // 14:00 — fechamento
-const DIAS_FUNCIONAMENTO = [1, 2, 3, 4, 5, 6]; // segunda a sábado
-
 let cart = [];
 let selectedSize = 'media';
 let selAcomp = [];
-let selCarne = [];
+let selCarne = {}; // { nomeCarne: quantidade }
 let selSalada = [];
 
 let CARDAPIO = {
@@ -25,132 +19,21 @@ let CARDAPIO = {
   sobremesas: []
 };
 
-let qtyPadrao = { media: 1, grande: 1 };
-let diaFechado = false; // true quando a data de hoje está marcada como fechado na planilha
-
-// ========== UTILITÁRIOS ==========
-
-// Parse CSV robusto (lida com vírgulas dentro de aspas)
-function parseCSVLine(line) {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += ch;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
-
-// Toast de feedback (substitui alert)
-function showToast(msg, tipo = 'sucesso') {
-  const existing = document.getElementById('toast');
-  if (existing) existing.remove();
-
-  const toast = document.createElement('div');
-  toast.id = 'toast';
-  toast.className = `toast toast-${tipo}`;
-  toast.innerHTML = msg;
-  document.body.appendChild(toast);
-
-  requestAnimationFrame(() => toast.classList.add('toast-show'));
-
-  setTimeout(() => {
-    toast.classList.remove('toast-show');
-    setTimeout(() => toast.remove(), 300);
-  }, 2800);
-}
-
-// Animação de "pulsar" no botão do carrinho
-function pulsarCarrinho() {
-  const btn = document.getElementById('cartBtnHeader');
-  if (!btn) return;
-  btn.classList.remove('cart-pulse');
-  void btn.offsetWidth;
-  btn.classList.add('cart-pulse');
-  setTimeout(() => btn.classList.remove('cart-pulse'), 600);
-}
-
-// ========== HORÁRIO DE FUNCIONAMENTO ==========
-function verificarHorario() {
-  const agora = new Date();
-  const diaSemana = agora.getDay();
-  const min = agora.getHours() * 60 + agora.getMinutes();
-  const badge = document.getElementById('statusBadge');
-  if (!badge) return;
-
-  const diaUtil = DIAS_FUNCIONAMENTO.includes(diaSemana) && !diaFechado;
-  let aceitaPedidos = false;
-
-  if (diaFechado) {
-    badge.className = 'status-badge status-fechado';
-    badge.innerHTML = '🔴 Fechado hoje';
-  } else if (diaUtil && min >= HORARIO_PEDIDOS && min < HORARIO_ABERTURA) {
-    badge.className = 'status-badge status-pedidos';
-    badge.innerHTML = '🟡 Disponível para pedidos de marmita';
-    aceitaPedidos = true;
-  } else if (diaUtil && min >= HORARIO_ABERTURA && min < HORARIO_FECHAMENTO) {
-    badge.className = 'status-badge status-aberto';
-    badge.innerHTML = '🟢 Aberto agora';
-    aceitaPedidos = true;
-  } else {
-    badge.className = 'status-badge status-fechado';
-    badge.innerHTML = '🔴 Fechado agora';
-  }
-
-  badge.style.display = 'inline-flex';
-  atualizarBotoesEnvio(aceitaPedidos);
-}
-
-// Habilita ou desabilita todos os botões de pedido
-function atualizarBotoesEnvio(aceitaPedidos) {
-  const btnWhatsapp = document.querySelector('.whatsapp-btn');
-  const btnsAdd = document.querySelectorAll('.btn-add');
-  const btnCart = document.getElementById('cartBtnHeader');
-
-  if (aceitaPedidos) {
-    if (btnWhatsapp) { btnWhatsapp.disabled = false; btnWhatsapp.classList.remove('btn-disabled'); }
-    btnsAdd.forEach(b => { b.disabled = false; b.classList.remove('btn-disabled'); });
-    if (btnCart)     { btnCart.disabled = false; btnCart.classList.remove('btn-disabled'); }
-  } else {
-    if (btnWhatsapp) { btnWhatsapp.disabled = true; btnWhatsapp.classList.add('btn-disabled'); }
-    btnsAdd.forEach(b => { b.disabled = true; b.classList.add('btn-disabled'); });
-    if (btnCart)     { btnCart.disabled = true; btnCart.classList.add('btn-disabled'); }
-  }
-}
-
 // ========== CARREGAR CARDÁPIO DO GOOGLE SHEETS ==========
 async function carregarCardapio() {
-  mostrarSkeletons();
   try {
     const res = await fetch(SHEETS_URL);
     const csv = await res.text();
 
     CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
-    const dataHoje = hojeFormatada();
 
     const linhas = csv.split('\n').slice(1);
     linhas.forEach(linha => {
       if (!linha.trim()) return;
-      const partes = parseCSVLine(linha);
-      const categoria = partes[0].toLowerCase();
-      const item = partes.slice(1).join(',').trim().replace(/^"|"$/g, '');
+      const partes = linha.split(',');
+      const categoria = partes[0].trim().replace(/"/g, '').toLowerCase();
+      const item = partes.slice(1).join(',').trim().replace(/"/g, '');
       if (!item) return;
-
-      if (categoria === 'fechado') {
-        // Normaliza a data vinda da planilha e compara com hoje
-        if (item.trim() === dataHoje) diaFechado = true;
-        return;
-      }
-
       if (categoria === 'acompanhamentos' || categoria === 'acompanhamento') CARDAPIO.acompanhamentos.push(item);
       else if (categoria === 'carnes' || categoria === 'carne') CARDAPIO.carnes.push(item);
       else if (categoria === 'saladas' || categoria === 'salada') CARDAPIO.saladas.push(item);
@@ -164,7 +47,7 @@ async function carregarCardapio() {
   } catch (e) {
     console.error('Erro ao carregar cardápio:', e);
     CARDAPIO = {
-      acompanhamentos: ["Arroz branco", "Feijão", "Macarrão espaguete", "Aipim com bacon"],
+      acompanhamentos: ["Arroz branco","Feijão","Macarrão espaguete","Aipim com bacon"],
       carnes: ["Carne do dia"],
       saladas: ["Salada da casa"],
       sobremesas: ["Sobremesa do dia"]
@@ -175,32 +58,22 @@ async function carregarCardapio() {
   }
 }
 
-// Retorna a data de hoje no formato DD/MM/AAAA
-function hojeFormatada() {
-  const d = new Date();
-  const dia  = String(d.getDate()).padStart(2, '0');
-  const mes  = String(d.getMonth() + 1).padStart(2, '0');
-  const ano  = d.getFullYear();
-  return `${dia}/${mes}/${ano}`;
-}
-
-function mostrarSkeletons() {
-  const ids = ['listaAcomp','listaCarne','listaSalada','listaSobremesa','cpgAcomp','cpgCarne','cpgSalada','cpgSobremesa'];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '<span class="skeleton-tag"></span><span class="skeleton-tag"></span><span class="skeleton-tag"></span>';
-  });
-}
-
 // ========== NAVEGAÇÃO ==========
 function showSection(id, btn) {
-  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('section').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = '';
+  });
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-
   const sec = document.getElementById(id);
   sec.classList.add('active');
+  if (id === 'inicio') sec.style.cssText = 'display:block;padding:0;max-width:100%;';
   if (btn) btn.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
+
+  // Aviso de balcão só na seção de pedidos
+  const aviso = document.getElementById('avisoBalcao');
+  if (aviso) aviso.classList.toggle('visible', id === 'pedidos');
 }
 
 function goToMarmitas() {
@@ -215,6 +88,17 @@ function goToCardapio() {
 
 // ========== CARDÁPIO ==========
 function buildCardapio() {
+  const flat = document.getElementById('cardapioDia');
+  if (flat) {
+    flat.innerHTML = '';
+    [...CARDAPIO.acompanhamentos, ...CARDAPIO.carnes, ...CARDAPIO.saladas, ...CARDAPIO.sobremesas].forEach(item => {
+      const tag = document.createElement('span');
+      tag.className = 'cardapio-tag';
+      tag.textContent = item;
+      flat.appendChild(tag);
+    });
+  }
+
   const grupos = [
     { id: 'listaAcomp',     items: CARDAPIO.acompanhamentos, cls: 'tag-acomp' },
     { id: 'listaCarne',     items: CARDAPIO.carnes,          cls: 'tag-carne' },
@@ -225,10 +109,6 @@ function buildCardapio() {
     const div = document.getElementById(id);
     if (!div) return;
     div.innerHTML = '';
-    if (items.length === 0) {
-      div.innerHTML = '<span style="color:#aaa;font-size:0.85rem;">Nenhum item hoje</span>';
-      return;
-    }
     items.forEach(item => {
       const tag = document.createElement('span');
       tag.className = `cardapio-item-tag ${cls}`;
@@ -267,20 +147,85 @@ function buildGrid(containerId, items, type) {
   const div = document.getElementById(containerId);
   if (!div) return;
   div.innerHTML = '';
-  if (items.length === 0) {
-    div.innerHTML = '<span style="color:#aaa;font-size:0.85rem;">Cardápio não disponível</span>';
-    return;
-  }
   items.forEach(item => {
-    const chip = document.createElement('button');
-    chip.className = 'item-chip';
-    chip.textContent = item;
-    chip.dataset.item = item;
-    chip.dataset.type = type;
-    chip.setAttribute('aria-pressed', 'false');
-    chip.onclick = () => toggleItem(chip, type, item);
-    div.appendChild(chip);
+    if (type === 'carne') {
+      // Card de carne com contador inline
+      const card = document.createElement('div');
+      card.className = 'carne-card';
+      card.dataset.item = item;
+
+      const nome = document.createElement('span');
+      nome.className = 'carne-nome';
+      nome.textContent = item;
+
+      const counter = document.createElement('div');
+      counter.className = 'carne-counter';
+      counter.style.display = 'none';
+
+      const btnMinus = document.createElement('button');
+      btnMinus.className = 'carne-btn carne-btn-minus';
+      btnMinus.textContent = '−';
+      btnMinus.onclick = (e) => { e.stopPropagation(); alterarCarne(card, item, -1); };
+
+      const qty = document.createElement('span');
+      qty.className = 'carne-qty';
+      qty.textContent = '0';
+
+      const btnPlus = document.createElement('button');
+      btnPlus.className = 'carne-btn carne-btn-plus';
+      btnPlus.textContent = '+';
+      btnPlus.onclick = (e) => { e.stopPropagation(); alterarCarne(card, item, 1); };
+
+      counter.appendChild(btnMinus);
+      counter.appendChild(qty);
+      counter.appendChild(btnPlus);
+
+      card.appendChild(nome);
+      card.appendChild(counter);
+
+      // Clique no card (fora dos botões) = adiciona 1
+      card.onclick = () => alterarCarne(card, item, 1);
+
+      div.appendChild(card);
+    } else {
+      const chip = document.createElement('button');
+      chip.className = 'item-chip';
+      chip.textContent = item;
+      chip.dataset.item = item;
+      chip.dataset.type = type;
+      chip.onclick = () => toggleItem(chip, type, item);
+      div.appendChild(chip);
+    }
   });
+}
+
+function alterarCarne(card, item, delta) {
+  const atual = selCarne[item] || 0;
+  const novo = Math.max(0, atual + delta);
+
+  if (novo === 0) {
+    delete selCarne[item];
+    card.classList.remove('carne-selecionada');
+    card.querySelector('.carne-counter').style.display = 'none';
+    card.querySelector('.carne-qty').textContent = '0';
+  } else {
+    selCarne[item] = novo;
+    card.classList.add('carne-selecionada');
+    card.querySelector('.carne-counter').style.display = 'flex';
+    card.querySelector('.carne-qty').textContent = novo;
+  }
+
+  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
+  const extras = Math.max(0, totalPedacos - 3);
+  const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
+  const counter = document.getElementById('carneCounter');
+  counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}${extraInfo}`;
+  counter.classList.toggle('warn', extras > 0);
+  updatePrecoPersonalizada();
+}
+
+function removeCarne(card, item) {
+  alterarCarne(card, item, -1);
 }
 
 function toggleItem(chip, type, item) {
@@ -288,50 +233,30 @@ function toggleItem(chip, type, item) {
     if (selAcomp.includes(item)) {
       selAcomp = selAcomp.filter(i => i !== item);
       chip.classList.remove('selected');
-      chip.setAttribute('aria-pressed', 'false');
     } else {
       selAcomp.push(item);
       chip.classList.add('selected');
-      chip.setAttribute('aria-pressed', 'true');
     }
     const extras = Math.max(0, selAcomp.length - 5);
-    const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
-    const counter = document.getElementById('acompCounter');
-    counter.textContent = `Selecionados: ${selAcomp.length} / 5${extraInfo}`;
-    counter.classList.toggle('warn', selAcomp.length > 5);
-
-  } else if (type === 'carne') {
-    if (selCarne.includes(item)) {
-      selCarne = selCarne.filter(i => i !== item);
-      chip.classList.remove('selected-carne');
-      chip.setAttribute('aria-pressed', 'false');
+    const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${(extras * 4).toFixed(0)})` : '';
+    document.getElementById('acompCounter').textContent = `Selecionados: ${selAcomp.length} / 5${extraInfo}`;
+    if (selAcomp.length > 5) {
+      document.getElementById('acompCounter').classList.add('warn');
     } else {
-      if (selCarne.length >= 3) {
-        showToast('⚠️ Máximo de 3 pedaços de carne!', 'aviso');
-        return;
-      }
-      selCarne.push(item);
-      chip.classList.add('selected-carne');
-      chip.setAttribute('aria-pressed', 'true');
+      document.getElementById('acompCounter').classList.remove('warn');
     }
-    document.getElementById('carneCounter').textContent = `Selecionados: ${selCarne.length} / 3`;
-
+  } else if (type === 'carne') {
+    // tratado por alterarCarne()
   } else if (type === 'salada') {
     if (selSalada.includes(item)) {
       selSalada = selSalada.filter(i => i !== item);
       chip.classList.remove('selected-salada');
-      chip.setAttribute('aria-pressed', 'false');
     } else {
-      if (selSalada.length >= 3) {
-        showToast('⚠️ Máximo de 3 saladas!', 'aviso');
-        return;
-      }
+      if (selSalada.length >= 3) { alert('Máximo de 3 saladas!'); return; }
       selSalada.push(item);
       chip.classList.add('selected-salada');
-      chip.setAttribute('aria-pressed', 'true');
     }
-    document.getElementById('saladaCounter').textContent =
-      `Selecionadas: ${selSalada.length} / 3${selSalada.length > 0 ? ` (+R$${selSalada.length * 2})` : ''}`;
+    document.getElementById('saladaCounter').textContent = `Selecionadas: ${selSalada.length} / 3${selSalada.length > 0 ? ` (+R$${(selSalada.length * 2).toFixed(0)})` : ''}`;
   }
   updatePrecoPersonalizada();
 }
@@ -344,11 +269,15 @@ function selectSize(size) {
 }
 
 function updatePrecoPersonalizada() {
-  const base = selectedSize === 'media' ? 25 : 27;
+  const base = selectedSize === 'media' ? 28 : 30;
   const extrasAcomp = Math.max(0, selAcomp.length - 5);
-  const total = base + (extrasAcomp * 4) + (selSalada.length * 2);
+  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
+  const extrasCarne = Math.max(0, totalPedacos - 3);
+  const total = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
   document.getElementById('precoPersonalizada').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
 }
+
+let qtyPadrao = { media: 1, grande: 1 };
 
 function changeQty(size, delta) {
   qtyPadrao[size] = Math.max(1, qtyPadrao[size] + delta);
@@ -360,80 +289,73 @@ function addPadrao(size) {
   const precoUnit = size === 'media' ? 25 : 27;
   const label = size === 'media' ? 'Média' : 'Grande';
   const qty = qtyPadrao[size];
+  const carneDesc = `3 pedaços de carne | ${CARDAPIO.carnes.join(', ')}`;
+  const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
+  const obs = document.getElementById(obsId).value.trim();
 
-  // Descrição correta: lista todos os itens padrão + carne do dia
-  const carneDesc = CARDAPIO.carnes.length > 0
-    ? `3x pedaços — ${CARDAPIO.carnes[0]}`
-    : '3x pedaços — Carne do dia';
-
-  const desc = `Arroz branco, Feijão, Macarrão, Aipim com bacon | ${carneDesc}`;
+  const descBase = `Arroz branco, Feijão, Macarrão espaguete, Aipim com bacon | ${carneDesc}`;
+  const desc = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
 
   for (let i = 0; i < qty; i++) {
     cart.push({
       tipo: `Marmita Padrão ${label}`,
       desc,
-      descPlanilha: '',
-      preco: precoUnit,
-      obs: ''
+      descPlanilha: obs ? `Obs: ${obs}` : '',
+      preco: precoUnit
     });
   }
 
   qtyPadrao[size] = 1;
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = '1';
+  document.getElementById(obsId).value = '';
   updateCart();
-  pulsarCarrinho();
-  showToast(`✅ ${qty}x Marmita ${label} adicionada${qty > 1 ? 's' : ''} ao carrinho!`);
+  toggleCart();
 }
 
 // ========== MARMITA PERSONALIZADA ==========
 function addPersonalizada() {
-  if (selAcomp.length === 0 && selCarne.length === 0 && selSalada.length === 0) {
-    showToast('⚠️ Selecione ao menos um item antes de adicionar!', 'aviso');
+  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
+  if (selAcomp.length === 0 && totalPedacos === 0) {
+    alert('Selecione ao menos um item antes de adicionar!');
     return;
   }
-
-  const base = selectedSize === 'media' ? 25 : 27;
+  const base = selectedSize === 'media' ? 28 : 30;
   const extrasAcomp = Math.max(0, selAcomp.length - 5);
-  const preco = base + (extrasAcomp * 4) + (selSalada.length * 2);
+  const extrasCarne = Math.max(0, totalPedacos - 3);
+  const preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
   const label = selectedSize === 'media' ? 'Média' : 'Grande';
 
-  let carnesDesc = '';
-  if (selCarne.length === 1) {
-    carnesDesc = `3x pedaços ${selCarne[0]}`;
-  } else if (selCarne.length === 2) {
-    carnesDesc = `2x pedaços ${selCarne[0]}, 1x pedaço ${selCarne[1]}`;
-  } else if (selCarne.length === 3) {
-    carnesDesc = `1x pedaço ${selCarne[0]}, 1x pedaço ${selCarne[1]}, 1x pedaço ${selCarne[2]}`;
-  }
-
+  const carnesDesc = totalPedacos > 0
+    ? Object.entries(selCarne).map(([c, q]) => `${q}x ${c}`).join(', ')
+    : '';
   const acompDesc  = selAcomp.length  > 0 ? selAcomp.join(', ') : '';
   const saladaDesc = selSalada.length > 0 ? 'Salada: ' + selSalada.join(', ') : '';
-  const parts = [acompDesc, carnesDesc, saladaDesc].filter(Boolean);
+
+  const parts = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc].filter(Boolean);
   const descCompleta = parts.join(' | ');
 
   cart.push({
     tipo: `Marmita Personalizada ${label}`,
     desc: descCompleta,
     descPlanilha: descCompleta,
-    preco,
-    obs: ''
+    preco
   });
 
   updateCart();
   clearPersonalizada();
-  pulsarCarrinho();
-  showToast(`✅ Marmita Personalizada ${label} adicionada ao carrinho!`);
+  toggleCart();
 }
 
 function clearPersonalizada() {
   selAcomp = [];
-  selCarne = [];
+  selCarne = {};
   selSalada = [];
   buildGrids();
   document.getElementById('acompCounter').textContent = 'Selecionados: 0 / 5';
-  document.getElementById('acompCounter').classList.remove('warn');
-  document.getElementById('carneCounter').textContent = 'Selecionados: 0 / 3';
+  document.getElementById('carneCounter').textContent = 'Selecionados: 0 pedaços';
   document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
+  document.getElementById('acompCounter').classList.remove('warn');
+  document.getElementById('carneCounter').classList.remove('warn');
   updatePrecoPersonalizada();
 }
 
@@ -443,9 +365,8 @@ function updateCart() {
   document.getElementById('cartCount').textContent = cart.length;
 
   if (cart.length === 0) {
-    container.innerHTML = '<p class="cart-empty">🛒 Seu carrinho está vazio.</p>';
+    container.innerHTML = '<p class="cart-empty">Seu carrinho está vazio.</p>';
     document.getElementById('cartTotal').textContent = 'R$ 0,00';
-    salvarCarrinhoLocal();
     return;
   }
 
@@ -456,76 +377,47 @@ function updateCart() {
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
-      <button class="remove-item" onclick="removeItem(${i})" title="Remover item" aria-label="Remover ${item.tipo}">✕</button>
       <div class="cart-item-title">${item.tipo}</div>
       <div class="cart-item-desc">${item.desc}</div>
       <div class="cart-item-price">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
+      <button class="remove-item" onclick="removeItem(${i})" title="Remover">✕</button>
     `;
     container.appendChild(div);
   });
 
   document.getElementById('cartTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-  salvarCarrinhoLocal();
 }
 
 function removeItem(i) {
-  const nome = cart[i].tipo;
   cart.splice(i, 1);
   updateCart();
-  showToast(`🗑️ ${nome} removida do carrinho.`, 'aviso');
 }
 
 function toggleCart() {
   const panel = document.getElementById('cartPanel');
   const overlay = document.getElementById('overlay');
-  const isOpen = panel.classList.toggle('open');
+  panel.classList.toggle('open');
   overlay.classList.toggle('open');
-  document.body.style.overflow = isOpen ? 'hidden' : '';
-}
-
-// ========== LOCALSTORAGE ==========
-function salvarCarrinhoLocal() {
-  try {
-    localStorage.setItem('rmario_cart', JSON.stringify(cart));
-  } catch (e) { /* silencioso */ }
-}
-
-function restaurarCarrinhoLocal() {
-  try {
-    const saved = localStorage.getItem('rmario_cart');
-    if (saved) {
-      cart = JSON.parse(saved);
-      updateCart();
-    }
-  } catch (e) {
-    cart = [];
-  }
 }
 
 // ========== MODAL NOME DO CLIENTE ==========
 function abrirModalNome() {
-  if (cart.length === 0) {
-    showToast('⚠️ Seu carrinho está vazio!', 'aviso');
-    return;
-  }
+  if (cart.length === 0) { alert('Carrinho vazio!'); return; }
   document.getElementById('inputNomeCliente').value = '';
   document.getElementById('modalOverlay').classList.add('open');
   document.getElementById('modalNome').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('inputNomeCliente').focus(), 150);
+  setTimeout(() => document.getElementById('inputNomeCliente').focus(), 100);
 }
 
 function fecharModalNome() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.getElementById('modalNome').classList.remove('open');
-  document.body.style.overflow = '';
 }
 
 function confirmarPedido() {
   const nome = document.getElementById('inputNomeCliente').value.trim();
   if (!nome) {
-    document.getElementById('inputNomeCliente').classList.add('input-erro');
-    setTimeout(() => document.getElementById('inputNomeCliente').classList.remove('input-erro'), 600);
+    alert('Por favor, digite seu nome antes de continuar.');
     document.getElementById('inputNomeCliente').focus();
     return;
   }
@@ -535,11 +427,11 @@ function confirmarPedido() {
 
 // ========== WHATSAPP + GOOGLE DRIVE ==========
 function enviarWhatsApp(nomeCliente) {
-  if (cart.length === 0) { showToast('⚠️ Carrinho vazio!', 'aviso'); return; }
+  if (cart.length === 0) { alert('Carrinho vazio!'); return; }
 
   const total = cart.reduce((sum, item) => sum + item.preco, 0);
 
-  // Salva no Google Drive (sem bloquear)
+  // ── Salva no Google Drive ──
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -555,7 +447,7 @@ function enviarWhatsApp(nomeCliente) {
     })
   }).catch(err => console.warn('Erro ao salvar no Drive:', err));
 
-  // Monta mensagem do WhatsApp
+  // ── Monta mensagem do WhatsApp ──
   let msg = `🍽️ *Pedido — Restaurante do Mário*\n`;
   msg += `👤 *Cliente: ${nomeCliente}*\n\n`;
   cart.forEach((item, i) => {
@@ -565,29 +457,7 @@ function enviarWhatsApp(nomeCliente) {
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
-
-  // Limpa carrinho após envio
-  setTimeout(() => {
-    cart = [];
-    updateCart();
-    toggleCart();
-    showToast('✅ Pedido enviado com sucesso!');
-  }, 500);
 }
 
-// ========== INICIALIZAÇÃO ==========
-document.addEventListener('DOMContentLoaded', () => {
-  carregarCardapio();
-  restaurarCarrinhoLocal();
-  verificarHorario();
-  // Atualiza badge de status a cada minuto
-  setInterval(verificarHorario, 60000);
-
-  // Fecha carrinho com ESC
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (document.getElementById('cartPanel').classList.contains('open')) toggleCart();
-      if (document.getElementById('modalNome').classList.contains('open')) fecharModalNome();
-    }
-  });
-});
+// ========== INIT ==========
+carregarCardapio();
