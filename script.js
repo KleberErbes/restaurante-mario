@@ -7,7 +7,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmzkXOJPdrAIr
 const WHATSAPP_NUMBER = "554733752227";
 
 // Horário de funcionamento
-
+const HORARIO_PEDIDOS    = 8 * 60;       // 08:00 — início pedidos marmita
+const HORARIO_ABERTURA   = 10 * 60 + 30; // 10:30 — buffet abre
+const HORARIO_FECHAMENTO = 14 * 60;      // 14:00 — fechamento
+const DIAS_FUNCIONAMENTO = [1, 2, 3, 4, 5, 6]; // segunda a sábado
 
 let cart = [];
 let selectedSize = 'media';
