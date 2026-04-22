@@ -422,6 +422,19 @@
 .aviso-balcao.visible {
   display: block;
 }
+/* Evita que o aviso tape o conteúdo */
+section#pedidos {
+  padding-bottom: 70px;
+}
+@media (max-width: 700px) {
+  .aviso-balcao {
+    font-size: 0.82rem;
+    padding: 10px 14px;
+  }
+  section#pedidos {
+    padding-bottom: 60px;
+  }
+}
 
 /* Campo de observação nas marmitas padrão */
 .obs-input {
