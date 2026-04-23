@@ -121,7 +121,6 @@ function buildCardapio() {
     { id: 'cpgAcomp',     items: CARDAPIO.acompanhamentos, cls: 'tag-acomp' },
     { id: 'cpgCarne',     items: CARDAPIO.carnes,          cls: 'tag-carne' },
     { id: 'cpgSalada',    items: CARDAPIO.saladas,         cls: 'tag-salada' },
-    { id: 'cpgSobremesa', items: CARDAPIO.sobremesas,      cls: 'tag-sobremesa' },
   ];
   cpgGrupos.forEach(({ id, items, cls }) => {
     const div = document.getElementById(id);
