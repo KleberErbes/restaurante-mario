@@ -347,7 +347,7 @@ function changeQty(size, delta) {
 // ========== MARMITA PADRÃO — BUG #1 CORRIGIDO ==========
 function addPadrao(size) {
   if (!estaAberto()) {
-    showToast('⏰ Fora do horário! Pedidos aceitos Seg–Sáb das 08h00 às 14h00.', 'aviso', 5000);
+    showToast('🔴 Estamos fechados', 'aviso', 5000);
     return;
   }
   const precoUnit = size === 'media' ? 25 : 27;
@@ -381,7 +381,7 @@ function addPadrao(size) {
 // ========== MARMITA PERSONALIZADA — BUG #3 CORRIGIDO ==========
 function addPersonalizada() {
   if (!estaAberto()) {
-    showToast('⏰ Fora do horário! Pedidos aceitos Seg–Sáb das 08h00 às 14h00.', 'aviso', 5000);
+    showToast('🔴 Estamos fechados', 'aviso', 5000);
     return;
   }
   const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
@@ -520,7 +520,7 @@ function fecharModalConfirm() {
 // ========== MODAL NOME DO CLIENTE ==========
 function abrirModalNome() {
   if (cart.length === 0) { showToast('🛒 Seu carrinho está vazio!', 'aviso'); return; }
-  if (!estaAberto()) { showToast('⏰ Fora do horário! Pedidos aceitos Seg–Sáb das 08h00 às 14h00.', 'aviso', 5000); return; }
+  if (!estaAberto()) { showToast('🔴 Estamos fechados', 'aviso', 5000); return; }
   document.getElementById('inputNomeCliente').value = '';
   document.getElementById('modalOverlay').classList.add('open');
   document.getElementById('modalNome').classList.add('open');

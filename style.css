@@ -93,6 +93,33 @@
     gap: 6px;
   }
 
+  .cart-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge-horario {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .badge-horario.badge-aberto {
+    color: #7ec870;
+  }
+
+  .badge-horario.badge-pedidos {
+    color: #ffc107;
+  }
+
+  .badge-horario.badge-fechado {
+    color: #ff6b6b;
+  }
+
   .cart-btn {
     position: relative;
     background: var(--verde-claro);
