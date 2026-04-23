@@ -26,6 +26,7 @@
         <span>📍 BR 280 Km 82 — Nº 515</span>
         <span>📞 (47) 3375-2227</span>
       </div>
+      <span id="badgeHorario" class="badge-horario">⏳ Verificando...</span>
       <button class="cart-btn" onclick="toggleCart()">
         Carrinho
         <span class="cart-count" id="cartCount">0</span>
@@ -41,7 +42,7 @@
 </header>
 
 <!-- ===================== HERO / INÍCIO ===================== -->
-<section id="inicio" class="active" style="padding:0;max-width:100%;">
+<section id="inicio" class="active">
   <div class="hero">
     <div>
       <div class="hero-badge">Comida Caseira de Verdade</div>
@@ -320,6 +321,17 @@
   </div>
 </div>
 
+<!-- ===================== MODAL CONFIRMAÇÃO ===================== -->
+<div class="modal-overlay" id="modalConfirmOverlay" onclick="fecharModalConfirm()"></div>
+<div class="modal-nome" id="modalConfirm">
+  <h3 class="modal-confirm-title">Confirmar</h3>
+  <p class="modal-confirm-msg"></p>
+  <div class="modal-btns">
+    <button class="modal-btn-cancelar" onclick="fecharModalConfirm()">Cancelar</button>
+    <button class="modal-btn-confirmar modal-confirm-ok">Confirmar</button>
+  </div>
+</div>
+
 <!-- ===================== ESTILOS DO MODAL ===================== -->
 <style>
 .modal-overlay {
@@ -537,6 +549,70 @@ section#pedidos {
   color: #fff;
   pointer-events: none;
 }
+/* ===== TOAST ===== */
+#toastContainer {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: #222;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 50px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.28s, transform 0.28s;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.toast-show { opacity: 1; transform: translateY(0); }
+.toast-sucesso { background: #2d7a27; }
+.toast-aviso   { background: #b07800; }
+.toast-info    { background: #1a5a8c; }
+
+/* ===== BADGE HORÁRIO ===== */
+.badge-horario {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.badge-aberto  { background: rgba(45,122,39,0.85); color: #d4ffce; }
+.badge-pedidos { background: rgba(160,100,0,0.85);  color: #fff3cc; }
+.badge-fechado { background: rgba(180,30,30,0.75);  color: #ffd4d4; }
+
+/* ===== SKELETON ===== */
+.skeleton-item {
+  display: inline-block;
+  width: 80px;
+  height: 26px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 20px;
+  margin: 3px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+@media (max-width: 700px) {
+  .badge-horario { font-size: 0.7rem; padding: 4px 9px; }
+  #toastContainer { bottom: 70px; }
+}
+
 #carneGrid {
   display: flex;
   flex-wrap: wrap;
