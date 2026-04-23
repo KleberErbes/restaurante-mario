@@ -960,7 +960,7 @@
       align-items: center;
     }
     .logo { gap: 10px; }
-    .logo-icon img { width: 54px; height: 54px; }
+    .logo-icon img { width: 68px; height: 68px; }
     .logo h1 { font-size: 1.1rem; }
     .logo-sub { display: none; }
     .header-info { display: none; }
