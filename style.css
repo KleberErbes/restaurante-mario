@@ -42,7 +42,7 @@
   .logo {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
   }
 
   .logo-icon img {
