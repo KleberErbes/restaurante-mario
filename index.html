@@ -185,6 +185,7 @@
   <div class="marmita-cards">
     <div class="marmita-card">
       <h3>Marmita Média</h3>
+      <div class="gramagem">⚖️ Aprox. 750g</div>
       <div class="price-tag">R$ 25,00</div>
       <ul>
         <li>Arroz branco</li>
@@ -193,7 +194,7 @@
         <li>Aipim com bacon</li>
         <li>3 pedaços — Carne do dia</li>
       </ul>
-      <textarea class="obs-input" id="obsMedia" placeholder="Observações: + feijão, trocar peixe por frango, sem arroz..." maxlength="200"></textarea>
+      <textarea class="obs-input" id="obsMedia" placeholder="Observações:  " maxlength="200"></textarea>
       <div class="qty-selector">
         <button class="qty-btn" onclick="changeQty('media', -1)">−</button>
         <span class="qty-value" id="qtyMedia">1</span>
@@ -203,6 +204,7 @@
     </div>
     <div class="marmita-card">
       <h3>Marmita Grande</h3>
+      <div class="gramagem">⚖️ Aprox. 1000g</div>
       <div class="price-tag">R$ 27,00</div>
       <ul>
         <li>Arroz branco</li>
@@ -211,7 +213,7 @@
         <li>Aipim com bacon</li>
         <li>3 pedaços — Carne do dia</li>
       </ul>
-      <textarea class="obs-input" id="obsGrande" placeholder="Observações: + feijão, trocar peixe por frango, sem arroz..." maxlength="200"></textarea>
+      <textarea class="obs-input" id="obsGrande" placeholder="Observações:  " maxlength="200"></textarea>
       <div class="qty-selector">
         <button class="qty-btn" onclick="changeQty('grande', -1)">−</button>
         <span class="qty-value" id="qtyGrande">1</span>
@@ -252,6 +254,8 @@
       <span>Total estimado:</span>
       <span id="precoPersonalizada">R$ 25,00</span>
     </div>
+
+    <textarea class="obs-input" id="obsPersonalizada" placeholder="Observações:   " maxlength="200"></textarea>
 
     <button class="btn-add" onclick="addPersonalizada()">+ Adicionar Marmita Personalizada ao Carrinho</button>
   </div>
@@ -410,6 +414,12 @@
   cursor: pointer;
 }
 .modal-btn-confirmar:hover { background: #1ebe5d; }
+
+.gramagem {
+  font-size: 0.82rem;
+  color: #888;
+  margin: 2px 0 6px;
+}
 
 /* Aviso retirada no balcão */
 .aviso-balcao {
@@ -624,7 +634,7 @@ section#pedidos {
 
 <!-- ===================== AVISO BALCÃO (fixo global) ===================== -->
 <div class="aviso-balcao" id="avisoBalcao">
-  🏪 <strong>Retirada somente no balcão</strong> — As marmitas não são entregues.
+⚠️ <strong>Retirada somente no balcão</strong> — As marmitas não são entregues.
 </div>
 
 </body>

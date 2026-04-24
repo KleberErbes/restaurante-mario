@@ -401,7 +401,8 @@ function addPersonalizada() {
   const carnesDesc  = totalPedacos > 0 ? Object.entries(selCarne).map(([c,q]) => `${q}x ${c}`).join(', ') : '';
   const acompDesc   = selAcomp.length  > 0 ? selAcomp.join(', ') : '';
   const saladaDesc  = selSalada.length > 0 ? 'Salada: ' + selSalada.join(', ') : '';
-  const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc].filter(Boolean).join(' | ');
+  const obs = document.getElementById('obsPersonalizada') ? document.getElementById('obsPersonalizada').value.trim() : '';
+  const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc, obs ? `⚠️ Obs: ${obs}` : ''].filter(Boolean).join(' | ');
 
   cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco });
 
@@ -419,6 +420,8 @@ function clearPersonalizada() {
   document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
   document.getElementById('acompCounter').classList.remove('warn');
   document.getElementById('carneCounter').classList.remove('warn');
+  const obsP = document.getElementById('obsPersonalizada');
+  if (obsP) obsP.value = '';
   updatePrecoPersonalizada();
 }
 
