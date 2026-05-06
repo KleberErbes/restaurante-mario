@@ -8,14 +8,359 @@
 <script src="script.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
+<style>
+/* ===== SCROLL SUAVE GLOBAL ===== */
+html { scroll-behavior: smooth; }
+
+/* ===== HEADER FIXO ===== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ===== NAV — botões de rolagem automática ===== */
+nav button.active,
+nav button:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+/* ===== RESET DO SISTEMA DE ABAS ===== */
+/* Todas as seções ficam visíveis e em fluxo normal */
+section {
+  display: block !important;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 32px;
+}
+
+/* Início não tem padding lateral ou max-width */
+section#inicio {
+  padding: 0;
+  max-width: 100%;
+}
+
+/* Separador visual entre seções */
+section:not(#inicio) {
+  border-top: 2px solid rgba(43,26,14,0.07);
+}
+
+/* Ancora de scroll: offset para não ficar atrás do header fixo */
+.scroll-anchor {
+  display: block;
+  height: 0;
+  /* O header ocupa ~130px (header-top ~100px + nav ~44px) */
+  margin-top: -130px;
+  padding-top: 130px;
+  pointer-events: none;
+}
+
+/* ===== AVISO BALCÃO ===== */
+.aviso-balcao {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff8e1;
+  border-top: 3px solid #f9a825;
+  padding: 12px 18px;
+  font-size: 1.1rem;
+  color: #5a3e00;
+  text-align: center;
+  z-index: 500;
+  box-shadow: 0 -2px 12px rgba(249,168,37,0.2);
+}
+.aviso-balcao.visible { display: block; }
+.aviso-balcao.hidden-by-cart { display: none !important; }
+
+section#pedidos { padding-bottom: 70px; }
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1100;
+}
+.modal-overlay.open { display: block; }
+
+.modal-nome {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  z-index: 1200;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  text-align: center;
+}
+.modal-nome.open { display: block; }
+
+.modal-nome h3 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+  color: #222;
+}
+.modal-nome p {
+  font-size: 0.88rem;
+  color: #888;
+  margin-bottom: 18px;
+}
+.modal-nome input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+.modal-nome input:focus { border-color: #8B0000; }
+
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.modal-btn-cancelar {
+  flex: 1;
+  padding: 11px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.modal-btn-confirmar {
+  flex: 2;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: #25D366;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-btn-confirmar:hover { background: #1ebe5d; }
+
+/* GRAMAGEM */
+.gramagem {
+  font-size: 0.82rem;
+  color: #888;
+  margin: 2px 0 6px;
+}
+
+/* OBS INPUT */
+.obs-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #444;
+  resize: none;
+  height: 64px;
+  font-family: inherit;
+  outline: none;
+  transition: border 0.2s;
+  background: #fafafa;
+}
+.obs-input:focus {
+  border-color: #8B0000;
+  background: #fff;
+}
+
+/* CHIP CARNE */
+.chip-nome { pointer-events: none; }
+.chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.chip-remove:hover { background: rgba(139,0,0,0.35); }
+
+/* CARDS CARNE */
+.carne-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: #f9f9f9;
+  border: 2px solid #ccc;
+  border-radius: 22px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.88rem;
+  color: var(--texto);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.carne-card.carne-selecionada {
+  background: var(--marrom);
+  border-color: var(--marrom);
+  color: #fff;
+}
+.carne-nome { pointer-events: none; }
+.carne-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+}
+.carne-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+.carne-btn-minus { background: rgba(255,255,255,0.3); color: #fff; }
+.carne-btn-minus:active { background: rgba(255,255,255,0.6); }
+.carne-btn-plus { background: rgba(255,255,255,0.3); color: #fff; }
+.carne-btn-plus:active { background: rgba(255,255,255,0.6); }
+.carne-qty {
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* TOAST */
+#toastContainer {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: #222;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 50px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.28s, transform 0.28s;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.toast-show { opacity: 1; transform: translateY(0); }
+.toast-sucesso { background: #2d7a27; }
+.toast-aviso   { background: #b07800; }
+.toast-info    { background: #1a5a8c; }
+
+/* BADGE HORÁRIO */
+.badge-horario {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.badge-aberto  { background: rgba(45,122,39,0.85); color: #d4ffce; }
+.badge-pedidos { background: rgba(160,100,0,0.85);  color: #fff3cc; }
+.badge-fechado { background: rgba(180,30,30,0.75);  color: #ffd4d4; }
+
+/* SKELETON */
+.skeleton-item {
+  display: inline-block;
+  width: 80px;
+  height: 26px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 20px;
+  margin: 3px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+#carneGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 700px) {
+  .badge-horario { font-size: 0.7rem; padding: 4px 9px; }
+  #toastContainer { bottom: 70px; }
+
+  section { padding: 40px 14px; }
+  section#inicio { padding: 0; }
+
+  /* Ajustar offset âncora no mobile (header menor ~90px) */
+  .scroll-anchor {
+    margin-top: -90px;
+    padding-top: 90px;
+  }
+
+  section#pedidos { padding-bottom: 60px; }
+  .aviso-balcao { font-size: 0.82rem; padding: 10px 14px; }
+  .modal-nome { padding: 24px 18px 20px; }
+  .modal-nome h3 { font-size: 1.15rem; }
+  .modal-btns { flex-direction: column; }
+  .modal-btn-cancelar,
+  .modal-btn-confirmar { flex: unset; width: 100%; }
+  .obs-input { font-size: 0.85rem; height: 58px; }
+  .carne-card { font-size: 0.85rem; padding: 7px 14px; }
+  .carne-btn { width: 26px; height: 26px; font-size: 1rem; }
+  .carne-qty { font-size: 0.85rem; min-width: 18px; }
+}
+</style>
 </head>
 <body>
+
 <header>
   <div class="header-top">
     <div class="logo">
       <div class="logo-icon">
-  <img src="logo.jpeg" alt="Logo Restaurante do Mário">
-</div>
+        <img src="logo.jpeg" alt="Logo Restaurante do Mário">
+      </div>
       <div>
         <h1>Restaurante do Mário</h1>
         <span class="logo-sub">Tradição &amp; Sabor Desde 1997.</span>
@@ -34,24 +379,27 @@
       </div>
     </div>
   </div>
+
+  <!-- NAV: botões de rolagem automática para cada seção -->
   <nav>
-    <button class="active" onclick="showSection('inicio', this)">Início</button>
-    <button onclick="showSection('cardapio-dia-sec', this)">Cardápio do Dia</button>
-    <button onclick="showSection('pedidos', this)">Marmitas</button>
-    <button onclick="showSection('localizacao', this)">Localização</button>
+    <button onclick="scrollToSection('inicio')">Início</button>
+    <button onclick="scrollToSection('cardapio-dia-sec')">Cardápio do Dia</button>
+    <button onclick="scrollToSection('pedidos')">Marmitas</button>
+    <button onclick="scrollToSection('localizacao')">Localização</button>
   </nav>
 </header>
 
 <!-- ===================== HERO / INÍCIO ===================== -->
-<section id="inicio" class="active">
+<section id="inicio">
+  <span class="scroll-anchor" id="anchor-inicio"></span>
   <div class="hero">
     <div>
       <div class="hero-badge">Comida Caseira de Verdade</div>
       <h2>Bem-vindo ao<span class="nome">Restaurante do Mário</span></h2>
       <p>Sabores autênticos, ingredientes frescos e o carinho de quem faz com amor.<br>Nossa nova forma de atender você!</p>
       <div class="hero-btns">
-        <button class="hero-btn-primary" onclick="goToMarmitas()">Pedir Marmita</button>
-        <button class="hero-btn-secondary" onclick="goToCardapio()">Ver Cardápio</button>
+        <button class="hero-btn-primary" onclick="scrollToSection('pedidos')">Pedir Marmita</button>
+        <button class="hero-btn-secondary" onclick="scrollToSection('cardapio-dia-sec')">Ver Cardápio</button>
       </div>
     </div>
   </div>
@@ -89,6 +437,7 @@
 
 <!-- ===================== CARDÁPIO DO DIA ===================== -->
 <section id="cardapio-dia-sec">
+  <span class="scroll-anchor" id="anchor-cardapio"></span>
   <h2>Cardápio do Dia</h2>
   <p class="subtitle">Tudo o que preparamos hoje com carinho!</p>
 
@@ -120,36 +469,9 @@
   </div>
 </section>
 
-<!-- ===================== BUFFET ===================== -->
-<section id="buffet" style="display:none;padding:48px 32px;max-width:900px;margin:0 auto;">
-  <h2>Buffet por Quilo</h2>
-  <p class="subtitle">Venha nos visitar e saboreie o melhor da culinária caseira!</p>
-
-  <div class="buffet-grid">
-    <div class="buffet-card">
-      <h3>Segunda a Sexta</h3>
-      <div class="buffet-price"><span>R$</span> 38,00</div>
-      <p>Prato feito com capricho, cardápio variado todo dia!</p>
-    </div>
-    <div class="buffet-card">
-      <h3>Sábado</h3>
-      <div class="buffet-price"><span>R$</span> 40,00</div>
-      <p>Especial de sábado com ainda mais opções no balcão!</p>
-    </div>
-  </div>
-
-  <div class="horario-card">
-    <div class="horario-icon">🕥</div>
-    <div>
-      <h3>Horário de Funcionamento</h3>
-      <p>10h30 às 14h00</p>
-      <small>Segunda a Sábado</small>
-    </div>
-  </div>
-</section>
-
 <!-- ===================== PEDIDOS ===================== -->
 <section id="pedidos">
+  <span class="scroll-anchor" id="anchor-pedidos"></span>
   <h2>Pedir Marmitas</h2>
   <p class="subtitle">Escolha a opção ideal para você!</p>
 
@@ -262,26 +584,124 @@
 </section>
 
 <!-- ===================== LOCALIZAÇÃO ===================== -->
-<section id="localizacao">
-  <h2>Nossa Localização</h2>
-  <p class="subtitle">Estamos prontos para te receber!</p>
-  <div class="localizacao-card">
-    <div class="map-icon">📍</div>
-    <h3>Restaurante do Mário</h3>
-    <p><strong>BR-280, Km 82, Nº 515</strong></p>
-    <p>Anexo ao Posto Ipiranga</p>
-    <div class="badge">🕥 Seg a Sáb: 10h30 às 14h00</div>
-    <div class="map-embed">
-      🗺️ BR-280, Km 82 — Posto Ipiranga<br>
-      <small style="font-weight:400;">Abra o Google Maps para navegar</small>
-      <br>
-      <a href="https://maps.app.goo.gl/yGuFPHiz4SvZrHfB9" target="_blank"
-         style="margin-top:10px;background:var(--verde);color:#fff;padding:8px 20px;border-radius:8px;text-decoration:none;font-size:0.92rem;">
-        Abrir no Google Maps
-      </a>
+<section id="localizacao" style="background:#1a2e16;max-width:100%;padding:60px 32px 64px;">
+  <span class="scroll-anchor" id="anchor-localizacao"></span>
+  <div style="max-width:600px;margin:0 auto;">
+
+    <!-- Eyebrow + título -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <span style="display:block;width:32px;height:1px;background:var(--dourado);"></span>
+      <span style="font-size:0.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dourado);">COMO CHEGAR</span>
+      <span style="display:block;width:32px;height:1px;background:var(--dourado);"></span>
     </div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:#fff;border:none;padding:0;margin-bottom:8px;line-height:1.15;">
+      Nossa <em style="color:var(--dourado);font-style:italic;">Localização</em>
+    </h2>
+    <p style="color:rgba(255,255,255,0.6);font-size:1rem;margin-bottom:36px;line-height:1.6;">Estamos prontos para te receber com a mesa posta!</p>
+
+    <!-- Cards de info -->
+    <div style="display:flex;flex-direction:column;gap:0;">
+
+      <div class="loc-info-row">
+        <div class="loc-icon-box" style="background:rgba(200,150,60,0.15);border:1px solid rgba(200,150,60,0.3);">📍</div>
+        <div>
+          <div class="loc-label">ENDEREÇO</div>
+          <div class="loc-value">BR-280, Km 82, Nº 515<br>Anexo ao Posto Ipiranga</div>
+        </div>
+      </div>
+
+      <div class="loc-info-row">
+        <div class="loc-icon-box" style="background:rgba(200,150,60,0.15);border:1px solid rgba(200,150,60,0.3);">🕐</div>
+        <div>
+          <div class="loc-label">HORÁRIO</div>
+          <div class="loc-value">Segunda a Sábado · 10h30 às 14h00</div>
+        </div>
+      </div>
+
+      <div class="loc-info-row">
+        <div class="loc-icon-box" style="background:rgba(200,150,60,0.15);border:1px solid rgba(200,150,60,0.3);">📞</div>
+        <div>
+          <div class="loc-label">TELEFONE</div>
+          <div class="loc-value">(47) 3375-2227</div>
+        </div>
+      </div>
+
+      <div class="loc-info-row" style="border-bottom:none;">
+        <div class="loc-icon-box" style="background:rgba(200,150,60,0.15);border:1px solid rgba(200,150,60,0.3);">💳</div>
+        <div>
+          <div class="loc-label">FORMAS DE PAGAMENTO</div>
+          <div class="loc-value">Pix · Cartão · ÚtilCard · VRCard · Sodexo</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mapa / botão Maps -->
+    <div style="margin-top:32px;background:#2a4a22;border-radius:18px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.35);">
+      <div style="height:140px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:linear-gradient(135deg,#2a4a22,#1a3d17);">🗺️</div>
+      <div style="padding:22px 24px;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:4px;">Restaurante do Mário</div>
+        <div style="font-size:0.88rem;color:rgba(255,255,255,0.5);margin-bottom:18px;">BR-280, Km 82 — Posto Ipiranga</div>
+        <a href="https://maps.app.goo.gl/yGuFPHiz4SvZrHfB9" target="_blank"
+           style="display:inline-flex;align-items:center;gap:8px;background:var(--verde-claro);color:#fff;padding:11px 22px;border-radius:10px;text-decoration:none;font-size:0.92rem;font-weight:700;font-family:'Lato',sans-serif;transition:background 0.2s;">
+          🗺️ Abrir no Google Maps
+        </a>
+      </div>
+    </div>
+
   </div>
 </section>
+
+<!-- ===================== RODAPÉ ===================== -->
+<footer style="background:#0f1f0d;padding:40px 24px 28px;text-align:center;">
+  <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:8px;">
+    Restaurante do <em style="color:var(--dourado);font-style:italic;">Mário</em>
+  </div>
+  <div style="font-size:0.82rem;color:rgba(255,255,255,0.35);margin-bottom:10px;letter-spacing:0.5px;">
+    © 2025 · Tradição &amp; Sabor Desde 1997
+  </div>
+  <a href="tel:+554733752227" style="font-size:0.95rem;font-weight:700;color:var(--dourado);text-decoration:none;letter-spacing:0.5px;">
+    (47) 3375-2227
+  </a>
+</footer>
+
+<style>
+/* Localização — linhas de info */
+.loc-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.loc-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.loc-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dourado);
+  margin-bottom: 4px;
+}
+.loc-value {
+  font-size: 0.97rem;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.55;
+}
+@media (max-width: 700px) {
+  #localizacao { padding: 48px 18px 56px !important; }
+  #localizacao h2 { font-size: 1.8rem !important; }
+}
+</style>
 
 <!-- ===================== CART ===================== -->
 <div class="overlay" id="overlay" onclick="toggleCart()"></div>
@@ -337,305 +757,65 @@
   </div>
 </div>
 
-<!-- ===================== ESTILOS DO MODAL ===================== -->
-<style>
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 1100;
-}
-.modal-overlay.open { display: block; }
-
-.modal-nome {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px 28px 24px;
-  z-index: 1200;
-  width: 90%;
-  max-width: 380px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-  text-align: center;
-}
-.modal-nome.open { display: block; }
-
-.modal-nome h3 {
-  font-size: 1.3rem;
-  margin-bottom: 6px;
-  color: #222;
-}
-.modal-nome p {
-  font-size: 0.88rem;
-  color: #888;
-  margin-bottom: 18px;
-}
-.modal-nome input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  outline: none;
-  box-sizing: border-box;
-  transition: border 0.2s;
-}
-.modal-nome input:focus { border-color: #8B0000; }
-
-.modal-btns {
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-}
-.modal-btn-cancelar {
-  flex: 1;
-  padding: 11px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  background: #fff;
-  color: #666;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-.modal-btn-confirmar {
-  flex: 2;
-  padding: 11px;
-  border: none;
-  border-radius: 10px;
-  background: #25D366;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.modal-btn-confirmar:hover { background: #1ebe5d; }
-
-.gramagem {
-  font-size: 0.82rem;
-  color: #888;
-  margin: 2px 0 6px;
-}
-
-/* Aviso retirada no balcão */
-.aviso-balcao {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff8e1;
-  border-top: 3px solid #f9a825;
-  padding: 12px 18px;
-  font-size: 1.1rem;
-  color: #5a3e00;
-  text-align: center;
-  z-index: 500;
-  box-shadow: 0 -2px 12px rgba(249,168,37,0.2);
-}
-.aviso-balcao.visible {
-  display: block;
-}
-/* Evita que o aviso tape o conteúdo */
-.aviso-balcao.hidden-by-cart { display: none !important; }
-section#pedidos {
-  padding-bottom: 70px;
-}
-@media (max-width: 700px) {
-  .aviso-balcao {
-    font-size: 0.82rem;
-    padding: 10px 14px;
-  }
-  section#pedidos {
-    padding-bottom: 60px;
-  }
-}
-
-/* Campo de observação nas marmitas padrão */
-.obs-input {
-  width: 100%;
-  box-sizing: border-box;
-  margin: 10px 0 14px;
-  padding: 10px 12px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  color: #444;
-  resize: none;
-  height: 64px;
-  font-family: inherit;
-  outline: none;
-  transition: border 0.2s;
-  background: #fafafa;
-}
-.obs-input:focus {
-  border-color: #8B0000;
-  background: #fff;
-}
-
-/* Chip de carne com botão remover */
-.chip-nome { pointer-events: none; }
-.chip-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 6px;
-  width: 18px;
-  height: 18px;
-  background: rgba(0,0,0,0.15);
-  border-radius: 50%;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.chip-remove:hover { background: rgba(139,0,0,0.35); }
-
-/* Cards de carne mobile */
-.carne-card {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  background: #f9f9f9;
-  border: 2px solid #ccc;
-  border-radius: 22px;
-  padding: 6px 16px;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-family: 'Lato', sans-serif;
-  font-size: 0.88rem;
-  color: var(--texto);
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.carne-card.carne-selecionada {
-  background: var(--marrom);
-  border-color: var(--marrom);
-  color: #fff;
-}
-.carne-nome {
-  pointer-events: none;
-}
-.carne-counter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 10px;
-}
-.carne-btn {
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 50%;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-  padding: 0;
-}
-.carne-btn-minus {
-  background: rgba(255,255,255,0.3);
-  color: #fff;
-}
-.carne-btn-minus:active { background: rgba(255,255,255,0.6); }
-.carne-btn-plus {
-  background: rgba(255,255,255,0.3);
-  color: #fff;
-}
-.carne-btn-plus:active { background: rgba(255,255,255,0.6); }
-.carne-qty {
-  min-width: 20px;
-  text-align: center;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #fff;
-  pointer-events: none;
-}
-/* ===== TOAST ===== */
-#toastContainer {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
-}
-.toast {
-  background: #222;
-  color: #fff;
-  padding: 12px 22px;
-  border-radius: 50px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.22);
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.28s, transform 0.28s;
-  white-space: nowrap;
-  max-width: 90vw;
-  text-align: center;
-}
-.toast.toast-show { opacity: 1; transform: translateY(0); }
-.toast-sucesso { background: #2d7a27; }
-.toast-aviso   { background: #b07800; }
-.toast-info    { background: #1a5a8c; }
-
-/* ===== BADGE HORÁRIO ===== */
-.badge-horario {
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 20px;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-.badge-aberto  { background: rgba(45,122,39,0.85); color: #d4ffce; }
-.badge-pedidos { background: rgba(160,100,0,0.85);  color: #fff3cc; }
-.badge-fechado { background: rgba(180,30,30,0.75);  color: #ffd4d4; }
-
-/* ===== SKELETON ===== */
-.skeleton-item {
-  display: inline-block;
-  width: 80px;
-  height: 26px;
-  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite;
-  border-radius: 20px;
-  margin: 3px;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-@media (max-width: 700px) {
-  .badge-horario { font-size: 0.7rem; padding: 4px 9px; }
-  #toastContainer { bottom: 70px; }
-}
-
-#carneGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-</style>
-
 <!-- ===================== AVISO BALCÃO (fixo global) ===================== -->
 <div class="aviso-balcao" id="avisoBalcao">
-⚠️<strong>Não entregamos marmitas.</strong> ⚠️
+  ⚠️ <strong>Não entregamos marmitas.</strong> Retire no balcão. ⚠️
 </div>
+
+<script>
+// ===== SCROLL SUAVE PARA SEÇÕES =====
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Calcula a posição levando em conta o header fixo
+  const headerHeight = document.querySelector('header').offsetHeight;
+  const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+// ===== DESTACA BOTÃO DA NAV CONFORME SEÇÃO VISÍVEL =====
+function atualizarNavAtiva() {
+  const headerH = document.querySelector('header').offsetHeight;
+  const secoes = [
+    { id: 'inicio',          navIdx: 0 },
+    { id: 'cardapio-dia-sec', navIdx: 1 },
+    { id: 'pedidos',         navIdx: 2 },
+    { id: 'localizacao',     navIdx: 3 },
+  ];
+
+  let ativa = 0;
+  secoes.forEach(({ id, navIdx }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= headerH + 10) ativa = navIdx;
+  });
+
+  document.querySelectorAll('nav button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === ativa);
+  });
+
+  // Mostra/esconde aviso balcão conforme seção marmitas visível
+  const pedidosEl = document.getElementById('pedidos');
+  const aviso = document.getElementById('avisoBalcao');
+  if (pedidosEl && aviso) {
+    const rect = pedidosEl.getBoundingClientRect();
+    const visivel = rect.top < window.innerHeight && rect.bottom > headerH;
+    aviso.classList.toggle('visible', visivel);
+  }
+}
+
+window.addEventListener('scroll', atualizarNavAtiva, { passive: true });
+window.addEventListener('load', atualizarNavAtiva);
+
+// ===== SUBSTITUI as funções de navegação original =====
+// (goToMarmitas e goToCardapio redirecionam para scroll)
+function goToMarmitas() { scrollToSection('pedidos'); }
+function goToCardapio()  { scrollToSection('cardapio-dia-sec'); }
+
+// showSection original usava display:none — sobrescrevemos para só rolar
+function showSection(id) { scrollToSection(id); }
+</script>
 
 </body>
 </html>
