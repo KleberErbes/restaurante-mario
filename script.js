@@ -329,7 +329,7 @@ function selectSize(size) {
 }
 
 function updatePrecoPersonalizada() {
-  const base = selectedSize === 'media' ? 28 : 30;
+  const base = selectedSize === 'media' ? 26 : 28;
   const extrasAcomp = Math.max(0, selAcomp.length - 5);
   const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
   const extrasCarne = Math.max(0, totalPedacos - 3);
@@ -392,7 +392,7 @@ function addPersonalizada() {
     return;
   }
 
-  const base = selectedSize === 'media' ? 28 : 30;
+  const base = selectedSize === 'media' ? 26 : 28;
   const extrasAcomp = Math.max(0, selAcomp.length - 5);
   const extrasCarne = Math.max(0, totalPedacos - 3);
   const preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
