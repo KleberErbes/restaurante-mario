@@ -350,7 +350,7 @@ function addPadrao(size) {
     showToast('🔴 Estamos fechados', 'aviso', 5000);
     return;
   }
-  const precoUnit = size === 'media' ? 25 : 27;
+  const precoUnit = size === 'media' ? 26 : 28;
   const label = size === 'media' ? 'Média' : 'Grande';
   const qty = qtyPadrao[size];
   const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
