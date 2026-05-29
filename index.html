@@ -410,5 +410,113 @@
   <div class="aviso-balcao" id="avisoBalcao">
     ⚠️ <strong>Não entregamos marmitas.</strong> Retire no balcão. ⚠️
   </div>
+<<<<<<< HEAD
+=======
+  <div style="font-size:0.82rem;color:rgba(255,255,255,0.35);margin-bottom:10px;letter-spacing:0.5px;">
+    © 2026 · Tradição &amp; Sabor Desde 1997
+  </div>
+  <a href="tel:+554733752227" style="font-size:0.95rem;font-weight:700;color:var(--dourado);text-decoration:none;letter-spacing:0.5px;">
+    (47) 3375-2227
+  </a>
+</footer>
+
+<style>
+/* Localização — linhas de info */
+.loc-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.loc-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.loc-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dourado);
+  margin-bottom: 4px;
+}
+.loc-value {
+  font-size: 0.97rem;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.55;
+}
+@media (max-width: 700px) {
+  #localizacao { padding: 48px 18px 56px !important; }
+  #localizacao h2 { font-size: 1.8rem !important; }
+}
+</style>
+
+<!-- ===================== CART ===================== -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>🛒 Meu Carrinho</h2>
+    <button class="close-cart" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <p class="cart-empty">Seu carrinho está vazio.</p>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotal">R$ 0,00</span>
+    </div>
+    <div class="pagamentos">
+      <strong>💳 Formas de Pagamento</strong>
+      Pix · Cartão · ÚtilCard · VRCard · Sodexo
+    </div>
+    <button class="whatsapp-btn" onclick="abrirModalNome()">
+      📲 Enviar Pedido pelo WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- ===================== MODAL NOME DO CLIENTE ===================== -->
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalNome()"></div>
+<div class="modal-nome" id="modalNome">
+  <h3>👤 Qual é o seu nome?</h3>
+  <p>Para identificarmos seu pedido.</p>
+  <input
+    type="text"
+    id="inputNomeCliente"
+    placeholder="Digite seu nome..."
+    maxlength="60"
+    onkeydown="if(event.key==='Enter') confirmarPedido()"
+  />
+  <div class="modal-btns">
+    <button class="modal-btn-cancelar" onclick="fecharModalNome()">Cancelar</button>
+    <button class="modal-btn-confirmar" onclick="confirmarPedido()">Confirmar e Enviar 📲</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL CONFIRMAÇÃO ===================== -->
+<div class="modal-overlay" id="modalConfirmOverlay" onclick="fecharModalConfirm()"></div>
+<div class="modal-nome" id="modalConfirm">
+  <h3 class="modal-confirm-title">Confirmar</h3>
+  <p class="modal-confirm-msg"></p>
+  <div class="modal-btns">
+    <button class="modal-btn-cancelar" onclick="fecharModalConfirm()">Cancelar</button>
+    <button class="modal-btn-confirmar modal-confirm-ok">Confirmar</button>
+  </div>
+</div>
+
+<!-- ===================== AVISO BALCÃO (fixo global) ===================== -->
+<div class="aviso-balcao" id="avisoBalcao">
+  ⚠️ <strong>Não entregamos marmitas.</strong> Retire no balcão. ⚠️
+</div>
+
+>>>>>>> cbc56ef (substituição "/" marmitas)
 </body>
 </html>

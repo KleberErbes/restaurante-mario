@@ -398,9 +398,9 @@ function addPersonalizada() {
   const preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
   const label = selectedSize === 'media' ? 'Média' : 'Grande';
 
-  const carnesDesc  = totalPedacos > 0 ? Object.entries(selCarne).map(([c,q]) => `${q}x ${c}`).join(', ') : '';
-  const acompDesc   = selAcomp.length  > 0 ? selAcomp.join(', ') : '';
-  const saladaDesc  = selSalada.length > 0 ? 'Salada: ' + selSalada.join(', ') : '';
+  const carnesDesc  = totalPedacos > 0 ? Object.entries(selCarne).map(([c,q]) => `${q}x ${c}`).join(' / ') : '';
+  const acompDesc   = selAcomp.length  > 0 ? selAcomp.join(' / ') : '';
+  const saladaDesc  = selSalada.length > 0 ? 'Salada: ' + selSalada.join(' / ') : '';
   const obs = document.getElementById('obsPersonalizada') ? document.getElementById('obsPersonalizada').value.trim() : '';
   const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc, obs ? `⚠️ Obs: ${obs}` : ''].filter(Boolean).join(' | ');
 
@@ -639,3 +639,59 @@ document.addEventListener('DOMContentLoaded', () => {
   atualizarBadgeHorario();
   setInterval(atualizarBadgeHorario, 60000);
 });
+<<<<<<< HEAD
+=======
+
+// ===== SCROLL SUAVE PARA SEÇÕES =====
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Calcula a posição levando em conta o header fixo
+  const headerHeight = document.querySelector('header').offsetHeight;
+  const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+// ===== DESTACA BOTÃO DA NAV CONFORME SEÇÃO VISÍVEL =====
+function atualizarNavAtiva() {
+  const headerH = document.querySelector('header').offsetHeight;
+  const secoes = [
+    { id: 'inicio',          navIdx: 0 },
+    { id: 'cardapio-dia-sec', navIdx: 1 },
+    { id: 'pedidos',         navIdx: 2 },
+    { id: 'localizacao',     navIdx: 3 },
+  ];
+
+  let ativa = 0;
+  secoes.forEach(({ id, navIdx }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= headerH + 10) ativa = navIdx;
+  });
+
+  document.querySelectorAll('nav button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === ativa);
+  });
+
+  // Mostra/esconde aviso balcão conforme seção marmitas visível
+  const pedidosEl = document.getElementById('pedidos');
+  const aviso = document.getElementById('avisoBalcao');
+  if (pedidosEl && aviso) {
+    const rect = pedidosEl.getBoundingClientRect();
+    const visivel = rect.top < window.innerHeight && rect.bottom > headerH;
+    aviso.classList.toggle('visible', visivel);
+  }
+}
+
+window.addEventListener('scroll', atualizarNavAtiva, { passive: true });
+window.addEventListener('load', atualizarNavAtiva);
+
+// ===== SUBSTITUI as funções de navegação original =====
+// (goToMarmitas e goToCardapio redirecionam para scroll)
+function goToMarmitas() { scrollToSection('pedidos'); }
+function goToCardapio()  { scrollToSection('cardapio-dia-sec'); }
+
+// showSection original usava display:none — sobrescrevemos para só rolar
+function showSection(id) { scrollToSection(id); }
+>>>>>>> cbc56ef (substituição "/" marmitas)

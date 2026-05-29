@@ -1,3 +1,346 @@
+/* ===== SCROLL SUAVE GLOBAL ===== */
+html { scroll-behavior: smooth; }
+
+/* ===== HEADER FIXO ===== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ===== NAV — botões de rolagem automática ===== */
+nav button.active,
+nav button:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+/* ===== RESET DO SISTEMA DE ABAS ===== */
+/* Todas as seções ficam visíveis e em fluxo normal */
+section {
+  display: block !important;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 32px;
+}
+
+/* Início não tem padding lateral ou max-width */
+section#inicio {
+  padding: 0;
+  max-width: 100%;
+}
+
+/* Separador visual entre seções */
+section:not(#inicio) {
+  border-top: 2px solid rgba(43,26,14,0.07);
+}
+
+/* Ancora de scroll: offset para não ficar atrás do header fixo */
+.scroll-anchor {
+  display: block;
+  height: 0;
+  /* O header ocupa ~130px (header-top ~100px + nav ~44px) */
+  margin-top: -130px;
+  padding-top: 130px;
+  pointer-events: none;
+}
+
+/* ===== AVISO BALCÃO ===== */
+.aviso-balcao {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff8e1;
+  border-top: 3px solid #f9a825;
+  padding: 12px 18px;
+  font-size: 1.1rem;
+  color: #5a3e00;
+  text-align: center;
+  z-index: 500;
+  box-shadow: 0 -2px 12px rgba(249,168,37,0.2);
+}
+.aviso-balcao.visible { display: block; }
+.aviso-balcao.hidden-by-cart { display: none !important; }
+
+section#pedidos { padding-bottom: 70px; }
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1100;
+}
+.modal-overlay.open { display: block; }
+
+.modal-nome {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  z-index: 1200;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  text-align: center;
+}
+.modal-nome.open { display: block; }
+
+.modal-nome h3 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+  color: #222;
+}
+.modal-nome p {
+  font-size: 0.88rem;
+  color: #888;
+  margin-bottom: 18px;
+}
+.modal-nome input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+.modal-nome input:focus { border-color: #8B0000; }
+
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.modal-btn-cancelar {
+  flex: 1;
+  padding: 11px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.modal-btn-confirmar {
+  flex: 2;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: #25D366;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-btn-confirmar:hover { background: #1ebe5d; }
+
+/* GRAMAGEM */
+.gramagem {
+  font-size: 0.82rem;
+  color: #888;
+  margin: 2px 0 6px;
+}
+
+/* OBS INPUT */
+.obs-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #444;
+  resize: none;
+  height: 64px;
+  font-family: inherit;
+  outline: none;
+  transition: border 0.2s;
+  background: #fafafa;
+}
+.obs-input:focus {
+  border-color: #8B0000;
+  background: #fff;
+}
+
+/* CHIP CARNE */
+.chip-nome { pointer-events: none; }
+.chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.chip-remove:hover { background: rgba(139,0,0,0.35); }
+
+/* CARDS CARNE */
+.carne-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: #f9f9f9;
+  border: 2px solid #ccc;
+  border-radius: 22px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.88rem;
+  color: var(--texto);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.carne-card.carne-selecionada {
+  background: var(--marrom);
+  border-color: var(--marrom);
+  color: #fff;
+}
+.carne-nome { pointer-events: none; }
+.carne-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+}
+.carne-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+.carne-btn-minus { background: rgba(255,255,255,0.3); color: #fff; }
+.carne-btn-minus:active { background: rgba(255,255,255,0.6); }
+.carne-btn-plus { background: rgba(255,255,255,0.3); color: #fff; }
+.carne-btn-plus:active { background: rgba(255,255,255,0.6); }
+.carne-qty {
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* TOAST */
+#toastContainer {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: #222;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 50px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.28s, transform 0.28s;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.toast-show { opacity: 1; transform: translateY(0); }
+.toast-sucesso { background: #2d7a27; }
+.toast-aviso   { background: #b07800; }
+.toast-info    { background: #1a5a8c; }
+
+/* BADGE HORÁRIO */
+.badge-horario {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.badge-aberto  { background: rgba(45,122,39,0.85); color: #d4ffce; }
+.badge-pedidos { background: rgba(160,100,0,0.85);  color: #fff3cc; }
+.badge-fechado { background: rgba(180,30,30,0.75);  color: #ffd4d4; }
+
+/* SKELETON */
+.skeleton-item {
+  display: inline-block;
+  width: 80px;
+  height: 26px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 20px;
+  margin: 3px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+#carneGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 700px) {
+  .badge-horario { font-size: 0.7rem; padding: 4px 9px; }
+  #toastContainer { bottom: 70px; }
+
+  section { padding: 40px 14px; }
+  section#inicio { padding: 0; }
+
+  /* Ajustar offset âncora no mobile (header menor ~90px) */
+  .scroll-anchor {
+    margin-top: -90px;
+    padding-top: 90px;
+  }
+
+  section#pedidos { padding-bottom: 60px; }
+  .aviso-balcao { font-size: 0.82rem; padding: 10px 14px; }
+  .modal-nome { padding: 24px 18px 20px; }
+  .modal-nome h3 { font-size: 1.15rem; }
+  .modal-btns { flex-direction: column; }
+  .modal-btn-cancelar,
+  .modal-btn-confirmar { flex: unset; width: 100%; }
+  .obs-input { font-size: 0.85rem; height: 58px; }
+  .carne-card { font-size: 0.85rem; padding: 7px 14px; }
+  .carne-btn { width: 26px; height: 26px; font-size: 1rem; }
+  .carne-qty { font-size: 0.85rem; min-width: 18px; }
+}
+
 :root {
     --verde: #2d5a27;
     --verde-claro: #4a8c3f;
@@ -1169,6 +1512,10 @@
   font-size: 1.1rem;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cbc56ef (substituição "/" marmitas)
 /* ===== IMAGENS DE SEÇÃO (buffet, salada, sobremesa) ===== */
 .section-img-wrap {
   width: 100%;
@@ -1201,6 +1548,7 @@
   .section-img { height: 150px; }
   .cardapio-box-img { width: calc(100% + 28px); margin: -16px -14px 14px -14px; height: 130px; border-radius: 16px; }
 }
+<<<<<<< HEAD
 
 /* Localização — linhas de info */
 .loc-info-row {
@@ -1579,3 +1927,5 @@ section#pedidos { padding-bottom: 70px; }
   .carne-btn { width: 26px; height: 26px; font-size: 1rem; }
   .carne-qty { font-size: 0.85rem; min-width: 18px; }
 }
+=======
+>>>>>>> cbc56ef (substituição "/" marmitas)
