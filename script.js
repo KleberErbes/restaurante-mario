@@ -639,8 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
   atualizarBadgeHorario();
   setInterval(atualizarBadgeHorario, 60000);
 });
-<<<<<<< HEAD
-=======
 
 // ===== SCROLL SUAVE PARA SEÇÕES =====
 function scrollToSection(id) {
@@ -694,4 +692,3 @@ function goToCardapio()  { scrollToSection('cardapio-dia-sec'); }
 
 // showSection original usava display:none — sobrescrevemos para só rolar
 function showSection(id) { scrollToSection(id); }
->>>>>>> cbc56ef (substituição "/" marmitas)
