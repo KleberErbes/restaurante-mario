@@ -1512,10 +1512,6 @@ section#pedidos { padding-bottom: 70px; }
   font-size: 1.1rem;
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> cbc56ef (substituição "/" marmitas)
 /* ===== IMAGENS DE SEÇÃO (buffet, salada, sobremesa) ===== */
 .section-img-wrap {
   width: 100%;
@@ -1548,9 +1544,7 @@ section#pedidos { padding-bottom: 70px; }
   .section-img { height: 150px; }
   .cardapio-box-img { width: calc(100% + 28px); margin: -16px -14px 14px -14px; height: 130px; border-radius: 16px; }
 }
-<<<<<<< HEAD
 
-/* Localização — linhas de info */
 .loc-info-row {
   display: flex;
   align-items: flex-start;
@@ -1927,5 +1921,32 @@ section#pedidos { padding-bottom: 70px; }
   .carne-btn { width: 26px; height: 26px; font-size: 1rem; }
   .carne-qty { font-size: 0.85rem; min-width: 18px; }
 }
-=======
->>>>>>> cbc56ef (substituição "/" marmitas)
+
+.aviso-horario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fff8e1;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 16px auto;
+  max-width: 600px;
+  font-size: 0.95rem;
+  color: #5c3d00;
+}
+
+.aviso-icone {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.aviso-horario p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.aviso-horario strong {
+  font-size: 1.05rem;
+  color: #b45309;
+}

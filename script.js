@@ -11,7 +11,7 @@ const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
 // Buffet / atendimento presencial: 10h30
 const HORARIO_ABERTURA   = { h: 10, m: 30 };
 // Fechamento: 14h00
-const HORARIO_FECHAMENTO = { h: 18, m: 0  };
+const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
 // DIAS_FECHADOS_ESPECIAIS é carregado da planilha (categoria "fechado")
 let DIAS_FECHADOS_ESPECIAIS = [];
