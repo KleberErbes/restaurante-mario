@@ -1377,6 +1377,8 @@ section#pedidos { padding-bottom: 70px; }
     .horario-card { padding: 18px 16px; gap: 12px; }
     .horario-card h3 { font-size: 1rem; }
     .horario-card p { font-size: 1.2rem; }
+    .aviso-horario { padding: 18px 16px; gap: 12px; width: calc(100% - 32px); }
+    .aviso-horario strong { font-size: 1.2rem; }
 
     /* TÍTULOS */
     h2 { font-size: 1.5rem; }
@@ -1931,8 +1933,10 @@ section#pedidos { padding-bottom: 70px; }
   align-items: center;
   gap: 20px;
   box-shadow: 0 2px 12px var(--sombra);
+  max-width: 900px;
   margin: 16px auto;
-  max-width: 700px;
+  box-sizing: border-box;
+  width: calc(100% - 64px);
 }
 
 .aviso-icone {
@@ -1940,17 +1944,21 @@ section#pedidos { padding-bottom: 70px; }
   flex-shrink: 0;
 }
 
-.aviso-horario p {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 0.95rem;
-  color: var(--marrom-claro);
+.aviso-horario h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  color: var(--marrom);
+  margin-bottom: 4px;
 }
 
-.aviso-horario strong {
-  display: block;
+.aviso-horario p {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--verde);
-  margin-bottom: 2px;
+  margin: 0;
+}
+
+.aviso-horario small {
+  color: var(--marrom-claro);
+  font-size: 0.87rem;
 }
