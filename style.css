@@ -1923,30 +1923,34 @@ section#pedidos { padding-bottom: 70px; }
 }
 
 .aviso-horario {
+  background: var(--marrom-creme);
+  border-radius: 18px;
+  padding: 28px 32px;
+  border-left: 6px solid var(--dourado);
   display: flex;
   align-items: center;
-  gap: 12px;
-  background-color: #fff8e1;
-  border-left: 4px solid #f59e0b;
-  border-radius: 8px;
-  padding: 14px 18px;
+  gap: 20px;
+  box-shadow: 0 2px 12px var(--sombra);
   margin: 16px auto;
-  max-width: 600px;
-  font-size: 0.95rem;
-  color: #5c3d00;
+  max-width: 700px;
 }
 
 .aviso-icone {
-  font-size: 1.5rem;
+  font-size: 2.5rem;
   flex-shrink: 0;
 }
 
 .aviso-horario p {
   margin: 0;
   line-height: 1.5;
+  font-size: 0.95rem;
+  color: var(--marrom-claro);
 }
 
 .aviso-horario strong {
-  font-size: 1.05rem;
-  color: #b45309;
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--verde);
+  margin-bottom: 2px;
 }
