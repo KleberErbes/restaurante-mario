@@ -356,17 +356,16 @@ function addPadrao(size) {
   const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
   const obs = document.getElementById(obsId).value.trim();
 
-  // BUG #1 CORRIGIDO: lista as opções de carne do dia sem repetir
-  const carneDesc = CARDAPIO.carnes.length > 0
-    ? `3 pedaços — ${CARDAPIO.carnes.join(' / ')}`
-    : '3 pedaços — Carne do dia';
+  // Lista as 3 primeiras carnes do cardápio (ou menos, se houver menos de 3)
+  const carnesOpcoes = CARDAPIO.carnes.length > 0 ? CARDAPIO.carnes.slice(0, 3) : ['Carne do dia'];
+  const carneDesc = `3 pedaços — ${carnesOpcoes.join(' / ')}`;
 
   const descBase = `Arroz branco, Feijão, Macarrão espaguete, Aipim com bacon | ${carneDesc}`;
   const desc = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
+  const descPlanilha = obs ? `Obs: ${obs}` : '';
 
-  for (let i = 0; i < qty; i++) {
-    cart.push({ tipo: `Marmita Padrão ${label}`, desc, descPlanilha: obs ? `Obs: ${obs}` : '', preco: precoUnit });
-  }
+  // Agrupa todas as unidades em um único item com quantidade
+  cart.push({ tipo: `Marmita Padrão ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty });
 
   salvarCarrinhoLocal();
   qtyPadrao[size] = 1;
@@ -443,7 +442,7 @@ function updateCart() {
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
-      <div class="cart-item-title">${item.tipo}</div>
+      <div class="cart-item-title">${item.qty > 1 ? item.qty + 'x ' : ''}${item.tipo}</div>
       <div class="cart-item-desc">${item.desc}</div>
       <div class="cart-item-price">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
       <button class="remove-item" onclick="confirmarRemocao(${i})" title="Remover">✕</button>
@@ -558,15 +557,19 @@ function enviarWhatsApp(nomeCliente) {
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
       nomeCliente,
-      itens: cart.map(item => ({ tipo: item.tipo, desc: item.descPlanilha, preco: item.preco })),
-      total: total.toFixed(2)
+      itens: cart.map(item => ({ tipo: item.tipo, desc: item.descPlanilha, preco: item.preco, qty: item.qty || 1 })),
+      total: total.toFixed(2),
+      totalMarmitas: cart.reduce((sum, item) => sum + (item.qty || 1), 0)
     })
   }).catch(err => console.warn('Erro ao salvar no Drive:', err));
 
+  const totalMarmitas = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
   let msg = `🍽️ *Pedido — Restaurante do Mário*\n`;
-  msg += `👤 *Cliente: ${nomeCliente}*\n\n`;
+  msg += `👤 *Cliente: ${nomeCliente}*\n`;
+  msg += `🍱 *Total de marmitas: ${totalMarmitas}*\n\n`;
   cart.forEach((item, i) => {
-    msg += `*${i + 1}. ${item.tipo}*\n${item.desc}\nR$ ${item.preco.toFixed(2).replace('.', ',')}\n\n`;
+    const prefixo = item.qty > 1 ? `${item.qty}x ` : '';
+    msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\nR$ ${item.preco.toFixed(2).replace('.', ',')}\n\n`;
   });
   msg += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
 
