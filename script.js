@@ -338,6 +338,12 @@ function updatePrecoPersonalizada() {
 }
 
 let qtyPadrao = { media: 1, grande: 1 };
+let qtyPersonalizada = 1;
+
+function changeQtyPersonalizada(delta) {
+  qtyPersonalizada = Math.max(1, qtyPersonalizada + delta);
+  document.getElementById('qtyPersonalizada').textContent = qtyPersonalizada;
+}
 
 function changeQty(size, delta) {
   qtyPadrao[size] = Math.max(1, qtyPadrao[size] + delta);
@@ -360,9 +366,9 @@ function addPadrao(size) {
   const carnesOpcoes = CARDAPIO.carnes.length > 0 ? CARDAPIO.carnes.slice(0, 3) : ['Carne do dia'];
   const carneDesc = `3 pedaços — ${carnesOpcoes.join(' / ')}`;
 
-  const descBase = `Arroz branco, Feijão, Macarrão espaguete, Aipim com bacon | ${carneDesc}`;
+  const descBase = `Arroz branco / Feijão / Macarrão / Aipim com bacon | ${carneDesc}`;
   const desc = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
-  const descPlanilha = obs ? `Obs: ${obs}` : '';
+  const descPlanilha = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
 
   // Agrupa todas as unidades em um único item com quantidade
   cart.push({ tipo: `Marmita Padrão ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty });
@@ -402,17 +408,21 @@ function addPersonalizada() {
   const saladaDesc  = selSalada.length > 0 ? 'Salada: ' + selSalada.join(' / ') : '';
   const obs = document.getElementById('obsPersonalizada') ? document.getElementById('obsPersonalizada').value.trim() : '';
   const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc, obs ? `⚠️ Obs: ${obs}` : ''].filter(Boolean).join(' | ');
+  const qty = qtyPersonalizada;
 
-  cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco });
+  cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: preco * qty, qty });
 
   salvarCarrinhoLocal();
   updateCart();
   clearPersonalizada();
-  showToast(`✅ Marmita Personalizada ${label} adicionada!`, 'sucesso');
+  showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita Personalizada ${label} adicionada!`, 'sucesso');
 }
 
 function clearPersonalizada() {
   selAcomp = []; selCarne = {}; selSalada = [];
+  qtyPersonalizada = 1;
+  const qtyEl = document.getElementById('qtyPersonalizada');
+  if (qtyEl) qtyEl.textContent = '1';
   buildGrids();
   document.getElementById('acompCounter').textContent  = 'Selecionados: 0 / 5';
   document.getElementById('carneCounter').textContent  = 'Selecionados: 0 pedaços';
