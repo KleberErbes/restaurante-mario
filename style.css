@@ -386,7 +386,6 @@ section#pedidos { padding-bottom: 70px; }
     display: flex;
     align-items: center;
     gap: 20px;
-    padding: 8px 12px;
   }
 
   .logo-icon img {
