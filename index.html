@@ -16,33 +16,32 @@
 <body>
   <header>
     <div class="header-top">
-      <div class="logo">
-        <div class="logo-icon">
-          <img src="logo.jpeg" alt="Logo Restaurante do Mário">
-        </div>
-        <div>
-          <h1>Restaurante do Mário</h1>
-          <span class="logo-sub">Tradição &amp; Sabor Desde 1997</span>
+      <div class="header-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <img src="logo.jpeg" alt="Logo Restaurante do Mário">
+          </div>
+          <div>
+            <h1>Restaurante do Mário</h1>
+          </div>
         </div>
       </div>
+      <div class="header-center">
+        <span id="badgeHorario" class="badge-horario">⏳ Verificando...</span>
+      </div>
       <div class="header-right">
-        <div class="header-info">
-        </div>
         <div class="cart-section">
-          <span id="badgeHorario" class="badge-horario">⏳ Verificando...</span>
           <button class="cart-btn" onclick="toggleCart()">
             Carrinho
             <span class="cart-count" id="cartCount">0</span>
           </button>
         </div>
+        <div class="menu-hamburguer" id="menuHamburguer" onclick="toggleMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-    </div>
-
-    <!-- NAV: menu hambúrguer -->
-    <div class="menu-hamburguer" id="menuHamburguer" onclick="toggleMenu()">
-      <span></span>
-      <span></span>
-      <span></span>
     </div>
 
     <nav id="navMenu" class="nav-dropdown">
