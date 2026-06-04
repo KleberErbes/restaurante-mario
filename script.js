@@ -705,37 +705,3 @@ function goToCardapio()  { scrollToSection('cardapio-dia-sec'); }
 
 // showSection original usava display:none — sobrescrevemos para só rolar
 function showSection(id) { scrollToSection(id); }
-// ===== MENU HAMBÚRGUER =====
-function toggleMenu() {
-  const hamburguer = document.getElementById('menuHamburguer');
-  const nav        = document.getElementById('navMenu');
-  const overlay    = document.getElementById('navOverlay');
-  const aberto     = hamburguer.classList.contains('aberto');
-
-  if (aberto) {
-    fecharMenu();
-  } else {
-    hamburguer.classList.add('aberto');
-    nav.classList.add('aberto');
-    overlay.classList.add('ativo');
-  }
-}
-
-function fecharMenu() {
-  const hamburguer = document.getElementById('menuHamburguer');
-  const nav        = document.getElementById('navMenu');
-  const overlay    = document.getElementById('navOverlay');
-  hamburguer.classList.remove('aberto');
-  nav.classList.remove('aberto');
-  overlay.classList.remove('ativo');
-}
-
-function navClick(id) {
-  fecharMenu();
-  scrollToSection(id);
-}
-
-// Fecha o menu ao pressionar ESC
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') fecharMenu();
-});

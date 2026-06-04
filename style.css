@@ -39,9 +39,9 @@ section:not(#inicio) {
 .scroll-anchor {
   display: block;
   height: 0;
-  /* Header agora ocupa ~100px (sem nav horizontal) */
-  margin-top: -100px;
-  padding-top: 100px;
+  /* O header ocupa ~130px (header-top ~100px + nav ~44px) */
+  margin-top: -130px;
+  padding-top: 130px;
   pointer-events: none;
 }
 
@@ -322,10 +322,10 @@ section#pedidos { padding-bottom: 70px; }
   section { padding: 40px 14px; }
   section#inicio { padding: 0; }
 
-  /* Offset mobile (header sem nav horizontal ~80px) */
+  /* Ajustar offset âncora no mobile (header menor ~90px) */
   .scroll-anchor {
-    margin-top: -80px;
-    padding-top: 80px;
+    margin-top: -90px;
+    padding-top: 90px;
   }
 
   section#pedidos { padding-bottom: 60px; }
@@ -416,24 +416,31 @@ section#pedidos { padding-bottom: 70px; }
     margin-top: 4px;
   }
 
-  .header-left,
   .header-right {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 28px;
   }
 
-  .header-center {
-    flex: 1;
+  .header-info {
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 20px;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.88rem;
+  }
+
+  .header-info span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .cart-section {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
   }
 
   .badge-horario {
@@ -441,7 +448,7 @@ section#pedidos { padding-bottom: 70px; }
     font-weight: 700;
     color: rgba(255,255,255,0.9);
     text-align: center;
-    min-width: 120px;
+    min-width: 100px;
   }
 
   .badge-horario.badge-aberto {
@@ -482,119 +489,33 @@ section#pedidos { padding-bottom: 70px; }
     font-weight: 900;
   }
 
-  /* ===== MENU HAMBÚRGUER ===== */
-  .menu-hamburguer {
-    position: relative;
-    width: 44px;
-    height: 44px;
+  nav {
     display: flex;
-    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    border-radius: 10px;
-    transition: background 0.2s;
-    padding: 8px;
+    gap: 0;
+    background: #1e4519;
+    overflow-x: auto;
   }
 
-  .menu-hamburguer:hover {
-    background: rgba(255,255,255,0.1);
-  }
-
-  .menu-hamburguer span {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: rgba(255,255,255,0.85);
-    border-radius: 2px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: center;
-  }
-
-  /* Animação X ao abrir */
-  .menu-hamburguer.aberto span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-  }
-  .menu-hamburguer.aberto span:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-  .menu-hamburguer.aberto span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-  }
-
-  /* Overlay escuro por trás do menu */
-  .nav-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 149;
-    backdrop-filter: blur(2px);
-  }
-  .nav-overlay.ativo { display: block; }
-
-  /* Dropdown do menu */
-  nav.nav-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 12px;
-    left: auto;
-    background: #1a3d17;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-    display: flex;
-    flex-direction: column;
-    min-width: 230px;
-    overflow: hidden;
-    z-index: 150;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px) scale(0.97);
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
-    pointer-events: none;
-  }
-
-  nav.nav-dropdown.aberto {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-  }
-
-  nav.nav-dropdown button {
+  nav button {
     background: none;
     border: none;
-    color: rgba(255,255,255,0.80);
+    color: rgba(255,255,255,0.65);
     font-family: 'Lato', sans-serif;
-    font-size: 0.92rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 16px 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px 32px;
     cursor: pointer;
-    text-align: left;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    transition: background 0.15s, color 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
   }
 
-  nav.nav-dropdown button:last-child {
-    border-bottom: none;
-  }
-
-  nav.nav-dropdown button:hover,
-  nav.nav-dropdown button.active {
-    background: rgba(200,150,60,0.15);
-    color: var(--dourado);
-  }
-
-  /* Ajuste no header-top para o hambúrguer ficar posicionado corretamente */
-  .header-top {
-    position: relative;
+  nav button.active, nav button:hover {
+    color: #fff;
+    border-bottom-color: #fff;
   }
 
   /* HERO */
@@ -1401,37 +1322,36 @@ section#pedidos { padding-bottom: 70px; }
   /* ===================== RESPONSIVO MOBILE ===================== */
   @media (max-width: 700px) {
 
-    /* HEADER MOBILE */
+    /* HEADER */
     .header-top {
-      padding: 10px 14px;
+      padding: 12px 14px;
+      flex-wrap: nowrap;
       gap: 8px;
       align-items: center;
-      min-height: 62px;
     }
-    /* Hambúrguer menor no mobile */
-    .menu-hamburguer {
-      position: relative;
-      width: 38px;
-      height: 38px;
-    }
-    /* Logo compacta */
-    .logo { gap: 8px; flex: 1; min-width: 0; }
-    .logo-icon img { width: 38px; height: 38px; }
-    .logo h1 {
-      font-size: 1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .logo { gap: 10px; }
+    .logo-icon img { width: 68px; height: 68px; }
+    .logo h1 { font-size: 1.1rem; }
     .logo-sub { display: none; }
     .header-info { display: none; }
-    /* Carrinho compacto */
-    .header-right { gap: 0; flex-shrink: 0; }
-    .cart-section { gap: 3px; }
-    .badge-horario { font-size: 0.62rem; padding: 3px 7px; min-width: unset; }
-    .cart-btn { padding: 7px 12px; font-size: 0.82rem; gap: 5px; }
-    /* Dropdown do menu alinhado ao topo mobile */
-    nav.nav-dropdown { right: 8px; left: auto; top: calc(100% + 4px); min-width: 210px; }
+    .header-right { gap: 0; }
+    .cart-btn { padding: 8px 14px; font-size: 0.85rem; }
+
+    /* NAV */
+    nav {
+      justify-content: flex-start;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button {
+      padding: 11px 16px;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
     /* SEÇÕES */
     section { padding: 24px 14px; }
@@ -1705,9 +1625,9 @@ section:not(#inicio) {
 .scroll-anchor {
   display: block;
   height: 0;
-  /* Header agora ocupa ~100px (sem nav horizontal) */
-  margin-top: -100px;
-  padding-top: 100px;
+  /* O header ocupa ~130px (header-top ~100px + nav ~44px) */
+  margin-top: -130px;
+  padding-top: 130px;
   pointer-events: none;
 }
 
@@ -1988,10 +1908,10 @@ section#pedidos { padding-bottom: 70px; }
   section { padding: 40px 14px; }
   section#inicio { padding: 0; }
 
-  /* Offset mobile (header sem nav horizontal ~80px) */
+  /* Ajustar offset âncora no mobile (header menor ~90px) */
   .scroll-anchor {
-    margin-top: -80px;
-    padding-top: 80px;
+    margin-top: -90px;
+    padding-top: 90px;
   }
 
   section#pedidos { padding-bottom: 60px; }
