@@ -1377,6 +1377,11 @@ section#pedidos { padding-bottom: 70px; }
     .horario-card { padding: 18px 16px; gap: 12px; }
     .horario-card h3 { font-size: 1rem; }
     .horario-card p { font-size: 1.2rem; }
+    
+    .aviso-horario { padding: 18px 16px; gap: 12px; }
+    .aviso-icone { font-size: 2rem; }
+    .aviso-horario p { font-size: 0.9rem; }
+    .aviso-horario strong { font-size: 1.2rem; }
 
     /* TÍTULOS */
     h2 { font-size: 1.5rem; }
@@ -1952,5 +1957,40 @@ section#pedidos { padding-bottom: 70px; }
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--verde);
-  margin-bottom: 2px;
+  margin-top: 4px;
+}
+
+.loc-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.loc-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.loc-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dourado);
+  margin-bottom: 4px;
+}
+.loc-value {
+  font-size: 0.97rem;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.55;
+}
+@media (max-width: 700px) {
+  #localizacao { padding: 48px 18px 56px !important; }
+  #localizacao h2 { font-size: 1.8rem !important; }
 }

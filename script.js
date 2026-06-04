@@ -77,13 +77,13 @@ function atualizarBadgeHorario() {
   if (!badge) return;
   const estado = getEstado();
   if (estado === 'aberto') {
-    badge.textContent = '🟢 Aberto agora';
+    badge.textContent = 'Aberto agora';
     badge.className = 'badge-horario badge-aberto';
   } else if (estado === 'pedidos') {
-    badge.textContent = '🟡 Pedidos disponíveis';
+    badge.textContent = 'Pedidos disponíveis';
     badge.className = 'badge-horario badge-pedidos';
   } else {
-    badge.textContent = '🔴 Fechado agora';
+    badge.textContent = 'Fechado agora';
     badge.className = 'badge-horario badge-fechado';
   }
 }
@@ -393,7 +393,7 @@ function addPersonalizada() {
 
   // BUG #3: valida todos os grupos, não apenas acomp e carne
   if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
-    showToast('⚠️ Selecione ao menos um item para montar sua marmita!', 'aviso');
+    showToast('Selecione ao menos um item para montar sua marmita!', 'aviso');
     return;
   }
 
@@ -507,7 +507,7 @@ function carregarCarrinhoLocal() {
     if (salvo) {
       cart = JSON.parse(salvo);
       updateCart();
-      if (cart.length > 0) showToast(`🛒 Você tem ${cart.length} item(ns) do seu último acesso!`, 'info', 4000);
+      if (cart.length > 0) showToast(`Você tem ${cart.length} item(ns) do seu último acesso!`, 'info', 4000);
     }
   } catch(e) {}
 }
@@ -557,7 +557,7 @@ function confirmarPedido() {
 
 // ========== WHATSAPP + GOOGLE DRIVE ==========
 function enviarWhatsApp(nomeCliente) {
-  if (cart.length === 0) { showToast('🛒 Carrinho vazio!', 'aviso'); return; }
+  if (cart.length === 0) { showToast('Carrinho vazio!', 'aviso'); return; }
 
   const total = cart.reduce((sum, item) => sum + item.preco, 0);
 
@@ -574,14 +574,14 @@ function enviarWhatsApp(nomeCliente) {
   }).catch(err => console.warn('Erro ao salvar no Drive:', err));
 
   const totalMarmitas = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
-  let msg = `🍽️ *Pedido — Restaurante do Mário*\n`;
-  msg += `👤 *Cliente: ${nomeCliente}*\n`;
-  msg += `🍱 *Total de marmitas: ${totalMarmitas}*\n\n`;
+  let msg = `*Pedido — Restaurante do Mário*\n`;
+  msg += `*Cliente: ${nomeCliente}*\n`;
+  msg += `*Total de marmitas: ${totalMarmitas}*\n\n`;
   cart.forEach((item, i) => {
     const prefixo = item.qty > 1 ? `${item.qty}x ` : '';
     msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\nR$ ${item.preco.toFixed(2).replace('.', ',')}\n\n`;
   });
-  msg += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+  msg += `*Total: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
 
   // Limpa carrinho após envio
   cart = [];
