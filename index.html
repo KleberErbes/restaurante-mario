@@ -38,13 +38,20 @@
       </div>
     </div>
 
-    <!-- NAV: botões de rolagem automática para cada seção -->
-    <nav>
-      <button onclick="scrollToSection('inicio')">Início</button>
-      <button onclick="scrollToSection('cardapio-dia-sec')">Cardápio do Dia</button>
-      <button onclick="scrollToSection('pedidos')">Marmitas</button>
-      <button onclick="scrollToSection('localizacao')">Localização</button>
+    <!-- NAV: menu hambúrguer -->
+    <div class="menu-hamburguer" id="menuHamburguer" onclick="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <nav id="navMenu" class="nav-dropdown">
+      <button onclick="navClick('inicio')">Início</button>
+      <button onclick="navClick('cardapio-dia-sec')">Cardápio do Dia</button>
+      <button onclick="navClick('pedidos')">Marmitas</button>
+      <button onclick="navClick('localizacao')">Localização</button>
     </nav>
+    <div class="nav-overlay" id="navOverlay" onclick="fecharMenu()"></div>
   </header>
 
   <!-- ===================== HERO / INÍCIO ===================== -->
