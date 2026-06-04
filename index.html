@@ -64,13 +64,6 @@
       </div>
     </div>
 
-        <div class="aviso-horario">
-        <span class="aviso-icone">🕗</span>
-         <p>Os pedidos de marmitas estão restritos aos seguintes horários:<br>
-        <strong>8h até as 14h</strong>
-        </p>
-        </div>
-
     <!-- BUFFET LIVRE abaixo do hero -->
     <div class="buffet-home">
       <div class="buffet-home-inner">
@@ -97,6 +90,13 @@
             <p>10h30 às 14h00</p>
             <small>Segunda a Sábado</small>
           </div>
+        </div>
+
+        <div class="aviso-horario">
+          <span class="aviso-icone">🕗</span>
+          <p>Os pedidos de marmitas estão restritos aos seguintes horários:<br>
+          <strong>8h até as 14h</strong>
+          </p>
         </div>
       </div>
     </div>
@@ -373,7 +373,7 @@
   <div class="overlay" id="overlay" onclick="toggleCart()"></div>
   <div class="cart-panel" id="cartPanel">
     <div class="cart-header">
-      <h2>🛒 Meu Carrinho</h2>
+      <h2>Meu Carrinho</h2>
       <button class="close-cart" onclick="toggleCart()">✕</button>
     </div>
     <div class="cart-items" id="cartItems">
@@ -385,11 +385,11 @@
         <span id="cartTotal">R$ 0,00</span>
       </div>
       <div class="pagamentos">
-        <strong>💳 Formas de Pagamento</strong>
+        <strong>Formas de Pagamento</strong>
         Pix · Cartão · ÚtilCard · VRCard · Sodexo
       </div>
       <button class="whatsapp-btn" onclick="abrirModalNome()">
-        📲 Enviar Pedido pelo WhatsApp
+        Enviar Pedido pelo WhatsApp
       </button>
     </div>
   </div>
@@ -397,7 +397,7 @@
   <!-- ===================== MODAL NOME DO CLIENTE ===================== -->
   <div class="modal-overlay" id="modalOverlay" onclick="fecharModalNome()"></div>
   <div class="modal-nome" id="modalNome">
-    <h3>👤 Qual é o seu nome?</h3>
+    <h3>Qual é o seu nome?</h3>
     <p>Para identificarmos seu pedido.</p>
     <input type="text" id="inputNomeCliente" placeholder="Digite seu nome..." maxlength="60"
       onkeydown="if(event.key==='Enter') confirmarPedido()" />
@@ -423,66 +423,6 @@
     ⚠️ <strong>Não entregamos marmitas.</strong> Retire no balcão. ⚠️
   </div>
 
-  <div style="font-size:0.82rem;color:rgba(255,255,255,0.35);margin-bottom:10px;letter-spacing:0.5px;">
-    © 2026 · Tradição &amp; Sabor Desde 1997
-  </div>
-  <a href="tel:+554733752227" style="font-size:0.95rem;font-weight:700;color:var(--dourado);text-decoration:none;letter-spacing:0.5px;">
-  </a>
-</footer>
-
-<!-- ===================== CART ===================== -->
-<div class="overlay" id="overlay" onclick="toggleCart()"></div>
-<div class="cart-panel" id="cartPanel">
-  <div class="cart-header">
-    <h2>Meu Carrinho</h2>
-    <button class="close-cart" onclick="toggleCart()">✕</button>
-  </div>
-  <div class="cart-items" id="cartItems">
-    <p class="cart-empty">Seu carrinho está vazio.</p>
-  </div>
-  <div class="cart-footer">
-    <div class="cart-total">
-      <span>Total:</span>
-      <span id="cartTotal">R$ 0,00</span>
-    </div>
-    <div class="pagamentos">
-      <strong>Formas de Pagamento</strong>
-      Pix · Cartão · ÚtilCard · VRCard · Sodexo
-    </div>
-    <button class="whatsapp-btn" onclick="abrirModalNome()">
-      Enviar Pedido pelo WhatsApp
-    </button>
-  </div>
-</div>
-
-<!-- ===================== MODAL NOME DO CLIENTE ===================== -->
-<div class="modal-overlay" id="modalOverlay" onclick="fecharModalNome()"></div>
-<div class="modal-nome" id="modalNome">
-  <h3>Qual é o seu nome?</h3>
-  <p>Para identificarmos seu pedido.</p>
-  <input
-    type="text"
-    id="inputNomeCliente"
-    placeholder="Digite seu nome..."
-    maxlength="60"
-    onkeydown="if(event.key==='Enter') confirmarPedido()"
-  />
-  <div class="modal-btns">
-    <button class="modal-btn-cancelar" onclick="fecharModalNome()">Cancelar</button>
-    <button class="modal-btn-confirmar" onclick="confirmarPedido()">Confirmar e Enviar</button>
-  </div>
-</div>
-
-<!-- ===================== MODAL CONFIRMAÇÃO ===================== -->
-<div class="modal-overlay" id="modalConfirmOverlay" onclick="fecharModalConfirm()"></div>
-<div class="modal-nome" id="modalConfirm">
-  <h3 class="modal-confirm-title">Confirmar</h3>
-  <p class="modal-confirm-msg"></p>
-  <div class="modal-btns">
-    <button class="modal-btn-cancelar" onclick="fecharModalConfirm()">Cancelar</button>
-    <button class="modal-btn-confirmar modal-confirm-ok">Confirmar</button>
-  </div>
-</div>
 
 </body>
 </html>

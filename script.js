@@ -44,19 +44,33 @@ function showToast(msg, tipo = 'info', duracao = 3000) {
 }
 
 // ========== HORÁRIO DE ATENDIMENTO ==========
+// Usa sempre o fuso de Brasília (America/Sao_Paulo) para evitar erros
+// se o cliente estiver em outro fuso horário.
 // Retorna: 'fechado' | 'pedidos' | 'aberto'
 function getEstado() {
   const agora = new Date();
-  const dia = agora.getDay(); // 0=dom, 6=sab
+
+  // Data e hora no fuso de Brasília
+  const partesBR = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', weekday: 'short',
+    hour12: false
+  }).formatToParts(agora);
+
+  const get = (tipo) => partesBR.find(p => p.type === tipo)?.value ?? '';
+  const hora    = parseInt(get('hour'),   10);
+  const minuto  = parseInt(get('minute'), 10);
+  const diaSem  = get('weekday'); // 'dom', 'seg', ...
+  const dataHoje = `${get('year')}-${get('month')}-${get('day')}`;
 
   // Verifica dias fechados especiais (formato AAAA-MM-DD)
-  const dataHoje = agora.toISOString().slice(0, 10);
   if (DIAS_FECHADOS_ESPECIAIS.includes(dataHoje)) return 'fechado';
 
   // Domingo sempre fechado
-  if (dia === 0) return 'fechado';
+  if (diaSem === 'dom') return 'fechado';
 
-  const totalMin = agora.getHours() * 60 + agora.getMinutes();
+  const totalMin      = hora * 60 + minuto;
   const inicioPedidos = HORARIO_PEDIDOS.h    * 60 + HORARIO_PEDIDOS.m;
   const abre          = HORARIO_ABERTURA.h   * 60 + HORARIO_ABERTURA.m;
   const fecha         = HORARIO_FECHAMENTO.h * 60 + HORARIO_FECHAMENTO.m;
@@ -150,10 +164,13 @@ async function carregarCardapio() {
 
 // Skeleton loading enquanto carrega
 function mostrarSkeleton(show) {
-  if (!show) return;
-  document.querySelectorAll('.cardapio-box-list, .cpg-list').forEach(el => {
-    el.innerHTML = '<span class="skeleton-item"></span><span class="skeleton-item"></span><span class="skeleton-item"></span>';
-  });
+  if (show) {
+    document.querySelectorAll('.cardapio-box-list, .cpg-list').forEach(el => {
+      el.innerHTML = '<span class="skeleton-item"></span><span class="skeleton-item"></span><span class="skeleton-item"></span>';
+    });
+  } else {
+    document.querySelectorAll('.skeleton-item').forEach(el => el.remove());
+  }
 }
 
 // ========== NAVEGAÇÃO — somente via classe, sem style.display inline ==========
@@ -505,11 +522,21 @@ function carregarCarrinhoLocal() {
     }
     const salvo = localStorage.getItem('rdm_cart');
     if (salvo) {
-      cart = JSON.parse(salvo);
-      updateCart();
-      if (cart.length > 0) showToast(`Você tem ${cart.length} item(ns) do seu último acesso!`, 'info', 4000);
+      const parsed = JSON.parse(salvo);
+      // Valida estrutura mínima esperada de cada item
+      if (Array.isArray(parsed) && parsed.every(i => i && typeof i.tipo === 'string' && typeof i.preco === 'number')) {
+        cart = parsed;
+        updateCart();
+        if (cart.length > 0) showToast(`Você tem ${cart.length} item(ns) do seu último acesso!`, 'info', 4000);
+      } else {
+        localStorage.removeItem('rdm_cart');
+        localStorage.removeItem('rdm_cart_ts');
+      }
     }
-  } catch(e) {}
+  } catch(e) {
+    localStorage.removeItem('rdm_cart');
+    localStorage.removeItem('rdm_cart_ts');
+  }
 }
 
 // ========== MODAL DE CONFIRMAÇÃO GENÉRICO ==========
@@ -531,7 +558,7 @@ function fecharModalConfirm() {
 
 // ========== MODAL NOME DO CLIENTE ==========
 function abrirModalNome() {
-  if (cart.length === 0) { showToast('🛒 Seu carrinho está vazio!', 'aviso'); return; }
+  if (cart.length === 0) { showToast('Seu carrinho está vazio!', 'aviso'); return; }
   if (!estaAberto()) { showToast('🔴 Estamos fechados', 'aviso', 5000); return; }
   document.getElementById('inputNomeCliente').value = '';
   document.getElementById('modalOverlay').classList.add('open');
@@ -652,56 +679,3 @@ document.addEventListener('DOMContentLoaded', () => {
   atualizarBadgeHorario();
   setInterval(atualizarBadgeHorario, 60000);
 });
-
-// ===== SCROLL SUAVE PARA SEÇÕES =====
-function scrollToSection(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  // Calcula a posição levando em conta o header fixo
-  const headerHeight = document.querySelector('header').offsetHeight;
-  const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
-  window.scrollTo({ top, behavior: 'smooth' });
-}
-
-// ===== DESTACA BOTÃO DA NAV CONFORME SEÇÃO VISÍVEL =====
-function atualizarNavAtiva() {
-  const headerH = document.querySelector('header').offsetHeight;
-  const secoes = [
-    { id: 'inicio',          navIdx: 0 },
-    { id: 'cardapio-dia-sec', navIdx: 1 },
-    { id: 'pedidos',         navIdx: 2 },
-    { id: 'localizacao',     navIdx: 3 },
-  ];
-
-  let ativa = 0;
-  secoes.forEach(({ id, navIdx }) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.top <= headerH + 10) ativa = navIdx;
-  });
-
-  document.querySelectorAll('nav button').forEach((btn, i) => {
-    btn.classList.toggle('active', i === ativa);
-  });
-
-  // Mostra/esconde aviso balcão conforme seção marmitas visível
-  const pedidosEl = document.getElementById('pedidos');
-  const aviso = document.getElementById('avisoBalcao');
-  if (pedidosEl && aviso) {
-    const rect = pedidosEl.getBoundingClientRect();
-    const visivel = rect.top < window.innerHeight && rect.bottom > headerH;
-    aviso.classList.toggle('visible', visivel);
-  }
-}
-
-window.addEventListener('scroll', atualizarNavAtiva, { passive: true });
-window.addEventListener('load', atualizarNavAtiva);
-
-// ===== SUBSTITUI as funções de navegação original =====
-// (goToMarmitas e goToCardapio redirecionam para scroll)
-function goToMarmitas() { scrollToSection('pedidos'); }
-function goToCardapio()  { scrollToSection('cardapio-dia-sec'); }
-
-// showSection original usava display:none — sobrescrevemos para só rolar
-function showSection(id) { scrollToSection(id); }
