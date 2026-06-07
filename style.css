@@ -1103,6 +1103,35 @@ section#pedidos { padding-bottom: 70px; }
     align-items: center;
   }
 
+  #precoPersonalizada.preco-a-pesar {
+    color: #b07d00;
+    font-size: 1.1rem;
+  }
+
+  .info-pesar {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: #7a5700;
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+
+  .cart-item-price-pesar {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #b07d00;
+  }
+
+  .total-pesar-aviso {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #b07d00;
+    margin-left: 4px;
+  }
+
   /* CART */
   .cart-panel {
     display: none;
@@ -1192,6 +1221,12 @@ section#pedidos { padding-bottom: 70px; }
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--marrom);
+  }
+
+  .cart-item-price-pesar {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #b07d00;
   }
 
   .remove-item {

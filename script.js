@@ -345,13 +345,43 @@ function selectSize(size) {
   updatePrecoPersonalizada();
 }
 
-function updatePrecoPersonalizada() {
-  const base = selectedSize === 'media' ? 26 : 28;
-  const extrasAcomp = Math.max(0, selAcomp.length - 5);
+function isModoPesar() {
+  const temAcomp  = selAcomp.length > 0;
   const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
-  const extrasCarne = Math.max(0, totalPedacos - 3);
-  const total = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
-  document.getElementById('precoPersonalizada').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+  const temCarne  = totalPedacos > 0;
+  const temSalada = selSalada.length > 0;
+  // Unica combinacao com salada que NAO pesa: acomp + carne + salada (completo)
+  if (temSalada && temAcomp && temCarne) return false;
+  // Qualquer outra combinacao com salada -> pesar
+  if (temSalada) return true;
+  // Sem salada: pesar se for categoria isolada (so acomp ou so carne)
+  const gruposSelecionados = [temAcomp, temCarne].filter(Boolean).length;
+  return gruposSelecionados === 1;
+}
+
+function updatePrecoPersonalizada() {
+  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
+  const el = document.getElementById('precoPersonalizada');
+  const infoEl = document.getElementById('infoPesar');
+
+  if (isModoPesar()) {
+    el.textContent = 'A pesar';
+    el.classList.add('preco-a-pesar');
+    if (infoEl) infoEl.style.display = 'block';
+  } else {
+    el.classList.remove('preco-a-pesar');
+    if (infoEl) infoEl.style.display = 'none';
+    if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
+      const base = selectedSize === 'media' ? 26 : 28;
+      el.textContent = `R$ ${base.toFixed(2).replace('.', ',')}`;
+    } else {
+      const base = selectedSize === 'media' ? 26 : 28;
+      const extrasAcomp = Math.max(0, selAcomp.length - 5);
+      const extrasCarne = Math.max(0, totalPedacos - 3);
+      const total = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
+      el.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+  }
 }
 
 let qtyPadrao = { media: 1, grande: 1 };
@@ -414,11 +444,18 @@ function addPersonalizada() {
     return;
   }
 
-  const base = selectedSize === 'media' ? 26 : 28;
-  const extrasAcomp = Math.max(0, selAcomp.length - 5);
-  const extrasCarne = Math.max(0, totalPedacos - 3);
-  const preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
   const label = selectedSize === 'media' ? 'Média' : 'Grande';
+  const pesar = isModoPesar();
+
+  let preco;
+  if (pesar) {
+    preco = 0; // preço definido no restaurante na balança
+  } else {
+    const base = selectedSize === 'media' ? 26 : 28;
+    const extrasAcomp = Math.max(0, selAcomp.length - 5);
+    const extrasCarne = Math.max(0, totalPedacos - 3);
+    preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
+  }
 
   const carnesDesc  = totalPedacos > 0 ? Object.entries(selCarne).map(([c,q]) => `${q}x ${c}`).join(' / ') : '';
   const acompDesc   = selAcomp.length  > 0 ? selAcomp.join(' / ') : '';
@@ -427,7 +464,7 @@ function addPersonalizada() {
   const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc, obs ? `⚠️ Obs: ${obs}` : ''].filter(Boolean).join(' | ');
   const qty = qtyPersonalizada;
 
-  cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: preco * qty, qty });
+  cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: preco * qty, qty, aPesar: pesar });
 
   salvarCarrinhoLocal();
   updateCart();
@@ -464,20 +501,30 @@ function updateCart() {
 
   container.innerHTML = '';
   let total = 0;
+  let temAPesar = false;
   cart.forEach((item, i) => {
     total += item.preco;
+    if (item.aPesar) temAPesar = true;
     const div = document.createElement('div');
     div.className = 'cart-item';
+    const precoExibido = item.aPesar
+      ? `<span class="cart-item-price-pesar">A pesar</span>`
+      : `<div class="cart-item-price">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>`;
     div.innerHTML = `
       <div class="cart-item-title">${item.qty > 1 ? item.qty + 'x ' : ''}${item.tipo}</div>
       <div class="cart-item-desc">${item.desc}</div>
-      <div class="cart-item-price">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
+      ${precoExibido}
       <button class="remove-item" onclick="confirmarRemocao(${i})" title="Remover">✕</button>
     `;
     container.appendChild(div);
   });
 
-  document.getElementById('cartTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+  const totalEl = document.getElementById('cartTotal');
+  if (temAPesar) {
+    totalEl.innerHTML = `R$ ${total.toFixed(2).replace('.', ',')} <span class="total-pesar-aviso">+ itens a pesar</span>`;
+  } else {
+    totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+  }
 }
 
 // UX #6: confirmar antes de remover
@@ -587,6 +634,7 @@ function enviarWhatsApp(nomeCliente) {
   if (cart.length === 0) { showToast('Carrinho vazio!', 'aviso'); return; }
 
   const total = cart.reduce((sum, item) => sum + item.preco, 0);
+  const temAPesar = cart.some(item => item.aPesar);
 
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
@@ -594,8 +642,8 @@ function enviarWhatsApp(nomeCliente) {
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
       nomeCliente,
-      itens: cart.map(item => ({ tipo: item.tipo, desc: item.descPlanilha, preco: item.preco, qty: item.qty || 1 })),
-      total: total.toFixed(2),
+      itens: cart.map(item => ({ tipo: item.tipo, desc: item.descPlanilha, preco: item.aPesar ? 'A pesar' : item.preco, qty: item.qty || 1 })),
+      total: temAPesar ? `${total.toFixed(2)} + itens a pesar` : total.toFixed(2),
       totalMarmitas: cart.reduce((sum, item) => sum + (item.qty || 1), 0)
     })
   }).catch(err => console.warn('Erro ao salvar no Drive:', err));
@@ -606,9 +654,13 @@ function enviarWhatsApp(nomeCliente) {
   msg += `*Total de marmitas: ${totalMarmitas}*\n\n`;
   cart.forEach((item, i) => {
     const prefixo = item.qty > 1 ? `${item.qty}x ` : '';
-    msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\nR$ ${item.preco.toFixed(2).replace('.', ',')}\n\n`;
+    const precoStr = item.aPesar ? 'A pesar' : `R$ ${item.preco.toFixed(2).replace('.', ',')}`;
+    msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\n${precoStr}\n\n`;
   });
-  msg += `*Total: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+  const totalStr = temAPesar
+    ? `R$ ${total.toFixed(2).replace('.', ',')} + itens a pesar`
+    : `R$ ${total.toFixed(2).replace('.', ',')}`;
+  msg += `*Total: ${totalStr}*\n`;
 
   // Limpa carrinho após envio
   cart = [];
