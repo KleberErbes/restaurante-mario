@@ -1413,7 +1413,15 @@ section#pedidos { padding-bottom: 70px; }
     .horario-card h3 { font-size: 1rem; }
     .horario-card p { font-size: 1.2rem; }
     
-    .aviso-horario { padding: 18px 16px; gap: 12px; }
+    .aviso-horario { background: var(--marrom-creme);
+    border-radius: 18px;
+    padding: 28px 32px;
+    border-left: 6px solid var(--dourado);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 12px var(--sombra);; 
+    }
     .aviso-icone { font-size: 2rem; }
     .aviso-horario p { font-size: 0.9rem; }
     .aviso-horario strong { font-size: 1.2rem; }
