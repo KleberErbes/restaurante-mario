@@ -54,21 +54,24 @@ function getEstado() {
   const partesBR = new Intl.DateTimeFormat('pt-BR', {
     timeZone: 'America/Sao_Paulo',
     year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', weekday: 'short',
+    hour: '2-digit', minute: '2-digit',
     hour12: false
   }).formatToParts(agora);
 
   const get = (tipo) => partesBR.find(p => p.type === tipo)?.value ?? '';
   const hora    = parseInt(get('hour'),   10);
   const minuto  = parseInt(get('minute'), 10);
-  const diaSem  = get('weekday'); // 'dom', 'seg', ...
   const dataHoje = `${get('year')}-${get('month')}-${get('day')}`;
+
+  // Dia da semana no fuso de Brasília (0 = domingo) — confiável em todos os navegadores
+  const dataBR = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const diaSem = dataBR.getDay();
 
   // Verifica dias fechados especiais (formato AAAA-MM-DD)
   if (DIAS_FECHADOS_ESPECIAIS.includes(dataHoje)) return 'fechado';
 
-  // Domingo sempre fechado
-  if (diaSem === 'dom') return 'fechado';
+  // Domingo sempre fechado (0 = domingo)
+  if (diaSem === 0) return 'fechado';
 
   const totalMin      = hora * 60 + minuto;
   const inicioPedidos = HORARIO_PEDIDOS.h    * 60 + HORARIO_PEDIDOS.m;
