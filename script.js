@@ -12,6 +12,8 @@ const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
 const HORARIO_ABERTURA   = { h: 11, m: 0  };
 // Fechamento: 14h00
 const HORARIO_FECHAMENTO = { h: 14, m: 0  };
+// Fechamento dos pedidos de marmitas (pode ser diferente do fechamento do buffet)
+let HORARIO_FECHAMENTO_PEDIDOS = { h: 14, m: 0  };
 
 // DIAS_FECHADOS_ESPECIAIS é carregado da planilha (categoria "fechado")
 let DIAS_FECHADOS_ESPECIAIS = [];
@@ -73,14 +75,17 @@ function getEstado() {
   // Domingo sempre fechado (0 = domingo)
   if (diaSem === 0) return 'fechado';
 
-  const totalMin      = hora * 60 + minuto;
-  const inicioPedidos = HORARIO_PEDIDOS.h    * 60 + HORARIO_PEDIDOS.m;
-  const abre          = HORARIO_ABERTURA.h   * 60 + HORARIO_ABERTURA.m;
-  const fecha         = HORARIO_FECHAMENTO.h * 60 + HORARIO_FECHAMENTO.m;
+  const totalMin           = hora * 60 + minuto;
+  const inicioPedidos      = HORARIO_PEDIDOS.h           * 60 + HORARIO_PEDIDOS.m;
+  const fechaPedidos       = HORARIO_FECHAMENTO_PEDIDOS.h * 60 + HORARIO_FECHAMENTO_PEDIDOS.m;
+  const abre               = HORARIO_ABERTURA.h          * 60 + HORARIO_ABERTURA.m;
+  const fechaBuffet        = HORARIO_FECHAMENTO.h        * 60 + HORARIO_FECHAMENTO.m;
 
-  if (totalMin >= inicioPedidos && totalMin < abre)  return 'pedidos'; // 08h–10h30
-  if (totalMin >= abre          && totalMin < fecha)  return 'aberto';  // 10h30–14h
-  return 'fechado'; // antes das 8h ou depois das 14h
+  if (totalMin >= inicioPedidos && totalMin < fechaPedidos && totalMin < abre) return 'pedidos';
+  if (totalMin >= abre          && totalMin < fechaBuffet)  return 'aberto';
+  // Pedidos ainda abertos mesmo depois de abrir o buffet (se fechamento de pedidos > abertura buffet)
+  if (totalMin >= inicioPedidos && totalMin < fechaPedidos) return 'pedidos';
+  return 'fechado';
 }
 
 // Mantém compatibilidade: estaAberto() = aceita pedidos (ambos os estados)
@@ -375,10 +380,10 @@ function updatePrecoPersonalizada() {
     el.classList.remove('preco-a-pesar');
     if (infoEl) infoEl.style.display = 'none';
     if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
-      const base = selectedSize === 'media' ? 26 : 28;
+      const base = selectedSize === 'media' ? (window._PRECO_MEDIA || 26) : (window._PRECO_GRANDE || 28);
       el.textContent = `R$ ${base.toFixed(2).replace('.', ',')}`;
     } else {
-      const base = selectedSize === 'media' ? 26 : 28;
+      const base = selectedSize === 'media' ? (window._PRECO_MEDIA || 26) : (window._PRECO_GRANDE || 28);
       const extrasAcomp = Math.max(0, selAcomp.length - 5);
       const extrasCarne = Math.max(0, totalPedacos - 3);
       const total = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
@@ -406,7 +411,7 @@ function addPadrao(size) {
     showToast('🔴 Estamos fechados', 'aviso', 5000);
     return;
   }
-  const precoUnit = size === 'media' ? 26 : 28;
+  const precoUnit = (size === 'media' ? (window._PRECO_MEDIA || 26) : (window._PRECO_GRANDE || 28));
   const label = size === 'media' ? 'Média' : 'Grande';
   const qty = qtyPadrao[size];
   const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
@@ -456,7 +461,7 @@ function addPersonalizada() {
   if (pesar) {
     preco = 0; // preço definido no restaurante na balança
   } else {
-    const base = selectedSize === 'media' ? 26 : 28;
+    const base = selectedSize === 'media' ? (window._PRECO_MEDIA || 26) : (window._PRECO_GRANDE || 28);
     const extrasAcomp = Math.max(0, selAcomp.length - 5);
     const extrasCarne = Math.max(0, totalPedacos - 3);
     preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
@@ -775,6 +780,242 @@ function enviarWhatsApp(nomeCliente) {
 document.addEventListener('DOMContentLoaded', () => {
   carregarCardapio();
   carregarCarrinhoLocal();
+  carregarConfigsDaPlanilha(); // Carrega configs salvas (horários, preços) para todos
   atualizarBadgeHorario();
   setInterval(atualizarBadgeHorario, 60000);
+  adminRegistrarAtalho(); // Registra Ctrl+Shift+P para abrir admin
 });
+// ========== PAINEL ADMIN ==========
+// ALTERE ESTA SENHA antes de publicar o site
+const ADMIN_SENHA = 'mario1997';
+
+let adminAutenticado = false;
+
+// Registra o atalho de teclado Ctrl+Shift+P para abrir o painel admin
+function adminRegistrarAtalho() {
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+      e.preventDefault(); // Evita conflito com atalhos do navegador
+      adminAbrirSenha();
+    }
+  });
+}
+
+// Abre o modal de senha
+function adminAbrirSenha() {
+  document.getElementById('adminSenhaOverlay').classList.add('open');
+  document.getElementById('adminSenhaModal').classList.add('open');
+  document.getElementById('adminSenhaErro').style.display = 'none';
+  document.getElementById('adminSenhaInput').value = '';
+  setTimeout(() => document.getElementById('adminSenhaInput').focus(), 100);
+}
+
+function adminFecharSenha() {
+  document.getElementById('adminSenhaOverlay').classList.remove('open');
+  document.getElementById('adminSenhaModal').classList.remove('open');
+}
+
+// Verifica a senha e abre o painel
+function adminVerificarSenha() {
+  const senha = document.getElementById('adminSenhaInput').value;
+  if (senha === ADMIN_SENHA) {
+    adminAutenticado = true;
+    adminFecharSenha();
+    adminAbrirPainel();
+  } else {
+    document.getElementById('adminSenhaErro').style.display = 'block';
+    document.getElementById('adminSenhaInput').value = '';
+    document.getElementById('adminSenhaInput').focus();
+  }
+}
+
+// Abre o painel principal
+function adminAbrirPainel() {
+  if (!adminAutenticado) return;
+  document.getElementById('adminOverlay').classList.add('open');
+  document.getElementById('adminPanel').classList.add('open');
+  document.getElementById('adminLoadingMsg').style.display = 'block';
+  document.getElementById('adminContent').style.display = 'none';
+  adminCarregarConfigs();
+}
+
+function adminFechar() {
+  document.getElementById('adminOverlay').classList.remove('open');
+  document.getElementById('adminPanel').classList.remove('open');
+}
+
+// Fecha o painel ao clicar no overlay
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('adminOverlay').addEventListener('click', adminFechar);
+});
+
+// Preenche os campos do painel com um objeto de config
+function adminPreencherCampos(cfg) {
+  document.getElementById('cfgHorarioPedidos').value          = cfg.horarioPedidos          || `${String(HORARIO_PEDIDOS.h).padStart(2,'0')}:${String(HORARIO_PEDIDOS.m).padStart(2,'0')}`;
+  document.getElementById('cfgHorarioFechamentoPedidos').value = cfg.horarioFechamentoPedidos || `${String(HORARIO_FECHAMENTO_PEDIDOS.h).padStart(2,'0')}:${String(HORARIO_FECHAMENTO_PEDIDOS.m).padStart(2,'0')}`;
+  document.getElementById('cfgHorarioAbertura').value          = cfg.horarioAbertura          || `${String(HORARIO_ABERTURA.h).padStart(2,'0')}:${String(HORARIO_ABERTURA.m).padStart(2,'0')}`;
+  document.getElementById('cfgHorarioFechamento').value        = cfg.horarioFechamento        || `${String(HORARIO_FECHAMENTO.h).padStart(2,'0')}:${String(HORARIO_FECHAMENTO.m).padStart(2,'0')}`;
+  document.getElementById('cfgPrecoMedia').value        = cfg.precoMedia        || '26.00';
+  document.getElementById('cfgPrecoGrande').value       = cfg.precoGrande       || '28.00';
+  document.getElementById('cfgPrecoBuffetSemana').value = cfg.precoBuffetSemana || '39.00';
+  document.getElementById('cfgPrecoBuffetSabado').value = cfg.precoBuffetSabado || '42.00';
+  document.getElementById('cfgDiasFechados').value      = cfg.diasFechados      || DIAS_FECHADOS_ESPECIAIS.join('\n');
+  document.getElementById('adminLoadingMsg').style.display = 'none';
+  document.getElementById('adminContent').style.display   = 'block';
+}
+
+// Carrega as configs da planilha — abre o painel mesmo se falhar
+async function adminCarregarConfigs() {
+  // Mostra o painel imediatamente com os valores atuais do site
+  // para não travar caso a planilha demore ou falhe
+  adminPreencherCampos({});
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5s máximo
+    const res = await fetch(`${APPS_SCRIPT_URL}?acao=lerConfig`, { signal: controller.signal });
+    clearTimeout(timeout);
+    const cfg = await res.json();
+    // Sobrescreve com os valores da planilha se a leitura funcionou
+    if (cfg && typeof cfg === 'object' && !cfg.error) {
+      adminPreencherCampos(cfg);
+    }
+  } catch (e) {
+    // Silencioso — os valores padrão já estão preenchidos acima
+  }
+}
+
+// Salva as configs na planilha e aplica no site
+async function adminSalvar() {
+  const btn = document.getElementById('adminBtnSalvar');
+  const salvoMsg = document.getElementById('adminSalvoMsg');
+  const erroMsg  = document.getElementById('adminErroMsg');
+  salvoMsg.style.display = 'none';
+  erroMsg.style.display  = 'none';
+
+  const horarioPedidos           = document.getElementById('cfgHorarioPedidos').value;
+  const horarioFechamentoPedidos = document.getElementById('cfgHorarioFechamentoPedidos').value;
+  const horarioAbertura          = document.getElementById('cfgHorarioAbertura').value;
+  const horarioFechamento        = document.getElementById('cfgHorarioFechamento').value;
+  const precoMedia        = parseFloat(document.getElementById('cfgPrecoMedia').value) || 26;
+  const precoGrande       = parseFloat(document.getElementById('cfgPrecoGrande').value) || 28;
+  const precoBuffetSemana = parseFloat(document.getElementById('cfgPrecoBuffetSemana').value) || 39;
+  const precoBuffetSabado = parseFloat(document.getElementById('cfgPrecoBuffetSabado').value) || 42;
+  const diasFechados      = document.getElementById('cfgDiasFechados').value.trim();
+
+  const payload = {
+    acao: 'salvarConfig',
+    horarioPedidos,
+    horarioFechamentoPedidos,
+    horarioAbertura,
+    horarioFechamento,
+    precoMedia,
+    precoGrande,
+    precoBuffetSemana,
+    precoBuffetSabado,
+    diasFechados
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+
+    // Aplica as configs imediatamente no site
+    window._adminMostrarToast = true;
+    adminAplicarConfigs({ horarioPedidos, horarioFechamentoPedidos, horarioAbertura, horarioFechamento, precoMedia, precoGrande, precoBuffetSemana, precoBuffetSabado, diasFechados });
+
+    salvoMsg.style.display = 'block';
+    setTimeout(() => salvoMsg.style.display = 'none', 4000);
+  } catch (e) {
+    erroMsg.style.display = 'block';
+    setTimeout(() => erroMsg.style.display = 'none', 4000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar Configurações';
+  }
+}
+
+// Aplica as configs dinamicamente no site (sem precisar recarregar)
+function adminAplicarConfigs(cfg) {
+  // Horários
+  const [ph, pm]   = cfg.horarioPedidos.split(':').map(Number);
+  const [fph, fpm] = (cfg.horarioFechamentoPedidos || cfg.horarioFechamento || '14:00').split(':').map(Number);
+  const [ah, am]   = cfg.horarioAbertura.split(':').map(Number);
+  const [fh, fm]   = cfg.horarioFechamento.split(':').map(Number);
+  HORARIO_PEDIDOS.h              = ph;  HORARIO_PEDIDOS.m              = pm;
+  HORARIO_FECHAMENTO_PEDIDOS.h   = fph; HORARIO_FECHAMENTO_PEDIDOS.m   = fpm;
+  HORARIO_ABERTURA.h             = ah;  HORARIO_ABERTURA.m             = am;
+  HORARIO_FECHAMENTO.h           = fh;  HORARIO_FECHAMENTO.m           = fm;
+  atualizarBadgeHorario();
+
+  // Atualiza textos de horario visiveis nos cards da pagina
+  function fmtH(h, m) { return h + "h" + (m > 0 ? String(m).padStart(2,"0") : "00"); }
+  const txtBuffet  = fmtH(ah, am) + " às " + fmtH(fh, fm);
+  const txtPedidos = fmtH(ph, pm) + " até as " + fmtH(fph, fpm);
+  const elBuffet  = document.getElementById("textoHorarioBuffet");
+  const elPedidos = document.getElementById("textoHorarioPedidos");
+  const elLoc     = document.getElementById("textoHorarioLocalizacao");
+  if (elBuffet)  elBuffet.textContent  = txtBuffet;
+  if (elPedidos) elPedidos.textContent = txtPedidos;
+  if (elLoc)     elLoc.textContent     = "Segunda a Sábado · " + txtBuffet;
+
+  // Preços das marmitas
+  const precoMedia   = parseFloat(cfg.precoMedia)   || 26;
+  const precoGrande  = parseFloat(cfg.precoGrande)  || 28;
+
+  // Atualiza os cards de preço na página
+  const priceTagMedia  = document.querySelector('.marmita-card:nth-child(1) .price-tag');
+  const priceTagGrande = document.querySelector('.marmita-card:nth-child(2) .price-tag');
+  if (priceTagMedia)  priceTagMedia.textContent  = `R$ ${precoMedia.toFixed(2).replace('.', ',')}`;
+  if (priceTagGrande) priceTagGrande.textContent = `R$ ${precoGrande.toFixed(2).replace('.', ',')}`;
+
+  // Atualiza botões de tamanho na personalizada
+  const btnMedia  = document.getElementById('sizeMedia');
+  const btnGrande = document.getElementById('sizeGrande');
+  if (btnMedia)  btnMedia.querySelector('small').textContent  = `R$ ${precoMedia.toFixed(2).replace('.', ',')}`;
+  if (btnGrande) btnGrande.querySelector('small').textContent = `R$ ${precoGrande.toFixed(2).replace('.', ',')}`;
+
+  // Preços do buffet
+  const precoBuffetSemana = parseFloat(cfg.precoBuffetSemana) || 39;
+  const precoBuffetSabado = parseFloat(cfg.precoBuffetSabado) || 42;
+  const buffetCards = document.querySelectorAll('.buffet-card .buffet-price');
+  if (buffetCards[0]) buffetCards[0].innerHTML = `<span>R$</span> ${precoBuffetSemana.toFixed(2).replace('.', ',')}`;
+  if (buffetCards[1]) buffetCards[1].innerHTML = `<span>R$</span> ${precoBuffetSabado.toFixed(2).replace('.', ',')}`;
+
+  // Dias fechados
+  DIAS_FECHADOS_ESPECIAIS = cfg.diasFechados
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => s.includes('/') ? parseDateBR(s) : s)
+    .filter(Boolean);
+
+  // Atualiza o preço nas variáveis internas (para cálculo do carrinho)
+  // Sobrescreve as funções de preço base
+  window._PRECO_MEDIA  = precoMedia;
+  window._PRECO_GRANDE = precoGrande;
+
+  if (window._adminMostrarToast) showToast('✅ Configurações aplicadas!', 'sucesso', 3000);
+}
+
+// Carrega as configs da planilha ao iniciar o site (para todos os visitantes)
+async function carregarConfigsDaPlanilha() {
+  try {
+    const url = `${APPS_SCRIPT_URL}?acao=lerConfig`;
+    const res = await fetch(url);
+    const cfg = await res.json();
+    if (cfg && cfg.horarioPedidos) {
+      window._adminMostrarToast = false;
+      adminAplicarConfigs(cfg);
+    }
+  } catch (e) {
+    // Silencioso — usa os valores padrão do código
+  }
+}
