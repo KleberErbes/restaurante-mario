@@ -8,8 +8,8 @@ const WHATSAPP_NUMBER = "554733752227";
 // ========== CONFIGURAÇÃO DE HORÁRIO ==========
 // Pedidos aceitos a partir das 08h00
 const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
-// Buffet / atendimento presencial: 10h30
-const HORARIO_ABERTURA   = { h: 10, m: 30 };
+// Buffet / atendimento presencial: 11h00
+const HORARIO_ABERTURA   = { h: 11, m: 0  };
 // Fechamento: 14h00
 const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
@@ -416,7 +416,9 @@ function addPadrao(size) {
   const carnesOpcoes = CARDAPIO.carnes.length > 0 ? CARDAPIO.carnes.slice(0, 3) : ['Carne do dia'];
   const carneDesc = `3 pedaços — ${carnesOpcoes.join(' / ')}`;
 
-  const descBase = `Arroz branco / Feijão / Macarrão / Aipim com bacon | ${carneDesc}`;
+  // Itens fixos do buffet padrão, ordenados conforme a sequência do buffet
+  const itensPadrao = ordenarItensPorBuffet(['Arroz branco', 'Feijão', 'Macarrão', 'Aipim com bacon']);
+  const descBase = `${itensPadrao.join(' / ')} | ${carneDesc}`;
   const desc = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
   const descPlanilha = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
 
@@ -461,7 +463,8 @@ function addPersonalizada() {
   }
 
   const carnesDesc  = totalPedacos > 0 ? Object.entries(selCarne).map(([c,q]) => `${q}x ${c}`).join(' / ') : '';
-  const acompDesc   = selAcomp.length  > 0 ? selAcomp.join(' / ') : '';
+  const acompOrdenado = ordenarItensPorBuffet(selAcomp);
+  const acompDesc   = acompOrdenado.length > 0 ? acompOrdenado.join(' / ') : '';
   const saladaDesc  = selSalada.length > 0 ? 'Salada: ' + selSalada.join(' / ') : '';
   const obs = document.getElementById('obsPersonalizada') ? document.getElementById('obsPersonalizada').value.trim() : '';
   const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc, obs ? `⚠️ Obs: ${obs}` : ''].filter(Boolean).join(' | ');
@@ -630,6 +633,47 @@ function confirmarPedido() {
   }
   fecharModalNome();
   enviarWhatsApp(nome);
+}
+
+// ========== ORDENAÇÃO DOS ITENS CONFORME O BUFFET ==========
+// Ordem fixa do buffet: arroz/macarrão/aipim → acompanhamento do dia → feijão →
+// farofa/batata palha → sopa (se houver) → carnes → demais acompanhamentos/saladas
+const ORDEM_BUFFET = [
+  'arroz',
+  'macarrão', 'macarrao',
+  'aipim',
+  'feijão', 'feijao',
+  'farofa',
+  'batata palha',
+  'sopa',
+];
+
+function ordenarItensPorBuffet(itens) {
+  // Retorna o índice de prioridade de um item conforme a ordem do buffet
+  function prioridade(nome) {
+    const lower = nome.toLowerCase();
+    // Arroz primeiro
+    if (lower.includes('arroz')) return 0;
+    // Macarrão
+    if (lower.includes('macarr')) return 1;
+    // Aipim / mandioca
+    if (lower.includes('aipim') || lower.includes('mandioca')) return 2;
+    // Acompanhamento genérico do dia (não é feijão, farofa, batata palha, sopa, carne, salada)
+    if (!lower.includes('feij') && !lower.includes('farofa') && !lower.includes('batata palha') &&
+        !lower.includes('sopa') && !lower.includes('salada')) return 3;
+    // Feijão
+    if (lower.includes('feij')) return 4;
+    // Farofa
+    if (lower.includes('farofa')) return 5;
+    // Batata palha
+    if (lower.includes('batata palha')) return 6;
+    // Sopa
+    if (lower.includes('sopa')) return 7;
+    // Salada e demais ficam no final
+    if (lower.includes('salada')) return 9;
+    return 8;
+  }
+  return [...itens].sort((a, b) => prioridade(a) - prioridade(b));
 }
 
 // ========== WHATSAPP + GOOGLE DRIVE ==========
