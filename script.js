@@ -6,10 +6,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmzkXOJPdrAIr
 const WHATSAPP_NUMBER = "554733752227";
 
 // ========== CONFIGURAÇÃO DE HORÁRIO ==========
-// Pedidos aceitos a partir das 08h00
+// Pedidos aceitos a partir das 08h00 até as 11h00
 const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
-// Buffet / atendimento presencial: 10h30
-const HORARIO_ABERTURA   = { h: 10, m: 30 };
+// Buffet / atendimento presencial: 11h00
+const HORARIO_ABERTURA   = { h: 11, m: 0  };
 // Fechamento: 14h00
 const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
@@ -400,7 +400,51 @@ function changeQty(size, delta) {
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = qtyPadrao[size];
 }
 
-// ========== MARMITA PADRÃO — BUG #1 CORRIGIDO ==========
+// ========== ORDENAÇÃO DO BUFFET ==========
+// Usa a ordem em que os itens aparecem em CARDAPIO.acompanhamentos,
+// que já é a ordem da planilha. Itens não encontrados ficam no final.
+
+function ordenarPelaplanilha(itens) {
+  return [...itens].sort((a, b) => {
+    const ia = CARDAPIO.acompanhamentos.indexOf(a);
+    const ib = CARDAPIO.acompanhamentos.indexOf(b);
+    const posA = ia === -1 ? 9999 : ia;
+    const posB = ib === -1 ? 9999 : ib;
+    return posA - posB;
+  });
+}
+
+// Monta a descrição completa do pedido respeitando a ordem da planilha:
+// acompanhamentos (na ordem da planilha) → carnes → saladas → obs
+function montarDescricaoOrdenada({ carnes, acompanhamentos, saladas, obs, incluiFixos, carnesOpcoes }) {
+  const partes = [];
+
+  if (incluiFixos) {
+    // Marmita padrão: lista todos os acompanhamentos do cardápio na ordem da planilha
+    const todosAcomp = CARDAPIO.acompanhamentos.length > 0 ? CARDAPIO.acompanhamentos : ['Arroz branco', 'Macarrão', 'Aipim com bacon', 'Feijão'];
+    partes.push(todosAcomp.join(' / '));
+    if (carnesOpcoes && carnesOpcoes.length > 0) {
+      partes.push(`Carnes (3 pedaços): ${carnesOpcoes.join(' / ')}`);
+    }
+  } else {
+    // Marmita personalizada: ordena os acompanhamentos selecionados pela ordem da planilha
+    if (acompanhamentos.length > 0) {
+      const acompOrdenados = ordenarPelaplanilha(acompanhamentos);
+      partes.push(acompOrdenados.join(' / '));
+    }
+    if (carnes && Object.keys(carnes).length > 0) {
+      const carnesDesc = Object.entries(carnes).map(([c, q]) => `${q}x ${c}`).join(' / ');
+      partes.push(`Carnes: ${carnesDesc}`);
+    }
+  }
+
+  if (saladas && saladas.length > 0) partes.push('Salada: ' + saladas.join(' / '));
+  if (obs) partes.push(`⚠️ Obs: ${obs}`);
+
+  return partes.join(' | ');
+}
+
+
 function addPadrao(size) {
   if (!estaAberto()) {
     showToast('🔴 Estamos fechados', 'aviso', 5000);
@@ -414,11 +458,12 @@ function addPadrao(size) {
 
   // Lista as 3 primeiras carnes do cardápio (ou menos, se houver menos de 3)
   const carnesOpcoes = CARDAPIO.carnes.length > 0 ? CARDAPIO.carnes.slice(0, 3) : ['Carne do dia'];
-  const carneDesc = `3 pedaços — ${carnesOpcoes.join(' / ')}`;
 
-  const descBase = `Arroz branco / Feijão / Macarrão / Aipim com bacon | ${carneDesc}`;
-  const desc = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
-  const descPlanilha = obs ? `${descBase} | ⚠️ Obs: ${obs}` : descBase;
+  const desc = montarDescricaoOrdenada({
+    carnes: {}, acompanhamentos: [], saladas: [], obs,
+    incluiFixos: true, carnesOpcoes, tamanho: label
+  });
+  const descPlanilha = desc;
 
   // Agrupa todas as unidades em um único item com quantidade
   cart.push({ tipo: `Marmita Padrão ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty });
@@ -460,11 +505,11 @@ function addPersonalizada() {
     preco = base + (extrasAcomp * 4) + (extrasCarne * 4) + (selSalada.length * 2);
   }
 
-  const carnesDesc  = totalPedacos > 0 ? Object.entries(selCarne).map(([c,q]) => `${q}x ${c}`).join(' / ') : '';
-  const acompDesc   = selAcomp.length  > 0 ? selAcomp.join(' / ') : '';
-  const saladaDesc  = selSalada.length > 0 ? 'Salada: ' + selSalada.join(' / ') : '';
   const obs = document.getElementById('obsPersonalizada') ? document.getElementById('obsPersonalizada').value.trim() : '';
-  const descCompleta = [acompDesc, carnesDesc ? `Carnes: ${carnesDesc}` : '', saladaDesc, obs ? `⚠️ Obs: ${obs}` : ''].filter(Boolean).join(' | ');
+  const descCompleta = montarDescricaoOrdenada({
+    carnes: selCarne, acompanhamentos: selAcomp, saladas: selSalada, obs,
+    incluiFixos: false
+  });
   const qty = qtyPersonalizada;
 
   cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: preco * qty, qty, aPesar: pesar });
