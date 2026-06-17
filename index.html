@@ -72,7 +72,7 @@
           <div class="horario-icon">🕐</div>
           <div>
             <h3>Horário de Funcionamento</h3>
-            <p id="textoHorarioBuffet">10h30 às 14h00</p>
+            <p>10h30 às 14h00</p>
             <small>Segunda a Sábado</small>
           </div>
         </div>
@@ -80,7 +80,7 @@
         <div class="aviso-horario">
           <span class="aviso-icone">🕗</span>
           <p>Os pedidos de marmitas estão restritos aos seguintes horários:<br>
-          <strong id="textoHorarioPedidos">8h até as 11h</strong>
+          <strong>8h até as 14h</strong>
           </p>
         </div>
 
@@ -309,7 +309,7 @@
         <div class="loc-info-row">
           <div>
             <div class="loc-label">HORÁRIO</div>
-            <div class="loc-value" id="textoHorarioLocalizacao">Segunda a Sábado · 10h30 às 14h00</div>
+            <div class="loc-value">Segunda a Sábado · 10h30 às 14h00</div>
           </div>
         </div>
 
@@ -419,98 +419,6 @@
     ⚠️ <strong>Não entregamos marmitas.</strong> Retire no balcão. ⚠️
   </div>
 
-  <!-- ===================== ADMIN: MODAL SENHA ===================== -->
-  <div class="modal-overlay" id="adminSenhaOverlay"></div>
-  <div class="modal-nome" id="adminSenhaModal">
-    <h3>🔒 Área Administrativa</h3>
-    <p>Digite a senha para acessar o painel.</p>
-    <input type="password" id="adminSenhaInput" placeholder="Senha..." maxlength="50"
-      onkeydown="if(event.key==='Enter') adminVerificarSenha()" />
-    <div id="adminSenhaErro" style="display:none;color:#c0392b;font-size:0.82rem;margin-top:6px;">Senha incorreta.</div>
-    <div class="modal-btns">
-      <button class="modal-btn-cancelar" onclick="adminFecharSenha()">Cancelar</button>
-      <button class="modal-btn-confirmar" style="background:#2c5f2e;" onclick="adminVerificarSenha()">Entrar</button>
-    </div>
-  </div>
-
-  <!-- ===================== ADMIN: PAINEL ===================== -->
-  <div class="admin-overlay" id="adminOverlay"></div>
-  <div class="admin-panel" id="adminPanel">
-    <div class="admin-header">
-      <div class="admin-header-title">⚙️ Painel Administrativo</div>
-      <button class="admin-close" onclick="adminFechar()">✕</button>
-    </div>
-
-    <div class="admin-body">
-      <div id="adminLoadingMsg" class="admin-loading">Carregando configurações...</div>
-      <div id="adminContent" style="display:none;">
-
-        <!-- HORÁRIOS MARMITAS -->
-        <div class="admin-section">
-          <div class="admin-section-title">🥡 Pedidos de Marmitas</div>
-          <div class="admin-row">
-            <label class="admin-label">Abertura dos pedidos</label>
-            <input type="time" id="cfgHorarioPedidos" class="admin-input-time">
-          </div>
-          <div class="admin-row">
-            <label class="admin-label">Fechamento dos pedidos</label>
-            <input type="time" id="cfgHorarioFechamentoPedidos" class="admin-input-time">
-          </div>
-        </div>
-
-        <!-- HORÁRIOS BUFFET -->
-        <div class="admin-section">
-          <div class="admin-section-title">🍽️ Buffet Livre</div>
-          <div class="admin-row">
-            <label class="admin-label">Abertura do buffet</label>
-            <input type="time" id="cfgHorarioAbertura" class="admin-input-time">
-          </div>
-          <div class="admin-row">
-            <label class="admin-label">Fechamento do buffet</label>
-            <input type="time" id="cfgHorarioFechamento" class="admin-input-time">
-          </div>
-        </div>
-
-        <!-- PREÇOS MARMITAS -->
-        <div class="admin-section">
-          <div class="admin-section-title">🥡 Preços das Marmitas</div>
-          <div class="admin-row">
-            <label class="admin-label">Marmita Média (R$)</label>
-            <input type="number" id="cfgPrecoMedia" class="admin-input-preco" step="0.50" min="0">
-          </div>
-          <div class="admin-row">
-            <label class="admin-label">Marmita Grande (R$)</label>
-            <input type="number" id="cfgPrecoGrande" class="admin-input-preco" step="0.50" min="0">
-          </div>
-        </div>
-
-        <!-- PREÇOS BUFFET -->
-        <div class="admin-section">
-          <div class="admin-section-title">🍽️ Preços do Buffet Livre</div>
-          <div class="admin-row">
-            <label class="admin-label">Segunda a Sexta (R$)</label>
-            <input type="number" id="cfgPrecoBuffetSemana" class="admin-input-preco" step="0.50" min="0">
-          </div>
-          <div class="admin-row">
-            <label class="admin-label">Sábado (R$)</label>
-            <input type="number" id="cfgPrecoBuffetSabado" class="admin-input-preco" step="0.50" min="0">
-          </div>
-        </div>
-
-        <!-- DIAS FECHADOS -->
-        <div class="admin-section">
-          <div class="admin-section-title">📅 Dias Fechados Especiais</div>
-          <p class="admin-hint">Feriados ou dias que não haverá atendimento. Um por linha no formato DD/MM/AAAA.</p>
-          <textarea id="cfgDiasFechados" class="admin-textarea" placeholder="Ex:&#10;25/12/2025&#10;01/01/2026"></textarea>
-        </div>
-
-        <div id="adminSalvoMsg" class="admin-salvo-msg" style="display:none;">✅ Configurações salvas com sucesso!</div>
-        <div id="adminErroMsg" class="admin-erro-msg" style="display:none;">❌ Erro ao salvar. Tente novamente.</div>
-
-        <button class="admin-btn-salvar" id="adminBtnSalvar" onclick="adminSalvar()">Salvar Configurações</button>
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>
