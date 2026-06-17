@@ -8,12 +8,12 @@ const WHATSAPP_NUMBER = "554733752227";
 // ========== CONFIGURAÇÃO DE HORÁRIO ==========
 // Pedidos aceitos a partir das 08h00
 const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
-// Buffet / atendimento presencial: 11h00
-const HORARIO_ABERTURA   = { h: 11, m: 0  };
+// Buffet / atendimento presencial: 10h30
+const HORARIO_ABERTURA   = { h: 10, m: 30  };
 // Fechamento: 14h00
 const HORARIO_FECHAMENTO = { h: 14, m: 0  };
-// Fechamento dos pedidos de marmitas (pode ser diferente do fechamento do buffet)
-let HORARIO_FECHAMENTO_PEDIDOS = { h: 14, m: 0  };
+// Fechamento dos pedidos de marmitas às 11h00
+let HORARIO_FECHAMENTO_PEDIDOS = { h: 11, m: 0  };
 
 // DIAS_FECHADOS_ESPECIAIS é carregado da planilha (categoria "fechado")
 let DIAS_FECHADOS_ESPECIAIS = [];
@@ -990,7 +990,7 @@ function adminAplicarConfigs(cfg) {
   if (buffetCards[1]) buffetCards[1].innerHTML = `<span>R$</span> ${precoBuffetSabado.toFixed(2).replace('.', ',')}`;
 
   // Dias fechados
-  DIAS_FECHADOS_ESPECIAIS = cfg.diasFechados
+  DIAS_FECHADOS_ESPECIAIS = (cfg.diasFechados || '')
     .split('\n')
     .map(s => s.trim())
     .filter(Boolean)
