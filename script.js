@@ -83,10 +83,10 @@ function getEstado() {
   return 'fechado'; // antes das 8h ou depois das 14h
 }
 
-// Mantém compatibilidade: estaAberto() = aceita pedidos (ambos os estados)
+// Pedidos aceitos SOMENTE no estado 'pedidos' (08h–11h)
+// Após as 11h o buffet abre mas marmitas não podem mais ser pedidas
 function estaAberto() {
-  const estado = getEstado();
-  return estado === 'aberto' || estado === 'pedidos';
+  return getEstado() === 'pedidos';
 }
 
 function atualizarBadgeHorario() {
@@ -319,6 +319,8 @@ function toggleItem(chip, type, item) {
       selAcomp = selAcomp.filter(i => i !== item);
       chip.classList.remove('selected');
     } else {
+      if (selAcomp.length >= 6) { showToast('Máximo de 6 acompanhamentos!', 'aviso'); return; }
+
       selAcomp.push(item);
       chip.classList.add('selected');
     }
@@ -420,9 +422,9 @@ function montarDescricaoOrdenada({ carnes, acompanhamentos, saladas, obs, inclui
   const partes = [];
 
   if (incluiFixos) {
-    // Marmita padrão: lista todos os acompanhamentos do cardápio na ordem da planilha
-    const todosAcomp = CARDAPIO.acompanhamentos.length > 0 ? CARDAPIO.acompanhamentos : ['Arroz branco', 'Macarrão', 'Aipim com bacon', 'Feijão'];
-    partes.push(todosAcomp.join(' / '));
+    // Marmita padrão: apenas os 4 acompanhamentos fixos (independente da planilha)
+    const fixos = ['Arroz branco', 'Macarrão', 'Aipim com bacon', 'Feijão'];
+    partes.push(fixos.join(' / '));
     if (carnesOpcoes && carnesOpcoes.length > 0) {
       partes.push(`Carnes (3 pedaços): ${carnesOpcoes.join(' / ')}`);
     }
@@ -447,7 +449,10 @@ function montarDescricaoOrdenada({ carnes, acompanhamentos, saladas, obs, inclui
 
 function addPadrao(size) {
   if (!estaAberto()) {
-    showToast('🔴 Estamos fechados', 'aviso', 5000);
+    const msg = getEstado() === 'fechado'
+      ? '🔴 Estamos fechados'
+      : '⏰ Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+    showToast(msg, 'aviso', 5000);
     return;
   }
   const precoUnit = size === 'media' ? 26 : 28;
@@ -481,7 +486,10 @@ function addPadrao(size) {
 // ========== MARMITA PERSONALIZADA — BUG #3 CORRIGIDO ==========
 function addPersonalizada() {
   if (!estaAberto()) {
-    showToast('🔴 Estamos fechados', 'aviso', 5000);
+    const msg = getEstado() === 'fechado'
+      ? '🔴 Estamos fechados'
+      : '⏰ Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+    showToast(msg, 'aviso', 5000);
     return;
   }
   const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
