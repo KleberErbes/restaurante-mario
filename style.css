@@ -811,72 +811,101 @@ section#pedidos { padding-bottom: 70px; }
   @media (max-width: 600px) {
     .cardapio-pedidos-grid { grid-template-columns: 1fr; }
   }
+  /* ===== CARDS DO CARDÁPIO DO DIA ===== */
   .cardapio-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
   }
 
   .cardapio-box {
     border-radius: 16px;
-    padding: 22px 20px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(43,26,14,0.10);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Área da foto com gradiente sobreposto */
+  .cardapio-box-cover {
+    position: relative;
+    height: 140px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .cardapio-box-cover img {
+    width: 100%;
     height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
-  .box-acomp {
-    background: #f0f7ee;
-    border: 2px solid #c3ddbf;
+  /* Gradiente escuro sobre a foto para legibilidade do título */
+  .cardapio-box-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.10) 60%, transparent 100%);
   }
 
-  .box-carne {
-    background: #fdf2ec;
-    border: 2px solid #e8c3a8;
-  }
-
-  .box-salada {
-    background: #f5faf0;
-    border: 2px solid #bdddb6;
-  }
-
-  .box-sobremesa {
-    background: #fdf8ee;
-    border: 2px solid #e8d8a8;
-  }
-
+  /* Título sobre a foto */
   .cardapio-box-title {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    right: 14px;
+    z-index: 1;
     font-family: 'Playfair Display', serif;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgba(0,0,0,0.07);
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    line-height: 1.2;
   }
 
-  .box-acomp .cardapio-box-title   { color: var(--verde); }
-  .box-carne .cardapio-box-title   { color: var(--marrom); }
-  .box-salada .cardapio-box-title  { color: #3a7a30; }
-  .box-sobremesa .cardapio-box-title { color: #9a6820; }
+  /* Faixa colorida fina acima da foto (identidade da categoria) */
+  .box-acomp    .cardapio-box-cover { border-top: 3px solid var(--verde); }
+  .box-carne    .cardapio-box-cover { border-top: 3px solid var(--marrom); }
+  .box-salada   .cardapio-box-cover { border-top: 3px solid #4a9a3e; }
+  .box-sobremesa.cardapio-box-cover { border-top: 3px solid var(--dourado); }
+
+  /* Fallback de cor quando não há foto */
+  .box-acomp     .cardapio-box-cover { background: #2d5a27; }
+  .box-carne     .cardapio-box-cover { background: #6b3a1f; }
+  .box-salada    .cardapio-box-cover { background: #3a7a30; }
+  .box-sobremesa .cardapio-box-cover { background: #a07010; }
+
+  /* Área dos itens */
+  .cardapio-box-body {
+    padding: 14px 14px 16px;
+    flex: 1;
+  }
 
   .cardapio-box-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 7px;
+    gap: 6px;
   }
 
   .cardapio-item-tag {
     border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 0.87rem;
+    padding: 4px 12px;
+    font-size: 0.82rem;
     font-weight: 600;
   }
 
-  .tag-acomp    { background: var(--verde);     color: #fff; }
-  .tag-carne    { background: var(--marrom);    color: #fff; }
-  .tag-salada   { background: #4a9a3e;          color: #fff; }
-  .tag-sobremesa{ background: var(--dourado);   color: #fff; }
+  .tag-acomp     { background: #eaf3e7; color: var(--verde); }
+  .tag-carne     { background: #fdf2ec; color: var(--marrom); }
+  .tag-salada    { background: #f0f9ec; color: #3a7a30; }
+  .tag-sobremesa { background: #fdf8ee; color: #9a6820; }
 
   @media (max-width: 600px) {
     .cardapio-grid { grid-template-columns: 1fr; }
+    .cardapio-box-cover { height: 120px; }
+    .cardapio-box-title { font-size: 0.98rem; bottom: 10px; left: 12px; }
+    .cardapio-box-body  { padding: 12px 12px 14px; }
   }
 
   /* MARMITA CARDS */
@@ -1577,20 +1606,11 @@ section#pedidos { padding-bottom: 70px; }
 }
 .section-img:hover { transform: scale(1.02); }
 
-/* ===== IMAGENS NOS CARDS DO CARDÁPIO DO DIA ===== */
-.cardapio-box-img {
-  width: calc(100% + 40px);
-  height: 170px;
-  object-fit: cover;
-  display: block;
-  border-radius: 20px;
-  margin: -22px -20px 18px -20px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
-}
+
 
 @media (max-width: 700px) {
   .section-img { height: 150px; }
-  .cardapio-box-img { width: calc(100% + 28px); margin: -16px -14px 14px -14px; height: 130px; border-radius: 16px; }
+
 }
 
 .loc-info-row {
