@@ -184,7 +184,7 @@
     <div class="admin-header-title">Restaurante do Mário — Admin</div>
     <div class="admin-header-right">
       <span class="badge-total" id="badgeTotal">0 pedidos</span>
-      <button class="btn-imprimir" onclick="gerarWord()">🖨️ Imprimir</button>
+      <button class="btn-imprimir" onclick="gerarWord()">Baixar</button>
       <button class="btn-sair" onclick="sair()">Sair</button>
     </div>
   </header>
@@ -209,9 +209,8 @@
 
 <script>
 // ========== CONFIGURAÇÕES ==========
-// ⚠️ ALTERE AS CREDENCIAIS ABAIXO
 const ADMIN_USER  = 'mario';
-const ADMIN_SENHA = 'restaurante2025';
+const ADMIN_SENHA = 'admin2025';
 
 // URL do Google Apps Script que retorna os pedidos
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
@@ -288,7 +287,7 @@ function renderizarPedidos() {
 
   if (!pedidos || pedidos.length === 0) {
     badge.textContent = '0 pedidos';
-    container.innerHTML = `<div class="pedido-vazio">📋 Nenhum pedido recebido ainda hoje.</div>`;
+    container.innerHTML = `<div class="pedido-vazio">Nenhum pedido recebido ainda hoje.</div>`;
     return;
   }
 

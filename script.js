@@ -6,25 +6,23 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HE
 const WHATSAPP_NUMBER = "554733752227";
 
 // ========== CONFIGURAÇÃO DE HORÁRIO ==========
-// Pedidos aceitos a partir das 08h00 até as 11h00
 const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
 // Buffet / atendimento presencial: 11h00
-const HORARIO_ABERTURA   = { h: 18, m: 0  };
+const HORARIO_ABERTURA   = { h: 11, m: 0  };
 // Fechamento: 14h00
-const HORARIO_FECHAMENTO = { h: 18, m: 0  };
+const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
-// DIAS_FECHADOS_ESPECIAIS é carregado da planilha (categoria "fechado")
+// DIAS_FECHADOS_ESPECIAIS
 let DIAS_FECHADOS_ESPECIAIS = [];
 
 let cart = [];
 let selectedSize = 'media';
 let selAcomp  = [];
-let selCarne  = {};   // { nomeCarne: quantidade }
+let selCarne  = {};   
 let selSalada = [];
 
 let CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
 
-// ========== TOAST — substitui todos os alert() ==========
 function showToast(msg, tipo = 'info', duracao = 3000) {
   let container = document.getElementById('toastContainer');
   if (!container) {
@@ -43,10 +41,6 @@ function showToast(msg, tipo = 'info', duracao = 3000) {
   }, duracao);
 }
 
-// ========== HORÁRIO DE ATENDIMENTO ==========
-// Usa sempre o fuso de Brasília (America/Sao_Paulo) para evitar erros
-// se o cliente estiver em outro fuso horário.
-// Retorna: 'fechado' | 'pedidos' | 'aberto'
 function getEstado() {
   const agora = new Date();
 
@@ -63,15 +57,12 @@ function getEstado() {
   const minuto  = parseInt(get('minute'), 10);
   const dataHoje = `${get('year')}-${get('month')}-${get('day')}`;
 
-  // Dia da semana no fuso de Brasília (0 = domingo) — confiável em todos os navegadores
   const dataBR = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
   const diaSem = dataBR.getDay();
 
-  // Verifica dias fechados especiais (formato AAAA-MM-DD)
   if (DIAS_FECHADOS_ESPECIAIS.includes(dataHoje)) return 'fechado';
 
-  // Domingo sempre fechado (0 = domingo)
-  // if (diaSem === 0) return 'fechado';
+  if (diaSem === 0) return 'fechado';
 
   const totalMin      = hora * 60 + minuto;
   const inicioPedidos = HORARIO_PEDIDOS.h    * 60 + HORARIO_PEDIDOS.m;
@@ -82,9 +73,6 @@ function getEstado() {
   if (totalMin >= abre          && totalMin < fecha)  return 'aberto';  // 10h30–14h
   return 'fechado'; // antes das 8h ou depois das 14h
 }
-
-// Pedidos aceitos SOMENTE no estado 'pedidos' (08h–11h)
-// Após as 11h o buffet abre mas marmitas não podem mais ser pedidas
 function estaAberto() {
   return getEstado() === 'pedidos';
 }
@@ -106,7 +94,6 @@ function atualizarBadgeHorario() {
 }
 
 // ========== CARREGAR CARDÁPIO DO GOOGLE SHEETS (TSV) ==========
-// Converte data DD/MM/AAAA → AAAA-MM-DD para comparação
 function parseDateBR(str) {
   const partes = str.trim().split('/');
   if (partes.length !== 3) return null;
@@ -137,7 +124,6 @@ async function carregarCardapio() {
       else if (categoria === 'saladas' || categoria === 'salada') CARDAPIO.saladas.push(item);
       else if (categoria === 'sobremesas' || categoria === 'sobremesa') CARDAPIO.sobremesas.push(item);
       else if (categoria === 'fechado') {
-        // Aceita DD/MM/AAAA ou AAAA-MM-DD
         const iso = item.includes('/') ? parseDateBR(item) : item;
         if (iso) DIAS_FECHADOS_ESPECIAIS.push(iso);
       }
@@ -146,7 +132,6 @@ async function carregarCardapio() {
     buildCardapio();
     buildGrids();
     updatePrecoPersonalizada();
-    // Re-checa badge após carregar (pode ter mudado por dia fechado)
     atualizarBadgeHorario();
   } catch (e) {
     console.error('Erro ao carregar cardápio:', e);
@@ -159,13 +144,12 @@ async function carregarCardapio() {
     buildCardapio();
     buildGrids();
     updatePrecoPersonalizada();
-    showToast('⚠️ Cardápio padrão carregado. Verifique sua conexão.', 'aviso', 5000);
+    showToast('Cardápio padrão carregado. Verifique sua conexão.', 'aviso', 5000);
   } finally {
     mostrarSkeleton(false);
   }
 }
 
-// Skeleton loading enquanto carrega
 function mostrarSkeleton(show) {
   if (show) {
     document.querySelectorAll('.cardapio-box-list, .cpg-list').forEach(el => {
@@ -176,7 +160,6 @@ function mostrarSkeleton(show) {
   }
 }
 
-// ========== NAVEGAÇÃO — somente via classe, sem style.display inline ==========
 function showSection(id, btn) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -230,7 +213,6 @@ function buildCardapio() {
   });
 }
 
-// ========== GRIDS PERSONALIZADA ==========
 function buildGrids() {
   buildGrid('acompGrid',  CARDAPIO.acompanhamentos, 'acomp');
   buildGrid('carneGrid',  CARDAPIO.carnes,          'carne');
@@ -353,17 +335,11 @@ function selectSize(size) {
 function isModoPesar() {
   const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
 
-  // Só tem preço fixo quando for EXATAMENTE o padrão: 4 acomp + 3 carnes
   if (selAcomp.length === 4 && totalPedacos === 3) return false;
 
-  // Qualquer outra combinação vai a pesar
   return true;
 }
 
-// Base: 4 acomp + 3 carnes = R$26 (média) / R$28 (grande)
-// Cada acomp a mais ou a menos: ±R$2
-// Cada carne a mais ou a menos: ±R$4
-// Cada salada: +R$2
 function calcularBasePersonalizada(totalAcomp, totalPedacos, tamanho) {
   const offset = tamanho === 'grande' ? 2 : 0;
   const base = 26 + offset;
@@ -409,10 +385,6 @@ function changeQty(size, delta) {
   document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = qtyPadrao[size];
 }
 
-// ========== ORDENAÇÃO DO BUFFET ==========
-// Usa a ordem em que os itens aparecem em CARDAPIO.acompanhamentos,
-// que já é a ordem da planilha. Itens não encontrados ficam no final.
-
 function ordenarPelaplanilha(itens) {
   return [...itens].sort((a, b) => {
     const ia = CARDAPIO.acompanhamentos.indexOf(a);
@@ -423,26 +395,21 @@ function ordenarPelaplanilha(itens) {
   });
 }
 
-// Monta a descrição completa do pedido respeitando a ordem da planilha:
-// acompanhamentos (na ordem da planilha) → carnes → saladas → obs
 function montarDescricaoOrdenada({ carnes, acompanhamentos, saladas, obs, incluiFixos, carnesOpcoes }) {
   const partes = [];
 
   if (incluiFixos) {
-    // Marmita padrão: usa o mesmo formato da personalizada
-    // Acompanhamentos fixos (verificar sábado para Lasanha de Frango)
+
     const hoje = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
     const ehSabado = hoje.getDay() === 6;
     let fixos = ['Arroz branco', 'Macarrão', 'Aipim com bacon', 'Feijão'];
     if (ehSabado) fixos = ['Lasanha de Frango', ...fixos];
     partes.push(fixos.join(', '));
     if (carnesOpcoes && carnesOpcoes.length > 0) {
-      // Cada carne como "1x Carne" igual à personalizada
       const carnesDesc = carnesOpcoes.map(c => `1x ${c}`).join(', ');
       partes.push(`Carnes: ${carnesDesc}`);
     }
   } else {
-    // Marmita personalizada: ordena os acompanhamentos selecionados pela ordem da planilha
     if (acompanhamentos.length > 0) {
       const acompOrdenados = ordenarPelaplanilha(acompanhamentos);
       partes.push(acompOrdenados.join(', '));
@@ -463,8 +430,8 @@ function montarDescricaoOrdenada({ carnes, acompanhamentos, saladas, obs, inclui
 function addPadrao(size) {
   if (!estaAberto()) {
     const msg = getEstado() === 'fechado'
-      ? '🔴 Estamos fechados'
-      : '⏰ Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+      ? 'Estamos fechados'
+      : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
     showToast(msg, 'aviso', 5000);
     return;
   }
@@ -474,7 +441,6 @@ function addPadrao(size) {
   const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
   const obs = document.getElementById(obsId).value.trim();
 
-  // Lista as 3 primeiras carnes do cardápio (ou menos, se houver menos de 3)
   const carnesOpcoes = CARDAPIO.carnes.length > 0 ? CARDAPIO.carnes.slice(0, 3) : ['Carne do dia'];
 
   const desc = montarDescricaoOrdenada({
@@ -483,7 +449,6 @@ function addPadrao(size) {
   });
   const descPlanilha = desc;
 
-  // Tipo da marmita: só "Marmita Grande" ou "Marmita Média" (sem "Padrão")
   cart.push({ tipo: `Marmita ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty });
 
   salvarCarrinhoLocal();
@@ -495,18 +460,16 @@ function addPadrao(size) {
   showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
 }
 
-// ========== MARMITA PERSONALIZADA — BUG #3 CORRIGIDO ==========
 function addPersonalizada() {
   if (!estaAberto()) {
     const msg = getEstado() === 'fechado'
-      ? '🔴 Estamos fechados'
-      : '⏰ Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+      ? 'Estamos fechados'
+      : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
     showToast(msg, 'aviso', 5000);
     return;
   }
   const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
 
-  // BUG #3: valida todos os grupos, não apenas acomp e carne
   if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
     showToast('Selecione ao menos um item para montar sua marmita!', 'aviso');
     return;
@@ -517,7 +480,7 @@ function addPersonalizada() {
 
   let preco;
   if (pesar) {
-    preco = 0; // preço definido no restaurante na balança
+    preco = 0; 
   } else {
     const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
     preco = base + (selSalada.length * 2);
@@ -530,12 +493,12 @@ function addPersonalizada() {
   });
   const qty = qtyPersonalizada;
 
-  cart.push({ tipo: `Marmita Personalizada ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: pesar ? 0 : preco * qty, qty, aPesar: pesar });
+  cart.push({ tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: pesar ? 0 : preco * qty, qty, aPesar: pesar });
 
   salvarCarrinhoLocal();
   updateCart();
   clearPersonalizada();
-  showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita Personalizada ${label} adicionada!`, 'sucesso');
+  showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
 }
 
 function clearPersonalizada() {
@@ -593,7 +556,6 @@ function updateCart() {
   }
 }
 
-// UX #6: confirmar antes de remover
 function confirmarRemocao(i) {
   abrirModalConfirm(
     'Remover item?',
@@ -617,7 +579,6 @@ function toggleCart() {
   if (aviso) aviso.classList.toggle('hidden-by-cart', panel.classList.contains('open'));
 }
 
-// ========== LOCALSTORAGE (#14) ==========
 function salvarCarrinhoLocal() {
   try {
     localStorage.setItem('rdm_cart', JSON.stringify(cart));
@@ -636,7 +597,6 @@ function carregarCarrinhoLocal() {
     const salvo = localStorage.getItem('rdm_cart');
     if (salvo) {
       const parsed = JSON.parse(salvo);
-      // Valida estrutura mínima esperada de cada item
       if (Array.isArray(parsed) && parsed.every(i => i && typeof i.tipo === 'string' && typeof i.preco === 'number')) {
         cart = parsed;
         updateCart();
@@ -652,7 +612,6 @@ function carregarCarrinhoLocal() {
   }
 }
 
-// ========== MODAL DE CONFIRMAÇÃO GENÉRICO ==========
 function abrirModalConfirm(titulo, mensagem, onConfirm) {
   const overlay = document.getElementById('modalConfirmOverlay');
   const modal   = document.getElementById('modalConfirm');
@@ -669,10 +628,9 @@ function fecharModalConfirm() {
   document.getElementById('modalConfirm').classList.remove('open');
 }
 
-// ========== MODAL NOME DO CLIENTE ==========
 function abrirModalNome() {
   if (cart.length === 0) { showToast('Seu carrinho está vazio!', 'aviso'); return; }
-  if (!estaAberto()) { showToast('🔴 Estamos fechados', 'aviso', 5000); return; }
+  if (!estaAberto()) { showToast('Estamos fechados', 'aviso', 5000); return; }
   document.getElementById('inputNomeCliente').value = '';
   document.getElementById('modalOverlay').classList.add('open');
   document.getElementById('modalNome').classList.add('open');
@@ -694,8 +652,6 @@ function confirmarPedido() {
   fecharModalNome();
   enviarWhatsApp(nome);
 }
-
-// ========== WHATSAPP + GOOGLE DRIVE ==========
 function enviarWhatsApp(nomeCliente) {
   if (cart.length === 0) { showToast('Carrinho vazio!', 'aviso'); return; }
 
@@ -728,7 +684,6 @@ function enviarWhatsApp(nomeCliente) {
     : `R$ ${total.toFixed(2).replace('.', ',')}`;
   msg += `*Total: ${totalStr}*\n`;
 
-  // Limpa carrinho após envio
   cart = [];
   salvarCarrinhoLocal();
   updateCart();
@@ -746,7 +701,6 @@ function enviarWhatsApp(nomeCliente) {
       window.scrollTo({ top, behavior: 'smooth' });
     }
 
-    // ===== DESTACA BOTÃO DA NAV CONFORME SEÇÃO VISÍVEL =====
     function atualizarNavAtiva() {
       const headerH = document.querySelector('header').offsetHeight;
       const secoes = [
@@ -768,7 +722,6 @@ function enviarWhatsApp(nomeCliente) {
         btn.classList.toggle('active', i === ativa);
       });
 
-      // Mostra/esconde aviso balcão conforme seção marmitas visível
       const pedidosEl = document.getElementById('pedidos');
       const aviso = document.getElementById('avisoBalcao');
       if (pedidosEl && aviso) {
@@ -781,12 +734,9 @@ function enviarWhatsApp(nomeCliente) {
     window.addEventListener('scroll', atualizarNavAtiva, { passive: true });
     window.addEventListener('load', atualizarNavAtiva);
 
-    // ===== SUBSTITUI as funções de navegação original =====
-    // (goToMarmitas e goToCardapio redirecionam para scroll)
     function goToMarmitas() { scrollToSection('pedidos'); }
     function goToCardapio() { scrollToSection('cardapio-dia-sec'); }
 
-    // showSection original usava display:none — sobrescrevemos para só rolar
     function showSection(id) { scrollToSection(id); }
 
 
