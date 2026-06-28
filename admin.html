@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Restaurante do Mário</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+  <style>
+    :root {
+      --verde: #1a4a14;
+      --verde-claro: #2e7d20;
+      --dourado: #c9a84c;
+      --bg: #f5f5f0;
+      --card-bg: #ffffff;
+      --texto: #1a1a1a;
+      --cinza: #666;
+      --borda: #e0e0d8;
+      --separador: #ddd;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--texto); min-height: 100vh; }
+
+    /* ===== LOGIN ===== */
+    #telaLogin {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: var(--verde);
+    }
+    .login-box {
+      background: #fff; border-radius: 20px; padding: 48px 40px;
+      width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-logo {
+      font-family: 'Playfair Display', serif; font-size: 1.6rem;
+      font-weight: 900; color: var(--verde); margin-bottom: 6px;
+    }
+    .login-sub { font-size: 0.82rem; color: var(--cinza); margin-bottom: 32px; letter-spacing: 1px; }
+    .login-box input {
+      width: 100%; padding: 13px 16px; border: 2px solid var(--borda);
+      border-radius: 10px; font-size: 1rem; font-family: 'Lato', sans-serif;
+      margin-bottom: 14px; outline: none; transition: border 0.2s;
+    }
+    .login-box input:focus { border-color: var(--verde-claro); }
+    .login-btn {
+      width: 100%; padding: 14px; background: var(--verde); color: #fff;
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; font-family: 'Lato', sans-serif;
+    }
+    .login-btn:hover { background: var(--verde-claro); }
+    .login-erro { color: #c0392b; font-size: 0.88rem; margin-top: 10px; min-height: 20px; }
+
+    /* ===== PAINEL ADMIN ===== */
+    #telaAdmin { display: none; }
+    .admin-header {
+      background: var(--verde); color: #fff; padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .admin-header-title {
+      font-family: 'Playfair Display', serif; font-size: 1.25rem;
+      font-weight: 900; color: #fff;
+    }
+    .admin-header-right { display: flex; align-items: center; gap: 16px; }
+    .badge-total {
+      background: var(--dourado); color: #fff; border-radius: 20px;
+      padding: 4px 14px; font-size: 0.82rem; font-weight: 700;
+    }
+    .btn-imprimir {
+      background: var(--dourado); color: #fff; border: none;
+      border-radius: 10px; padding: 9px 20px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: 'Lato', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn-imprimir:hover { background: #b8922e; }
+    .btn-sair {
+      background: rgba(255,255,255,0.15); color: #fff; border: none;
+      border-radius: 10px; padding: 9px 16px; font-size: 0.85rem;
+      cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.2s;
+    }
+    .btn-sair:hover { background: rgba(255,255,255,0.25); }
+
+    .admin-body { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
+
+    .admin-info-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
+    }
+    .admin-info-bar h2 {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem;
+      font-weight: 900; color: var(--verde);
+    }
+    .status-atualizacao {
+      font-size: 0.82rem; color: var(--cinza); display: flex; align-items: center; gap: 6px;
+    }
+    .dot-animado {
+      width: 8px; height: 8px; background: #27ae60; border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ===== LISTA DE PEDIDOS ===== */
+    #listaPedidos { display: flex; flex-direction: column; gap: 20px; }
+
+    .pedido-card {
+      background: var(--card-bg); border-radius: 14px; padding: 24px 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-left: 4px solid var(--verde);
+    }
+    .pedido-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+    }
+    .pedido-cliente {
+      font-weight: 700; font-size: 1.1rem; color: var(--verde);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pedido-cliente::before { content: "📦"; }
+    .pedido-hora { font-size: 0.8rem; color: var(--cinza); }
+    .pedido-total-tag {
+      font-size: 0.8rem; font-weight: 700; background: var(--verde);
+      color: #fff; border-radius: 20px; padding: 3px 12px;
+    }
+
+    .marmita-linha {
+      display: flex; gap: 10px; padding: 10px 0;
+      border-top: 1px solid var(--borda); align-items: flex-start;
+    }
+    .marmita-badge {
+      background: var(--bg); border: 1px solid var(--borda); border-radius: 8px;
+      padding: 3px 10px; font-size: 0.8rem; font-weight: 700; color: var(--verde);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .marmita-itens { font-size: 0.9rem; color: var(--texto); line-height: 1.6; }
+
+    .pedido-vazio {
+      text-align: center; color: var(--cinza); padding: 60px 0;
+      font-size: 1rem;
+    }
+
+    /* ===== LOADING ===== */
+    .loading-spinner {
+      text-align: center; padding: 60px 0; color: var(--cinza);
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--borda);
+      border-top-color: var(--verde); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .admin-header { padding: 0 16px; }
+      .admin-body { padding: 20px 14px 48px; }
+      .pedido-card { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== TELA DE LOGIN ===== -->
+<div id="telaLogin">
+  <div class="login-box">
+    <div class="login-logo">Restaurante do Mário</div>
+    <div class="login-sub">PAINEL ADMINISTRATIVO</div>
+    <input type="text" id="inputUsuario" placeholder="Usuário" autocomplete="username"
+      onkeydown="if(event.key==='Enter') document.getElementById('inputSenha').focus()">
+    <input type="password" id="inputSenha" placeholder="Senha" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') fazerLogin()">
+    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-erro" id="loginErro"></div>
+  </div>
+</div>
+
+<!-- ===== PAINEL ADMIN ===== -->
+<div id="telaAdmin">
+  <header class="admin-header">
+    <div class="admin-header-title">Restaurante do Mário — Admin</div>
+    <div class="admin-header-right">
+      <span class="badge-total" id="badgeTotal">0 pedidos</span>
+      <button class="btn-imprimir" onclick="gerarWord()">🖨️ Imprimir</button>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <div class="admin-info-bar">
+      <h2>Pedidos do Dia</h2>
+      <div class="status-atualizacao">
+        <div class="dot-animado"></div>
+        <span id="statusAtualizacao">Atualizando em 30s...</span>
+      </div>
+    </div>
+
+    <div id="listaPedidos">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <div>Carregando pedidos...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== CONFIGURAÇÕES ==========
+// ⚠️ ALTERE AS CREDENCIAIS ABAIXO
+const ADMIN_USER  = 'mario';
+const ADMIN_SENHA = 'restaurante2025';
+
+// URL do Google Apps Script que retorna os pedidos
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmzkXOJPdrAIrg5WFu-r91O8lZQbCvkGBzriRB-j7eSllrKPGYCeROAKI7zGixj4/exec';
+
+let pedidos = [];
+let intervalo = null;
+let contagemRegressiva = 30;
+
+// ========== LOGIN ==========
+function fazerLogin() {
+  const usuario = document.getElementById('inputUsuario').value.trim();
+  const senha   = document.getElementById('inputSenha').value;
+  const erroEl  = document.getElementById('loginErro');
+
+  if (usuario === ADMIN_USER && senha === ADMIN_SENHA) {
+    erroEl.textContent = '';
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('telaAdmin').style.display = 'block';
+    iniciarAdmin();
+  } else {
+    erroEl.textContent = 'Usuário ou senha incorretos.';
+    document.getElementById('inputSenha').value = '';
+    document.getElementById('inputSenha').focus();
+  }
+}
+
+function sair() {
+  clearInterval(intervalo);
+  document.getElementById('telaAdmin').style.display = 'none';
+  document.getElementById('telaLogin').style.display = 'flex';
+  document.getElementById('inputUsuario').value = '';
+  document.getElementById('inputSenha').value = '';
+  pedidos = [];
+}
+
+// ========== BUSCAR PEDIDOS DO GOOGLE SHEETS ==========
+async function buscarPedidos() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=listar', { cache: 'no-store' });
+    const data = await res.json();
+    if (data && Array.isArray(data.pedidos)) {
+      pedidos = data.pedidos;
+      renderizarPedidos();
+    }
+  } catch (e) {
+    console.warn('Erro ao buscar pedidos:', e);
+  }
+}
+
+// ========== INICIAR ADMIN ==========
+function iniciarAdmin() {
+  buscarPedidos();
+  contagemRegressiva = 30;
+  intervalo = setInterval(() => {
+    contagemRegressiva--;
+    document.getElementById('statusAtualizacao').textContent =
+      `Atualizando em ${contagemRegressiva}s...`;
+    if (contagemRegressiva <= 0) {
+      contagemRegressiva = 30;
+      buscarPedidos();
+    }
+  }, 1000);
+}
+
+// ========== RENDERIZAR PEDIDOS ==========
+function renderizarPedidos() {
+  const container = document.getElementById('listaPedidos');
+  const badge = document.getElementById('badgeTotal');
+
+  if (!pedidos || pedidos.length === 0) {
+    badge.textContent = '0 pedidos';
+    container.innerHTML = `<div class="pedido-vazio">📋 Nenhum pedido recebido ainda hoje.</div>`;
+    return;
+  }
+
+  badge.textContent = `${pedidos.length} pedido${pedidos.length !== 1 ? 's' : ''}`;
+  container.innerHTML = '';
+
+  pedidos.forEach(pedido => {
+    const card = document.createElement('div');
+    card.className = 'pedido-card';
+
+    // Agrupar marmitas iguais
+    const marmitasAgrupadas = agruparMarmitas(pedido.marmitas);
+    const totalMarmitas = pedido.marmitas.reduce((s, m) => s + (m.qty || 1), 0);
+
+    let marmitasHTML = marmitasAgrupadas.map(m => `
+      <div class="marmita-linha">
+        <div class="marmita-badge">${m.qty > 1 ? m.qty + 'x ' : ''}${m.tipo}</div>
+        <div class="marmita-itens">${m.itens}</div>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="pedido-header">
+        <div class="pedido-cliente">${pedido.nome}</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="pedido-hora">${pedido.hora || ''}</span>
+          <span class="pedido-total-tag">Total: ${totalMarmitas} marmita${totalMarmitas !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      ${marmitasHTML}
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ========== AGRUPAR MARMITAS IGUAIS ==========
+function agruparMarmitas(marmitas) {
+  const grupos = [];
+  marmitas.forEach(m => {
+    const chave = `${m.tipo}||${m.itens}`;
+    const existente = grupos.find(g => `${g.tipo}||${g.itens}` === chave);
+    if (existente) {
+      existente.qty += (m.qty || 1);
+    } else {
+      grupos.push({ tipo: m.tipo, itens: m.itens, qty: m.qty || 1 });
+    }
+  });
+  return grupos;
+}
+
+// ========== GERAR WORD ==========
+async function gerarWord() {
+  if (!pedidos || pedidos.length === 0) {
+    alert('Nenhum pedido para imprimir.');
+    return;
+  }
+
+  const { Document, Packer, Paragraph, TextRun, PageBreak } = docx;
+
+  const children = [];
+
+  pedidos.forEach((pedido, idx) => {
+    const totalMarmitas = pedido.marmitas.reduce((s, m) => s + (m.qty || 1), 0);
+    const marmitasAgrupadas = agruparMarmitas(pedido.marmitas);
+
+    // Nome do cliente
+    children.push(new Paragraph({
+      children: [new TextRun({ text: `Nome: ${pedido.nome}`, font: 'Arial', size: 24, bold: true })]
+    }));
+
+    // Total de marmitas
+    children.push(new Paragraph({
+      children: [new TextRun({ text: `Total de Marmitas: ${totalMarmitas}`, font: 'Arial', size: 24 })]
+    }));
+
+    // Linha em branco
+    children.push(new Paragraph({ children: [new TextRun({ text: '', font: 'Arial', size: 24 })] }));
+
+    // Cada marmita
+    marmitasAgrupadas.forEach(m => {
+      const tipoLabel = m.qty > 1 ? `${m.qty}x ${m.tipo}` : m.tipo;
+      children.push(new Paragraph({
+        children: [new TextRun({ text: tipoLabel, font: 'Arial', size: 24, bold: true })]
+      }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: m.itens, font: 'Arial', size: 24 })]
+      }));
+      children.push(new Paragraph({ children: [new TextRun({ text: '', font: 'Arial', size: 24 })] }));
+    });
+
+    // Separador entre pedidos (exceto no último)
+    if (idx < pedidos.length - 1) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: '________________________________________________', font: 'Arial', size: 24 })]
+      }));
+      children.push(new Paragraph({ children: [new TextRun({ text: '', font: 'Arial', size: 24 })] }));
+    }
+  });
+
+  const doc = new Document({
+    sections: [{
+      properties: {
+        page: {
+          size: { width: 11906, height: 16838 },
+          margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+        }
+      },
+      children
+    }]
+  });
+
+  const buffer = await Packer.toBlob(doc);
+  const url = URL.createObjectURL(buffer);
+  const a = document.createElement('a');
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  a.href = url;
+  a.download = `pedidos-${hoje}.docx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
