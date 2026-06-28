@@ -247,7 +247,10 @@ function sair() {
 // ========== BUSCAR PEDIDOS DO GOOGLE SHEETS ==========
 async function buscarPedidos() {
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=listar', { cache: 'no-store' });
+    const res = await fetch(APPS_SCRIPT_URL + '?action=listar', {
+      method: 'GET',
+      redirect: 'follow'
+    });
     const data = await res.json();
     if (data && Array.isArray(data.pedidos)) {
       pedidos = data.pedidos;
@@ -255,6 +258,8 @@ async function buscarPedidos() {
     }
   } catch (e) {
     console.warn('Erro ao buscar pedidos:', e);
+    document.getElementById('listaPedidos').innerHTML =
+      `<div class="pedido-vazio">⚠️ Erro ao conectar. Verifique a URL do Apps Script.</div>`;
   }
 }
 
