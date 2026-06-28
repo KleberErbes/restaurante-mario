@@ -1,7 +1,7 @@
 // ========== GOOGLE SHEETS (Cardápio) — TSV para parsing robusto ==========
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv';
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWuWbjbNmct6nRmEaCPoA8UkssdJhvdpkv6UzGXKjeXtH5X5CZbc09hRq9xnpzxeza/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
 
 const WHATSAPP_NUMBER = "554733752227";
 
