@@ -8,9 +8,9 @@ const WHATSAPP_NUMBER = "554733752227";
 // ========== CONFIGURAÇÃO DE HORÁRIO ==========
 const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
 // Buffet / atendimento presencial: 11h00
-const HORARIO_ABERTURA   = { h: 18, m: 0  };
+const HORARIO_ABERTURA   = { h: 11, m: 0  };
 // Fechamento: 14h00
-const HORARIO_FECHAMENTO = { h: 18, m: 0  };
+const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
 // DIAS_FECHADOS_ESPECIAIS
 let DIAS_FECHADOS_ESPECIAIS = [];
