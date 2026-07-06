@@ -209,36 +209,62 @@
 
 <script>
 // ========== CONFIGURAÇÕES ==========
-const ADMIN_USER  = 'mario';
-const ADMIN_SENHA = 'admin2025';
-
-// URL do Google Apps Script que retorna os pedidos
+// A senha NÃO fica mais aqui — a validação acontece no Apps Script.
+// Este arquivo só guarda o token de sessão devolvido pelo servidor.
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
 
 let pedidos = [];
 let intervalo = null;
 let contagemRegressiva = 30;
+let sessionToken = null;
 
-// ========== LOGIN ==========
-function fazerLogin() {
+// ========== LOGIN (validado no servidor via Apps Script) ==========
+async function fazerLogin() {
   const usuario = document.getElementById('inputUsuario').value.trim();
   const senha   = document.getElementById('inputSenha').value;
   const erroEl  = document.getElementById('loginErro');
+  const btn     = document.querySelector('.login-btn');
 
-  if (usuario === ADMIN_USER && senha === ADMIN_SENHA) {
-    erroEl.textContent = '';
-    document.getElementById('telaLogin').style.display = 'none';
-    document.getElementById('telaAdmin').style.display = 'block';
-    iniciarAdmin();
-  } else {
-    erroEl.textContent = 'Usuário ou senha incorretos.';
-    document.getElementById('inputSenha').value = '';
-    document.getElementById('inputSenha').focus();
+  if (!usuario || !senha) {
+    erroEl.textContent = 'Preencha usuário e senha.';
+    return;
+  }
+
+  erroEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // evita preflight CORS no Apps Script
+      body: JSON.stringify({ action: 'login', usuario, senha })
+    });
+    const data = await res.json();
+
+    if (data.status === 'ok' && data.token) {
+      sessionToken = data.token;
+      sessionStorage.setItem('rdm_admin_token', sessionToken);
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('telaAdmin').style.display = 'block';
+      iniciarAdmin();
+    } else {
+      erroEl.textContent = data.mensagem || 'Usuário ou senha incorretos.';
+      document.getElementById('inputSenha').value = '';
+      document.getElementById('inputSenha').focus();
+    }
+  } catch (e) {
+    erroEl.textContent = 'Erro ao conectar. Tente novamente.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
   }
 }
 
 function sair() {
   clearInterval(intervalo);
+  sessionToken = null;
+  sessionStorage.removeItem('rdm_admin_token');
   document.getElementById('telaAdmin').style.display = 'none';
   document.getElementById('telaLogin').style.display = 'flex';
   document.getElementById('inputUsuario').value = '';
@@ -246,14 +272,33 @@ function sair() {
   pedidos = [];
 }
 
+// Retoma sessão se já havia um token válido nesta aba
+window.addEventListener('DOMContentLoaded', () => {
+  const tokenSalvo = sessionStorage.getItem('rdm_admin_token');
+  if (tokenSalvo) {
+    sessionToken = tokenSalvo;
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('telaAdmin').style.display = 'block';
+    iniciarAdmin();
+  }
+});
+
 // ========== BUSCAR PEDIDOS DO GOOGLE SHEETS ==========
 async function buscarPedidos() {
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=listar', {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=listar&token=' + encodeURIComponent(sessionToken), {
       method: 'GET',
       redirect: 'follow'
     });
     const data = await res.json();
+
+    if (data && data.error === 'unauthorized') {
+      // Token expirado ou inválido — volta para a tela de login
+      sair();
+      document.getElementById('loginErro').textContent = 'Sessão expirada. Entre novamente.';
+      return;
+    }
+
     if (data && Array.isArray(data.pedidos)) {
       pedidos = data.pedidos;
       renderizarPedidos();
@@ -327,15 +372,71 @@ function renderizarPedidos() {
 function agruparMarmitas(marmitas) {
   const grupos = [];
   marmitas.forEach(m => {
-    const chave = `${m.tipo}||${m.itens}`;
-    const existente = grupos.find(g => `${g.tipo}||${g.itens}` === chave);
+    const chave = `${m.tipo}||${m.itens}||${m.tipoPedido}`;
+    const existente = grupos.find(g => `${g.tipo}||${g.itens}||${g.tipoPedido}` === chave);
     if (existente) {
       existente.qty += (m.qty || 1);
     } else {
-      grupos.push({ tipo: m.tipo, itens: m.itens, qty: m.qty || 1 });
+      grupos.push({ tipo: m.tipo, itens: m.itens, qty: m.qty || 1, tipoPedido: m.tipoPedido });
     }
   });
   return grupos;
+}
+
+// ========== FORMATAÇÃO DOS ITENS PARA O WORD ==========
+// Marmita padrão: mostra só "Padrão" (+ observação, se houver).
+// Marmita personalizada: separa em Salada / Acompanhamentos / Carnes,
+// cada linha com os itens unidos por " - ".
+function juntarComTraco(str) {
+  return str.split(',').map(s => s.trim()).filter(Boolean).join(' - ');
+}
+
+function formatarItensPersonalizada(itensStr) {
+  let resto = itensStr;
+  let obs = '';
+
+  const idxObs = resto.indexOf('⚠️ Obs:');
+  if (idxObs !== -1) {
+    obs = resto.slice(idxObs + '⚠️ Obs:'.length).trim();
+    resto = resto.slice(0, idxObs).trim().replace(/\|\s*$/, '').trim();
+  }
+
+  let salada = '';
+  const idxSalada = resto.indexOf('Salada:');
+  if (idxSalada !== -1) {
+    salada = resto.slice(idxSalada + 'Salada:'.length).trim();
+    resto = resto.slice(0, idxSalada).trim().replace(/\|\s*$/, '').trim();
+  }
+
+  let carnes = '';
+  const idxCarnes = resto.indexOf('Carnes:');
+  if (idxCarnes !== -1) {
+    carnes = resto.slice(idxCarnes + 'Carnes:'.length).trim();
+    resto = resto.slice(0, idxCarnes).trim().replace(/\|\s*$/, '').trim();
+  }
+
+  const acomp = resto.trim();
+
+  const linhas = [];
+  if (salada) linhas.push(juntarComTraco(salada));
+  if (acomp) linhas.push(juntarComTraco(acomp));
+  if (carnes) linhas.push(juntarComTraco(carnes));
+  if (obs) linhas.push(`Obs: ${obs}`);
+
+  return linhas;
+}
+
+function formatarItensMarmita(m) {
+  if (m.tipoPedido === 'padrao') {
+    const linhas = ['Padrão'];
+    const idxObs = m.itens.indexOf('⚠️ Obs:');
+    if (idxObs !== -1) {
+      const obs = m.itens.slice(idxObs + '⚠️ Obs:'.length).trim();
+      if (obs) linhas.push(`Obs: ${obs}`);
+    }
+    return linhas;
+  }
+  return formatarItensPersonalizada(m.itens);
 }
 
 // ========== GERAR WORD ==========
@@ -373,9 +474,11 @@ async function gerarWord() {
       children.push(new Paragraph({
         children: [new TextRun({ text: tipoLabel, font: 'Arial', size: 24, bold: true })]
       }));
-      children.push(new Paragraph({
-        children: [new TextRun({ text: m.itens, font: 'Arial', size: 24 })]
-      }));
+      formatarItensMarmita(m).forEach(linha => {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: linha, font: 'Arial', size: 24 })]
+        }));
+      });
       children.push(new Paragraph({ children: [new TextRun({ text: '', font: 'Arial', size: 24 })] }));
     });
 
@@ -393,7 +496,8 @@ async function gerarWord() {
       properties: {
         page: {
           size: { width: 11906, height: 16838 },
-          margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+          // 0,5cm em cada margem (1cm ≈ 566.93 twips)
+          margin: { top: 283, right: 283, bottom: 283, left: 283 }
         }
       },
       children

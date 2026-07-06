@@ -17,6 +17,16 @@ let DIAS_FECHADOS_ESPECIAIS = [];
 
 let cart = [];
 let selectedSize = 'media';
+
+// ========== ID ÚNICO DE PEDIDO ==========
+// Gerado uma vez por envio (não por item), usado para evitar duplicidade
+// no Sheets e na impressão — nunca por comparação de conteúdo.
+function gerarIdPedido() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
 let selAcomp  = [];
 let selCarne  = {};   
 let selSalada = [];
@@ -449,7 +459,10 @@ function addPadrao(size) {
   });
   const descPlanilha = desc;
 
-  cart.push({ tipo: `Marmita ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty });
+  cart.push({
+    tipo: `Marmita ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty,
+    composicao: { tipoPedido: 'padrao', tamanho: size, pesar: false }
+  });
 
   salvarCarrinhoLocal();
   qtyPadrao[size] = 1;
@@ -493,7 +506,14 @@ function addPersonalizada() {
   });
   const qty = qtyPersonalizada;
 
-  cart.push({ tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: pesar ? 0 : preco * qty, qty, aPesar: pesar });
+  cart.push({
+    tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta,
+    preco: pesar ? 0 : preco * qty, qty, aPesar: pesar,
+    composicao: {
+      tipoPedido: 'personalizada', tamanho: selectedSize, pesar,
+      qtyAcomp: selAcomp.length, qtyCarnePedacos: totalPedacos, qtySalada: selSalada.length
+    }
+  });
 
   salvarCarrinhoLocal();
   updateCart();
@@ -657,14 +677,22 @@ function enviarWhatsApp(nomeCliente) {
 
   const total = cart.reduce((sum, item) => sum + item.preco, 0);
   const temAPesar = cart.some(item => item.aPesar);
+  const pedidoId = gerarIdPedido();
 
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
+      pedidoId,
       nomeCliente,
-      itens: cart.map(item => ({ tipo: item.tipo, desc: item.descPlanilha, preco: item.aPesar ? 'A pesar' : item.preco, qty: item.qty || 1 })),
+      itens: cart.map(item => ({
+        tipo: item.tipo,
+        desc: item.descPlanilha,
+        preco: item.aPesar ? 'A pesar' : item.preco,
+        qty: item.qty || 1,
+        composicao: item.composicao || null
+      })),
       total: temAPesar ? `${total.toFixed(2)} + itens a pesar` : total.toFixed(2),
       totalMarmitas: cart.reduce((sum, item) => sum + (item.qty || 1), 0)
     })
