@@ -170,8 +170,10 @@
     <div class="login-logo">Restaurante do Mário</div>
     <div class="login-sub">PAINEL ADMINISTRATIVO</div>
     <input type="text" id="inputUsuario" placeholder="Usuário" autocomplete="username"
+      autocapitalize="off" autocorrect="off" spellcheck="false"
       onkeydown="if(event.key==='Enter') document.getElementById('inputSenha').focus()">
     <input type="password" id="inputSenha" placeholder="Senha" autocomplete="current-password"
+      autocapitalize="off" autocorrect="off" spellcheck="false"
       onkeydown="if(event.key==='Enter') fazerLogin()">
     <button class="login-btn" onclick="fazerLogin()">Entrar</button>
     <div class="login-erro" id="loginErro"></div>
@@ -220,8 +222,8 @@ let sessionToken = null;
 
 // ========== LOGIN (validado no servidor via Apps Script) ==========
 async function fazerLogin() {
-  const usuario = document.getElementById('inputUsuario').value.trim();
-  const senha   = document.getElementById('inputSenha').value;
+  const usuario = document.getElementById('inputUsuario').value.trim().toLowerCase();
+  const senha   = document.getElementById('inputSenha').value.trim();
   const erroEl  = document.getElementById('loginErro');
   const btn     = document.querySelector('.login-btn');
 
@@ -420,7 +422,9 @@ function formatarItensPersonalizada(itensStr) {
   const linhas = [];
   if (salada) linhas.push(juntarComTraco(salada));
   if (acomp) linhas.push(juntarComTraco(acomp));
-  if (carnes) linhas.push(juntarComTraco(carnes));
+  if (carnes) {
+    carnes.split(',').map(c => c.trim()).filter(Boolean).forEach(c => linhas.push(c));
+  }
   if (obs) linhas.push(`Obs: ${obs}`);
 
   return linhas;

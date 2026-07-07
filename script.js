@@ -363,6 +363,15 @@ function updatePrecoPersonalizada() {
   const el = document.getElementById('precoPersonalizada');
   const infoEl = document.getElementById('infoPesar');
 
+  const nadaSelecionado = selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0;
+
+  if (nadaSelecionado) {
+    el.textContent = 'R$ 0,00';
+    el.classList.remove('preco-a-pesar');
+    if (infoEl) infoEl.style.display = 'none';
+    return;
+  }
+
   if (isModoPesar()) {
     el.textContent = 'A pesar';
     el.classList.add('preco-a-pesar');
@@ -371,14 +380,9 @@ function updatePrecoPersonalizada() {
     el.classList.remove('preco-a-pesar');
     if (infoEl) infoEl.style.display = 'none';
 
-    if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
-      const base = selectedSize === 'media' ? 26 : 28;
-      el.textContent = `R$ ${base.toFixed(2).replace('.', ',')}`;
-    } else {
-      const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
-      const total = base + (selSalada.length * 2);
-      el.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
+    const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
+    const total = base + (selSalada.length * 2);
+    el.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
   }
 }
 
