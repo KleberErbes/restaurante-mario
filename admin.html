@@ -211,8 +211,6 @@
 
 <script>
 // ========== CONFIGURAÇÕES ==========
-// A senha NÃO fica mais aqui — a validação acontece no Apps Script.
-// Este arquivo só guarda o token de sessão devolvido pelo servidor.
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
 
 let pedidos = [];
@@ -386,9 +384,6 @@ function agruparMarmitas(marmitas) {
 }
 
 // ========== FORMATAÇÃO DOS ITENS PARA O WORD ==========
-// Marmita padrão: mostra só "Padrão" (+ observação, se houver).
-// Marmita personalizada: separa em Salada / Acompanhamentos / Carnes,
-// cada linha com os itens unidos por " - ".
 function juntarComTraco(str) {
   return str.split(',').map(s => s.trim()).filter(Boolean).join(' - ');
 }

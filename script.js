@@ -1,4 +1,3 @@
-// ========== GOOGLE SHEETS (Cardápio) — TSV para parsing robusto ==========
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv';
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
@@ -12,15 +11,12 @@ const HORARIO_ABERTURA   = { h: 14, m: 0  };
 // Fechamento: 14h00
 const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
-// DIAS_FECHADOS_ESPECIAIS
 let DIAS_FECHADOS_ESPECIAIS = [];
 
 let cart = [];
 let selectedSize = 'media';
 
 // ========== ID ÚNICO DE PEDIDO ==========
-// Gerado uma vez por envio (não por item), usado para evitar duplicidade
-// no Sheets e na impressão — nunca por comparação de conteúdo.
 function gerarIdPedido() {
   if (window.crypto && typeof window.crypto.randomUUID === 'function') {
     return window.crypto.randomUUID();
