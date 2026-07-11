@@ -155,11 +155,94 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 600px) {
-      .admin-header { padding: 0 16px; }
-      .admin-body { padding: 20px 14px 48px; }
-      .pedido-card { padding: 18px 16px; }
+    /* ===== ABAS DE NAVEGAÇÃO ===== */
+    .admin-tabs {
+      display: flex; gap: 4px; max-width: 860px; margin: 0 auto;
+      padding: 0 24px; border-bottom: 1px solid var(--borda);
     }
+    .admin-tab {
+      background: none; border: none; padding: 14px 18px; cursor: pointer;
+      font-family: 'Lato', sans-serif; font-size: 0.95rem; font-weight: 700;
+      color: var(--cinza); border-bottom: 3px solid transparent;
+      margin-bottom: -1px; transition: color 0.2s, border-color 0.2s;
+    }
+    .admin-tab:hover { color: var(--verde); }
+    .admin-tab.active { color: var(--verde); border-bottom-color: var(--dourado); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ===== RESUMO ===== */
+    .resumo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+    .stat-card {
+      background: var(--card-bg); border-radius: 14px; padding: 18px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .stat-card.wide { grid-column: 1 / -1; }
+    .stat-label { font-size: 0.78rem; color: var(--cinza); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+    .stat-num { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin-top: 4px; }
+    .stat-num.media { color: var(--verde-claro); }
+    .stat-num.grande { color: #8B0000; }
+    .stat-num.verde { color: var(--verde); }
+    .stat-sub { font-size: 0.82rem; color: var(--cinza); margin-top: 5px; }
+    .stat-valor { font-size: 1.8rem; font-weight: 900; color: var(--verde); }
+    .barra-prop { height: 12px; border-radius: 7px; background: var(--borda); overflow: hidden; display: flex; margin-top: 12px; }
+    .barra-prop i { display: block; height: 100%; }
+    .barra-prop .fm { background: var(--verde-claro); }
+    .barra-prop .fg { background: #8B0000; }
+    .legenda { display: flex; gap: 18px; margin-top: 10px; font-size: 0.85rem; color: var(--cinza); }
+    .legenda span { display: flex; align-items: center; gap: 6px; }
+    .legenda i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+    .prev-card {
+      background: linear-gradient(135deg, var(--verde), var(--verde-claro));
+      color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 18px;
+      box-shadow: 0 6px 20px rgba(26,74,20,0.3);
+    }
+    .prev-eyebrow { font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--dourado); font-weight: 700; }
+    .prev-dia { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900; margin: 4px 0 12px; }
+    .prev-nums { display: flex; gap: 24px; flex-wrap: wrap; }
+    .prev-n b { display: block; font-size: 1.9rem; font-weight: 900; line-height: 1; }
+    .prev-n span { font-size: 0.78rem; opacity: 0.85; }
+    .prev-conf { margin-top: 12px; font-size: 0.8rem; opacity: 0.85; }
+
+    table.hist { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    table.hist th { background: var(--verde); color: #fff; font-size: 0.76rem; padding: 10px 8px; text-transform: uppercase; letter-spacing: 0.3px; }
+    table.hist td { padding: 10px 8px; font-size: 0.88rem; text-align: center; border-top: 1px solid var(--borda); }
+    table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde); white-space: nowrap; }
+
+    /* ===== CALENDÁRIO DIAS FECHADOS ===== */
+    .cal-wrap { background: var(--card-bg); border-radius: 16px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); max-width: 420px; margin: 0 auto 20px; }
+    .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .cal-mes { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--verde); }
+    .cal-nav { background: var(--bg); border: 1px solid var(--borda); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1.2rem; color: var(--verde); font-weight: 700; }
+    .cal-nav:hover { background: var(--borda); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-dow { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--cinza); padding: 6px 0; text-transform: uppercase; }
+    .cal-dia {
+      aspect-ratio: 1; border: 1px solid var(--borda); border-radius: 10px;
+      background: #fff; cursor: pointer; font-family: 'Lato', sans-serif;
+      font-size: 0.95rem; font-weight: 700; color: var(--texto);
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .cal-dia:hover:not(.vazio):not(.domingo) { border-color: var(--verde-claro); }
+    .cal-dia.vazio { border: none; background: none; cursor: default; }
+    .cal-dia.fechado { background: #c0392b; color: #fff; border-color: #c0392b; }
+    .cal-dia.hoje { box-shadow: 0 0 0 2px var(--dourado); }
+    .cal-dia.domingo { background: #f0e6e6; color: #c99; cursor: default; }
+    .cal-dia.passado { opacity: 0.4; }
+    .cal-legenda { display: flex; gap: 18px; margin-top: 16px; font-size: 0.82rem; color: var(--cinza); justify-content: center; flex-wrap: wrap; }
+    .cal-legenda span { display: flex; align-items: center; gap: 6px; }
+    .cal-legenda i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+    .cal-hint { text-align: center; font-size: 0.85rem; color: var(--cinza); margin-top: 6px; }
+    .lista-fechados { max-width: 420px; margin: 0 auto; }
+    .lista-fechados h3 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--verde); margin-bottom: 10px; }
+    .chip-data { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--borda); border-radius: 20px; padding: 6px 8px 6px 14px; font-size: 0.88rem; font-weight: 700; color: var(--texto); margin: 0 8px 8px 0; }
+    .chip-data button { background: #c0392b; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 0.9rem; line-height: 1; }
+
+    .carregando-box { text-align: center; padding: 40px; color: var(--cinza); }
+
+
   </style>
 </head>
 <body>
@@ -191,19 +274,44 @@
     </div>
   </header>
 
+  <nav class="admin-tabs">
+    <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
+    <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
+    <button class="admin-tab" data-tab="fechados" onclick="trocarTab('fechados')">Dias Fechados</button>
+  </nav>
+
   <div class="admin-body">
-    <div class="admin-info-bar">
-      <h2>Pedidos do Dia</h2>
-      <div class="status-atualizacao">
-        <div class="dot-animado"></div>
-        <span id="statusAtualizacao">Atualizando em 30s...</span>
+    <!-- ===== ABA: PEDIDOS DO DIA ===== -->
+    <div class="tab-panel active" id="tab-pedidos">
+      <div class="admin-info-bar">
+        <h2>Pedidos do Dia</h2>
+        <div class="status-atualizacao">
+          <div class="dot-animado"></div>
+          <span id="statusAtualizacao">Atualizando em 30s...</span>
+        </div>
+      </div>
+
+      <div id="listaPedidos">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <div>Carregando pedidos...</div>
+        </div>
       </div>
     </div>
 
-    <div id="listaPedidos">
-      <div class="loading-spinner">
-        <div class="spinner"></div>
-        <div>Carregando pedidos...</div>
+    <!-- ===== ABA: RESUMO & HISTÓRICO ===== -->
+    <div class="tab-panel" id="tab-resumo">
+      <div class="admin-info-bar"><h2>Resumo &amp; Histórico</h2></div>
+      <div id="resumoConteudo">
+        <div class="carregando-box"><div class="spinner"></div>Carregando resumo…</div>
+      </div>
+    </div>
+
+    <!-- ===== ABA: DIAS FECHADOS ===== -->
+    <div class="tab-panel" id="tab-fechados">
+      <div class="admin-info-bar"><h2>Dias Fechados</h2></div>
+      <div id="fechadosConteudo">
+        <div class="carregando-box"><div class="spinner"></div>Carregando calendário…</div>
       </div>
     </div>
   </div>
@@ -511,6 +619,229 @@ async function gerarWord() {
   a.download = `pedidos-${hoje}.docx`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// ABAS DE NAVEGAÇÃO
+// ============================================================
+let resumoJaCarregado = false;
+let fechadosJaCarregado = false;
+
+function trocarTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+
+  if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
+  if (tab === 'fechados' && !fechadosJaCarregado) carregarFechados();
+}
+
+// ============================================================
+// RESUMO & HISTÓRICO
+// ============================================================
+function fmtR(v) { return 'R$ ' + (Number(v) || 0).toFixed(2).replace('.', ','); }
+function fmtDataBR(iso) { const [a, m, d] = iso.split('-'); return `${d}/${m}`; }
+
+async function carregarResumo() {
+  const cont = document.getElementById('resumoConteudo');
+  cont.innerHTML = '<div class="carregando-box"><div class="spinner"></div>Carregando resumo…</div>';
+  try {
+    const url = APPS_SCRIPT_URL + '?action=resumo&token=' + encodeURIComponent(sessionToken);
+    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const d = await res.json();
+    if (d && d.error === 'unauthorized') { sair(); return; }
+
+    resumoJaCarregado = true;
+    const h = d.hoje;
+    const totMarm = h.total || 0;
+    const pctM = totMarm > 0 ? Math.round(h.media / totMarm * 100) : 0;
+    const pctG = 100 - pctM;
+    const pesarTxt = (h.pesar || 0) > 0 ? ` · ${h.pesar} a pesar` : '';
+
+    const p = d.previsao;
+    let prevHtml = `<div class="prev-card">
+      <div class="prev-eyebrow">Previsão · próximo dia</div>
+      <div class="prev-dia">${p.diaSemana}, ${fmtDataBR(p.data)}</div>`;
+    if (p.baseAmostras === 0) {
+      prevHtml += `<div style="font-size:0.9rem;opacity:0.9;">Ainda sem dados suficientes de ${p.diaSemana.toLowerCase()}s anteriores para prever.</div>`;
+    } else {
+      prevHtml += `<div class="prev-nums">
+          <div class="prev-n"><b>${p.totalPrevisto}</b><span>marmitas previstas</span></div>
+          <div class="prev-n"><b>${p.mediaPrevista}</b><span>médias</span></div>
+          <div class="prev-n"><b>${p.grandePrevista}</b><span>grandes</span></div>
+          <div class="prev-n"><b>${fmtR(p.valorPrevisto).replace('R$ ','R$')}</b><span>estimado</span></div>
+        </div>
+        <div class="prev-conf">Baseado em ${p.baseAmostras} ${p.diaSemana.toLowerCase()}${p.baseAmostras>1?'s':''} anterior${p.baseAmostras>1?'es':''} · confiança ${p.confianca}</div>`;
+    }
+    prevHtml += `</div>`;
+
+    const ant = (d.anteriores || []).slice().reverse();
+    let tabela;
+    if (ant.length === 0) {
+      tabela = '<div class="pedido-vazio">Nenhum dia anterior registrado ainda.</div>';
+    } else {
+      tabela = `<table class="hist"><thead><tr>
+        <th style="text-align:left;">Dia</th><th>Média</th><th>Grande</th><th>Total</th><th>Valor</th>
+      </tr></thead><tbody>` +
+      ant.map(x => `<tr>
+        <td class="dia">${x.diaSemana.slice(0,3)} ${fmtDataBR(x.data)}</td>
+        <td>${x.media}</td><td>${x.grande}</td><td><b>${x.total}</b></td><td>${fmtR(x.valor).replace('R$ ','R$')}</td>
+      </tr>`).join('') + `</tbody></table>`;
+    }
+
+    cont.innerHTML = `
+      <div class="stat-card wide">
+        <div class="stat-label">Hoje — ${h.diaSemana}, ${fmtDataBR(h.data)} · balcão + site</div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px;">
+          <div><div class="stat-num verde">${totMarm}</div><div class="stat-sub">marmitas no total${pesarTxt}</div></div>
+          <div style="text-align:right;"><div class="stat-valor">${fmtR(h.valor)}</div><div class="stat-sub">em marmitas com preço fixo</div></div>
+        </div>
+        <div class="barra-prop"><i class="fm" style="width:${pctM}%"></i><i class="fg" style="width:${pctG}%"></i></div>
+        <div class="legenda">
+          <span><i style="background:var(--verde-claro)"></i>Média: <b>&nbsp;${h.media}</b></span>
+          <span><i style="background:#8B0000"></i>Grande: <b>&nbsp;${h.grande}</b></span>
+        </div>
+      </div>
+      <div class="resumo-grid">
+        <div class="stat-card"><div class="stat-label">Marmitas Média</div><div class="stat-num media">${h.media}</div></div>
+        <div class="stat-card"><div class="stat-label">Marmitas Grande</div><div class="stat-num grande">${h.grande}</div></div>
+      </div>
+      <div style="margin-top:18px;">${prevHtml}</div>
+      <div class="admin-info-bar" style="margin:4px 0 12px;"><h2 style="font-size:1.1rem;">Dias anteriores</h2></div>
+      ${tabela}
+      <div style="text-align:center;color:var(--cinza);font-size:0.76rem;margin-top:14px;">Conta pedidos do balcão e do site · atualizado ${d.geradoEm}</div>
+    `;
+  } catch (e) {
+    cont.innerHTML = '<div class="pedido-vazio">Não foi possível carregar o resumo. Verifique se as funções foram adicionadas ao Apps Script.</div>';
+  }
+}
+
+// ============================================================
+// DIAS FECHADOS — CALENDÁRIO
+// ============================================================
+let diasFechados = [];
+let calMesAtual = null;
+
+function hojeSP() {
+  const p = new Intl.DateTimeFormat('en-CA', { timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
+  const g = t => p.find(x => x.type===t)?.value ?? '';
+  return `${g('year')}-${g('month')}-${g('day')}`;
+}
+
+async function carregarFechados() {
+  const cont = document.getElementById('fechadosConteudo');
+  cont.innerHTML = '<div class="carregando-box"><div class="spinner"></div>Carregando calendário…</div>';
+  try {
+    const url = APPS_SCRIPT_URL + '?action=diasFechados&token=' + encodeURIComponent(sessionToken);
+    const res = await fetch(url, { method:'GET', redirect:'follow' });
+    const d = await res.json();
+    if (d && d.error === 'unauthorized') { sair(); return; }
+    diasFechados = Array.isArray(d.dias) ? d.dias : [];
+    fechadosJaCarregado = true;
+
+    if (!calMesAtual) {
+      const [a, m] = hojeSP().split('-');
+      calMesAtual = new Date(parseInt(a), parseInt(m) - 1, 1);
+    }
+    renderCalendario();
+  } catch (e) {
+    cont.innerHTML = '<div class="pedido-vazio">Não foi possível carregar os dias fechados.</div>';
+  }
+}
+
+function mudarMes(delta) {
+  calMesAtual = new Date(calMesAtual.getFullYear(), calMesAtual.getMonth() + delta, 1);
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const cont = document.getElementById('fechadosConteudo');
+  const ano = calMesAtual.getFullYear();
+  const mes = calMesAtual.getMonth();
+  const nomesMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const dow = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const hoje = hojeSP();
+
+  const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+  const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+
+  let celulas = '';
+  dow.forEach(d => { celulas += `<div class="cal-dow">${d}</div>`; });
+  for (let i = 0; i < primeiroDiaSemana; i++) celulas += `<div class="cal-dia vazio"></div>`;
+
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const iso = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const dataObj = new Date(ano, mes, dia);
+    const ehDomingo = dataObj.getDay() === 0;
+    const ehFechado = diasFechados.includes(iso);
+    const ehHoje = iso === hoje;
+    const ehPassado = iso < hoje;
+
+    let cls = 'cal-dia';
+    if (ehDomingo) cls += ' domingo';
+    if (ehFechado) cls += ' fechado';
+    if (ehHoje) cls += ' hoje';
+    if (ehPassado && !ehFechado) cls += ' passado';
+
+    const onclick = ehDomingo ? '' : ` onclick="toggleDia('${iso}')"`;
+    const titulo = ehDomingo ? 'title="Domingo já é fechado"' : '';
+    celulas += `<div class="${cls}" ${titulo}${onclick}>${dia}</div>`;
+  }
+
+  const futuras = diasFechados.filter(x => x >= hoje).sort();
+  let chips = '';
+  if (futuras.length > 0) {
+    chips = futuras.map(iso => {
+      const [a,m,dd] = iso.split('-');
+      return `<span class="chip-data">${dd}/${m}/${a}<button onclick="toggleDia('${iso}')" title="Reabrir">✕</button></span>`;
+    }).join('');
+  } else {
+    chips = '<div style="color:var(--cinza);font-size:0.88rem;">Nenhum dia fechado à frente.</div>';
+  }
+
+  cont.innerHTML = `
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="cal-nav" onclick="mudarMes(-1)">‹</button>
+        <div class="cal-mes">${nomesMes[mes]} ${ano}</div>
+        <button class="cal-nav" onclick="mudarMes(1)">›</button>
+      </div>
+      <div class="cal-grid">${celulas}</div>
+      <div class="cal-legenda">
+        <span><i style="background:#c0392b"></i>Fechado</span>
+        <span><i style="background:#f0e6e6"></i>Domingo</span>
+        <span><i style="background:#fff;border:1px solid var(--borda)"></i>Aberto</span>
+      </div>
+      <div class="cal-hint">Toque num dia para fechar ou reabrir.</div>
+    </div>
+    <div class="lista-fechados">
+      <h3>Próximos dias fechados</h3>
+      ${chips}
+    </div>
+  `;
+}
+
+async function toggleDia(iso) {
+  const estaFechado = diasFechados.includes(iso);
+  const acao = estaFechado ? 'abrirDia' : 'fecharDia';
+
+  if (estaFechado) diasFechados = diasFechados.filter(x => x !== iso);
+  else diasFechados = [...diasFechados, iso].sort();
+  renderCalendario();
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: acao, token: sessionToken, data: iso })
+    });
+    const d = await res.json();
+    if (d && d.error === 'unauthorized') { sair(); return; }
+    if (d && Array.isArray(d.dias)) { diasFechados = d.dias; renderCalendario(); }
+  } catch (e) {
+    if (estaFechado) diasFechados = [...diasFechados, iso].sort();
+    else diasFechados = diasFechados.filter(x => x !== iso);
+    renderCalendario();
+    alert('Não foi possível salvar. Verifique a conexão e tente de novo.');
+  }
 }
 </script>
 </body>
