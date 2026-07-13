@@ -28,6 +28,7 @@ let selCarne  = {};
 let selSalada = [];
 
 let CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
+let CARDAPIO_ATUALIZADO_EM = '';
 
 function showToast(msg, tipo = 'info', duracao = 3000) {
   let container = document.getElementById('toastContainer');
@@ -133,12 +134,16 @@ async function carregarCardapio() {
         const iso = item.includes('/') ? parseDateBR(item) : item;
         if (iso) DIAS_FECHADOS_ESPECIAIS.push(iso);
       }
+      else if (categoria === 'atualizado') {
+        CARDAPIO_ATUALIZADO_EM = item;
+      }
     });
 
     buildCardapio();
     buildGrids();
     updatePrecoPersonalizada();
     atualizarBadgeHorario();
+    mostrarCardapioAtualizado();
   } catch (e) {
     console.error('Erro ao carregar cardápio:', e);
     CARDAPIO = {
@@ -775,3 +780,24 @@ document.addEventListener('DOMContentLoaded', () => {
   atualizarBadgeHorario();
   setInterval(atualizarBadgeHorario, 60000);
 });
+// ========== SELO "CARDÁPIO ATUALIZADO EM..." ==========
+// Lê a data da categoria "atualizado" da planilha do cardápio e mostra
+// no selo acima do Cardápio do Dia. Aceita "11/07/2026" ou "2026-07-11".
+// Se a planilha não tiver a linha, o selo permanece oculto.
+function mostrarCardapioAtualizado() {
+  const selo = document.getElementById('cardapioAtualizado');
+  if (!selo) return;
+
+  const bruto = String(CARDAPIO_ATUALIZADO_EM || '').trim();
+  if (!bruto) { selo.hidden = true; return; }
+
+  // Normaliza para DD/MM/AAAA
+  let dataBR = bruto;
+  if (/^\d{4}-\d{2}-\d{2}/.test(bruto)) {
+    const [a, m, d] = bruto.slice(0, 10).split('-');
+    dataBR = `${d}/${m}/${a}`;
+  }
+
+  selo.textContent = `Cardápio atualizado em ${dataBR}`;
+  selo.hidden = false;
+}
