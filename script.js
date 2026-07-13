@@ -1,4 +1,3 @@
-// ========== GOOGLE SHEETS (Cardápio) — TSV para parsing robusto ==========
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv';
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
@@ -8,20 +7,28 @@ const WHATSAPP_NUMBER = "554733752227";
 // ========== CONFIGURAÇÃO DE HORÁRIO ==========
 const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
 // Buffet / atendimento presencial: 11h00
-const HORARIO_ABERTURA   = { h: 11, m: 0  };
+const HORARIO_ABERTURA   = { h: 14, m: 0  };
 // Fechamento: 14h00
 const HORARIO_FECHAMENTO = { h: 14, m: 0  };
 
-// DIAS_FECHADOS_ESPECIAIS
 let DIAS_FECHADOS_ESPECIAIS = [];
 
 let cart = [];
 let selectedSize = 'media';
+
+// ========== ID ÚNICO DE PEDIDO ==========
+function gerarIdPedido() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
 let selAcomp  = [];
 let selCarne  = {};   
 let selSalada = [];
 
 let CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
+let CARDAPIO_ATUALIZADO_EM = '';
 
 function showToast(msg, tipo = 'info', duracao = 3000) {
   let container = document.getElementById('toastContainer');
@@ -127,12 +134,16 @@ async function carregarCardapio() {
         const iso = item.includes('/') ? parseDateBR(item) : item;
         if (iso) DIAS_FECHADOS_ESPECIAIS.push(iso);
       }
+      else if (categoria === 'atualizado') {
+        CARDAPIO_ATUALIZADO_EM = item;
+      }
     });
 
     buildCardapio();
     buildGrids();
     updatePrecoPersonalizada();
     atualizarBadgeHorario();
+    mostrarCardapioAtualizado();
   } catch (e) {
     console.error('Erro ao carregar cardápio:', e);
     CARDAPIO = {
@@ -353,6 +364,15 @@ function updatePrecoPersonalizada() {
   const el = document.getElementById('precoPersonalizada');
   const infoEl = document.getElementById('infoPesar');
 
+  const nadaSelecionado = selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0;
+
+  if (nadaSelecionado) {
+    el.textContent = 'R$ 0,00';
+    el.classList.remove('preco-a-pesar');
+    if (infoEl) infoEl.style.display = 'none';
+    return;
+  }
+
   if (isModoPesar()) {
     el.textContent = 'A pesar';
     el.classList.add('preco-a-pesar');
@@ -361,14 +381,9 @@ function updatePrecoPersonalizada() {
     el.classList.remove('preco-a-pesar');
     if (infoEl) infoEl.style.display = 'none';
 
-    if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
-      const base = selectedSize === 'media' ? 26 : 28;
-      el.textContent = `R$ ${base.toFixed(2).replace('.', ',')}`;
-    } else {
-      const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
-      const total = base + (selSalada.length * 2);
-      el.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
+    const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
+    const total = base + (selSalada.length * 2);
+    el.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
   }
 }
 
@@ -449,7 +464,10 @@ function addPadrao(size) {
   });
   const descPlanilha = desc;
 
-  cart.push({ tipo: `Marmita ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty });
+  cart.push({
+    tipo: `Marmita ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty,
+    composicao: { tipoPedido: 'padrao', tamanho: size, pesar: false }
+  });
 
   salvarCarrinhoLocal();
   qtyPadrao[size] = 1;
@@ -493,7 +511,14 @@ function addPersonalizada() {
   });
   const qty = qtyPersonalizada;
 
-  cart.push({ tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta, preco: pesar ? 0 : preco * qty, qty, aPesar: pesar });
+  cart.push({
+    tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta,
+    preco: pesar ? 0 : preco * qty, qty, aPesar: pesar,
+    composicao: {
+      tipoPedido: 'personalizada', tamanho: selectedSize, pesar,
+      qtyAcomp: selAcomp.length, qtyCarnePedacos: totalPedacos, qtySalada: selSalada.length
+    }
+  });
 
   salvarCarrinhoLocal();
   updateCart();
@@ -657,14 +682,22 @@ function enviarWhatsApp(nomeCliente) {
 
   const total = cart.reduce((sum, item) => sum + item.preco, 0);
   const temAPesar = cart.some(item => item.aPesar);
+  const pedidoId = gerarIdPedido();
 
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
+      pedidoId,
       nomeCliente,
-      itens: cart.map(item => ({ tipo: item.tipo, desc: item.descPlanilha, preco: item.aPesar ? 'A pesar' : item.preco, qty: item.qty || 1 })),
+      itens: cart.map(item => ({
+        tipo: item.tipo,
+        desc: item.descPlanilha,
+        preco: item.aPesar ? 'A pesar' : item.preco,
+        qty: item.qty || 1,
+        composicao: item.composicao || null
+      })),
       total: temAPesar ? `${total.toFixed(2)} + itens a pesar` : total.toFixed(2),
       totalMarmitas: cart.reduce((sum, item) => sum + (item.qty || 1), 0)
     })
@@ -747,3 +780,24 @@ document.addEventListener('DOMContentLoaded', () => {
   atualizarBadgeHorario();
   setInterval(atualizarBadgeHorario, 60000);
 });
+// ========== SELO "CARDÁPIO ATUALIZADO EM..." ==========
+// Lê a data da categoria "atualizado" da planilha do cardápio e mostra
+// no selo acima do Cardápio do Dia. Aceita "11/07/2026" ou "2026-07-11".
+// Se a planilha não tiver a linha, o selo permanece oculto.
+function mostrarCardapioAtualizado() {
+  const selo = document.getElementById('cardapioAtualizado');
+  if (!selo) return;
+
+  const bruto = String(CARDAPIO_ATUALIZADO_EM || '').trim();
+  if (!bruto) { selo.hidden = true; return; }
+
+  // Normaliza para DD/MM/AAAA
+  let dataBR = bruto;
+  if (/^\d{4}-\d{2}-\d{2}/.test(bruto)) {
+    const [a, m, d] = bruto.slice(0, 10).split('-');
+    dataBR = `${d}/${m}/${a}`;
+  }
+
+  selo.textContent = `Cardápio atualizado em ${dataBR}`;
+  selo.hidden = false;
+}

@@ -4,245 +4,589 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Restaurante do Mário</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
   <script type="module">
     import { Document, Packer, Paragraph, TextRun } from 'https://esm.sh/docx@8.5.0';
     window.docxLib = { Document, Packer, Paragraph, TextRun };
   </script>
   <style>
+    /* ============================================================
+       ADMIN — Restaurante do Mário · Design 2026
+       Mesmo sistema visual do site: verde profundo + dourado,
+       Fraunces + Atkinson Hyperlegible, foco em legibilidade.
+       ============================================================ */
     :root {
-      --verde: #1a4a14;
-      --verde-claro: #2e7d20;
-      --dourado: #c9a84c;
-      --bg: #f5f5f0;
+      --verde-900: #14350f;
+      --verde-800: #1a4a14;
+      --verde-700: #1e5216;
+      --verde-600: #2e7d20;
+      --verde-100: #e9f1e5;
+      --dourado: #c9a050;
+      --dourado-claro: #e6c887;
+      --dourado-texto: #8a6b21;
+      --terra: #9e3b2b;
+      --papel: #faf8f2;
       --card-bg: #ffffff;
-      --texto: #1a1a1a;
-      --cinza: #666;
-      --borda: #e0e0d8;
-      --separador: #ddd;
+      --tinta: #23281f;
+      --cinza: #5c6355;
+      --borda: #e3e0d6;
+      --erro: #b3372a;
+      --sombra-1: 0 1px 3px rgba(24,34,18,0.08);
+      --sombra-2: 0 6px 20px rgba(24,34,18,0.10);
+      --sombra-3: 0 14px 38px rgba(24,34,18,0.16);
+      --raio: 14px;
+      --raio-g: 20px;
+      --transicao: 200ms cubic-bezier(0.2,0.6,0.3,1);
+      /* aliases usados por regras antigas */
+      --verde: var(--verde-800);
+      --verde-claro: var(--verde-600);
+      --texto: var(--tinta);
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--texto); min-height: 100vh; }
+
+    body {
+      font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif;
+      background: var(--papel);
+      color: var(--tinta);
+      font-size: 16.5px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible { outline: 3px solid var(--dourado); outline-offset: 2px; border-radius: 6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
 
     /* ===== LOGIN ===== */
     #telaLogin {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; background: var(--verde);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 420px at 85% -10%, rgba(201,160,80,0.14), transparent 60%),
+        linear-gradient(160deg, var(--verde-900), var(--verde-800));
+      padding: 20px;
     }
     .login-box {
-      background: #fff; border-radius: 20px; padding: 48px 40px;
-      width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      background: var(--card-bg);
+      border-radius: var(--raio-g);
+      padding: 44px 36px 36px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--sombra-3);
       text-align: center;
     }
     .login-logo {
-      font-family: 'Playfair Display', serif; font-size: 1.6rem;
-      font-weight: 900; color: var(--verde); margin-bottom: 6px;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--verde-900);
     }
-    .login-sub { font-size: 0.82rem; color: var(--cinza); margin-bottom: 32px; letter-spacing: 1px; }
+    .login-sub {
+      font-size: 0.72rem;
+      color: var(--cinza);
+      letter-spacing: 0.22em;
+      margin: 6px 0 28px;
+    }
     .login-box input {
-      width: 100%; padding: 13px 16px; border: 2px solid var(--borda);
-      border-radius: 10px; font-size: 1rem; font-family: 'Lato', sans-serif;
-      margin-bottom: 14px; outline: none; transition: border 0.2s;
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--borda);
+      border-radius: var(--raio);
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 12px;
+      transition: border-color var(--transicao);
     }
-    .login-box input:focus { border-color: var(--verde-claro); }
+    .login-box input:focus { outline: none; border-color: var(--verde-600); }
     .login-btn {
-      width: 100%; padding: 14px; background: var(--verde); color: #fff;
-      border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
-      cursor: pointer; transition: background 0.2s; font-family: 'Lato', sans-serif;
+      width: 100%;
+      min-height: 52px;
+      padding: 14px;
+      background: var(--verde-800);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background var(--transicao), transform var(--transicao);
     }
-    .login-btn:hover { background: var(--verde-claro); }
-    .login-erro { color: #c0392b; font-size: 0.88rem; margin-top: 10px; min-height: 20px; }
+    .login-btn:hover { background: var(--verde-700); transform: translateY(-1px); }
+    .login-erro { color: var(--erro); font-size: 0.88rem; margin-top: 12px; min-height: 20px; }
 
-    /* ===== PAINEL ADMIN ===== */
+    /* ===== APP ===== */
     #telaAdmin { display: none; }
+
     .admin-header {
-      background: var(--verde); color: #fff; padding: 0 32px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 64px; position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      background: var(--verde-900);
+      color: #fff;
+      padding: 0 24px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 14px rgba(10,20,8,0.35);
     }
     .admin-header-title {
-      font-family: 'Playfair Display', serif; font-size: 1.25rem;
-      font-weight: 900; color: #fff;
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 1.12rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .admin-header-right { display: flex; align-items: center; gap: 16px; }
+    .admin-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .badge-total {
-      background: var(--dourado); color: #fff; border-radius: 20px;
-      padding: 4px 14px; font-size: 0.82rem; font-weight: 700;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
-    .btn-imprimir {
-      background: var(--dourado); color: #fff; border: none;
-      border-radius: 10px; padding: 9px 20px; font-size: 0.9rem;
-      font-weight: 700; cursor: pointer; font-family: 'Lato', sans-serif;
-      transition: background 0.2s;
+    .btn-imprimir, .btn-sair {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      min-height: 42px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background var(--transicao), transform var(--transicao);
     }
-    .btn-imprimir:hover { background: #b8922e; }
-    .btn-sair {
-      background: rgba(255,255,255,0.15); color: #fff; border: none;
-      border-radius: 10px; padding: 9px 16px; font-size: 0.85rem;
-      cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.2s;
-    }
-    .btn-sair:hover { background: rgba(255,255,255,0.25); }
+    .btn-imprimir { background: var(--dourado); color: #221a04; }
+    .btn-imprimir:hover { background: var(--dourado-claro); transform: translateY(-1px); }
+    .btn-sair { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn-sair:hover { background: rgba(255,255,255,0.22); }
 
-    .admin-body { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
-
-    .admin-info-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
-    }
-    .admin-info-bar h2 {
-      font-family: 'Playfair Display', serif; font-size: 1.5rem;
-      font-weight: 900; color: var(--verde);
-    }
-    .status-atualizacao {
-      font-size: 0.82rem; color: var(--cinza); display: flex; align-items: center; gap: 6px;
-    }
-    .dot-animado {
-      width: 8px; height: 8px; background: #27ae60; border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
-    }
-
-    /* ===== LISTA DE PEDIDOS ===== */
-    #listaPedidos { display: flex; flex-direction: column; gap: 20px; }
-
-    .pedido-card {
-      background: var(--card-bg); border-radius: 14px; padding: 24px 28px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-left: 4px solid var(--verde);
-    }
-    .pedido-header {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
-    }
-    .pedido-cliente {
-      font-weight: 700; font-size: 1.1rem; color: var(--verde);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .pedido-cliente::before { content: "📦"; }
-    .pedido-hora { font-size: 0.8rem; color: var(--cinza); }
-    .pedido-total-tag {
-      font-size: 0.8rem; font-weight: 700; background: var(--verde);
-      color: #fff; border-radius: 20px; padding: 3px 12px;
-    }
-
-    .marmita-linha {
-      display: flex; gap: 10px; padding: 10px 0;
-      border-top: 1px solid var(--borda); align-items: flex-start;
-    }
-    .marmita-badge {
-      background: var(--bg); border: 1px solid var(--borda); border-radius: 8px;
-      padding: 3px 10px; font-size: 0.8rem; font-weight: 700; color: var(--verde);
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .marmita-itens { font-size: 0.9rem; color: var(--texto); line-height: 1.6; }
-
-    .pedido-vazio {
-      text-align: center; color: var(--cinza); padding: 60px 0;
-      font-size: 1rem;
-    }
-
-    /* ===== LOADING ===== */
-    .loading-spinner {
-      text-align: center; padding: 60px 0; color: var(--cinza);
-    }
-    .spinner {
-      width: 36px; height: 36px; border: 3px solid var(--borda);
-      border-top-color: var(--verde); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== ABAS DE NAVEGAÇÃO ===== */
+    /* ===== ABAS ===== */
     .admin-tabs {
-      display: flex; gap: 4px; max-width: 860px; margin: 0 auto;
-      padding: 0 24px; border-bottom: 1px solid var(--borda);
+      display: flex;
+      gap: 2px;
+      background: var(--verde-900);
+      padding: 0 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: 62px;
+      z-index: 49;
     }
     .admin-tab {
-      background: none; border: none; padding: 14px 18px; cursor: pointer;
-      font-family: 'Lato', sans-serif; font-size: 0.95rem; font-weight: 700;
-      color: var(--cinza); border-bottom: 3px solid transparent;
-      margin-bottom: -1px; transition: color 0.2s, border-color 0.2s;
+      background: none;
+      border: none;
+      padding: 14px 18px;
+      min-height: 50px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.65);
+      border-bottom: 3px solid transparent;
+      transition: color var(--transicao), border-color var(--transicao);
+      white-space: nowrap;
     }
-    .admin-tab:hover { color: var(--verde); }
-    .admin-tab.active { color: var(--verde); border-bottom-color: var(--dourado); }
+    .admin-tab:hover { color: #fff; }
+    .admin-tab.active { color: #fff; border-bottom-color: var(--dourado); }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
+    .admin-body { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+
+    .admin-info-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .admin-info-bar h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--verde-900);
+    }
+    .status-atualizacao {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--cinza);
+    }
+    .dot-animado {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--verde-600);
+      animation: pulsar 1.6s ease-in-out infinite;
+    }
+    @keyframes pulsar {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.82); }
+    }
+
+    /* ===== CARDS DE PEDIDO (assinatura de comanda) ===== */
+    .pedido-card {
+      background: var(--card-bg);
+      border-radius: 6px 6px var(--raio) var(--raio);
+      border-top: 5px solid var(--verde-800);
+      padding: 20px 22px 18px;
+      margin-bottom: 24px;
+      box-shadow: var(--sombra-2);
+      position: relative;
+    }
+    .pedido-card::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: -9px;
+      height: 11px;
+      background-image: radial-gradient(circle at 6px 0px, transparent 5px, var(--card-bg) 5.5px);
+      background-size: 14px 11px;
+      background-repeat: repeat-x;
+    }
+
+    .pedido-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--borda);
+    }
+    .pedido-cliente {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--verde-900);
+    }
+    .pedido-hora {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--cinza);
+      background: var(--papel);
+      border: 1px solid var(--borda);
+      border-radius: 999px;
+      padding: 5px 12px;
+    }
+    .pedido-total-tag {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--verde-700);
+      border-radius: 999px;
+      padding: 5px 14px;
+    }
+
+    .marmita-linha { padding: 12px 0; border-bottom: 1px solid #f1eee4; }
+    .marmita-linha:last-child { border-bottom: none; padding-bottom: 4px; }
+    .marmita-badge {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--verde-800);
+      background: var(--verde-100);
+      border-radius: 999px;
+      padding: 5px 14px;
+      margin-bottom: 6px;
+    }
+    .marmita-itens { font-size: 0.95rem; color: var(--tinta); line-height: 1.6; }
+    .marmita-itens .obs-destaque { color: #1a56db; font-weight: 700; }
+
+    .pedido-vazio {
+      text-align: center;
+      color: var(--cinza);
+      background: var(--card-bg);
+      border: 1px dashed var(--borda);
+      border-radius: var(--raio-g);
+      padding: 44px 20px;
+      font-size: 1rem;
+    }
+
+    .loading-spinner, .carregando-box { text-align: center; padding: 48px 20px; color: var(--cinza); }
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid var(--borda);
+      border-top-color: var(--verde-700);
+      border-radius: 50%;
+      animation: girar 0.8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes girar { to { transform: rotate(360deg); } }
+
     /* ===== RESUMO ===== */
     .resumo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
     .stat-card {
-      background: var(--card-bg); border-radius: 14px; padding: 18px 20px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      background: var(--card-bg);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio-g);
+      padding: 20px 22px;
+      box-shadow: var(--sombra-1);
     }
     .stat-card.wide { grid-column: 1 / -1; }
-    .stat-label { font-size: 0.78rem; color: var(--cinza); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-    .stat-num { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin-top: 4px; }
-    .stat-num.media { color: var(--verde-claro); }
-    .stat-num.grande { color: #8B0000; }
-    .stat-num.verde { color: var(--verde); }
-    .stat-sub { font-size: 0.82rem; color: var(--cinza); margin-top: 5px; }
-    .stat-valor { font-size: 1.8rem; font-weight: 900; color: var(--verde); }
+    .stat-label {
+      font-size: 0.74rem;
+      color: var(--cinza);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .stat-num {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      line-height: 1.05;
+      margin-top: 4px;
+    }
+    .stat-num.media { color: var(--verde-600); }
+    .stat-num.grande { color: var(--terra); }
+    .stat-num.verde { color: var(--verde-800); }
+    .stat-sub { font-size: 0.84rem; color: var(--cinza); margin-top: 5px; }
+    .stat-valor {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--verde-800);
+    }
     .barra-prop { height: 12px; border-radius: 7px; background: var(--borda); overflow: hidden; display: flex; margin-top: 12px; }
     .barra-prop i { display: block; height: 100%; }
-    .barra-prop .fm { background: var(--verde-claro); }
-    .barra-prop .fg { background: #8B0000; }
-    .legenda { display: flex; gap: 18px; margin-top: 10px; font-size: 0.85rem; color: var(--cinza); }
+    .barra-prop .fm { background: var(--verde-600); }
+    .barra-prop .fg { background: var(--terra); }
+    .legenda { display: flex; gap: 18px; margin-top: 10px; font-size: 0.86rem; color: var(--cinza); flex-wrap: wrap; }
     .legenda span { display: flex; align-items: center; gap: 6px; }
-    .legenda i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+    .legenda i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
 
     .prev-card {
-      background: linear-gradient(135deg, var(--verde), var(--verde-claro));
-      color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 18px;
-      box-shadow: 0 6px 20px rgba(26,74,20,0.3);
+      background:
+        radial-gradient(700px 300px at 90% -20%, rgba(201,160,80,0.18), transparent 60%),
+        linear-gradient(150deg, var(--verde-900), var(--verde-800));
+      color: #fff;
+      border-radius: var(--raio-g);
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: var(--sombra-2);
     }
-    .prev-eyebrow { font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--dourado); font-weight: 700; }
-    .prev-dia { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900; margin: 4px 0 12px; }
-    .prev-nums { display: flex; gap: 24px; flex-wrap: wrap; }
-    .prev-n b { display: block; font-size: 1.9rem; font-weight: 900; line-height: 1; }
+    .prev-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--dourado-claro);
+      font-weight: 700;
+    }
+    .prev-dia {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin: 4px 0 14px;
+    }
+    .prev-nums { display: flex; gap: 26px; flex-wrap: wrap; }
+    .prev-n b {
+      display: block;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      line-height: 1;
+    }
     .prev-n span { font-size: 0.78rem; opacity: 0.85; }
-    .prev-conf { margin-top: 12px; font-size: 0.8rem; opacity: 0.85; }
+    .prev-conf { margin-top: 14px; font-size: 0.8rem; opacity: 0.85; }
 
-    table.hist { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
-    table.hist th { background: var(--verde); color: #fff; font-size: 0.76rem; padding: 10px 8px; text-transform: uppercase; letter-spacing: 0.3px; }
-    table.hist td { padding: 10px 8px; font-size: 0.88rem; text-align: center; border-top: 1px solid var(--borda); }
-    table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde); white-space: nowrap; }
+    table.hist {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border-radius: var(--raio);
+      overflow: hidden;
+      box-shadow: var(--sombra-1);
+    }
+    table.hist th {
+      background: var(--verde-800);
+      color: #fff;
+      font-size: 0.74rem;
+      padding: 11px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    table.hist td { padding: 11px 8px; font-size: 0.9rem; text-align: center; border-top: 1px solid var(--borda); }
+    table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde-800); white-space: nowrap; }
 
     /* ===== CALENDÁRIO DIAS FECHADOS ===== */
-    .cal-wrap { background: var(--card-bg); border-radius: 16px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); max-width: 420px; margin: 0 auto 20px; }
-    .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .cal-mes { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--verde); }
-    .cal-nav { background: var(--bg); border: 1px solid var(--borda); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1.2rem; color: var(--verde); font-weight: 700; }
-    .cal-nav:hover { background: var(--borda); }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .cal-dow { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--cinza); padding: 6px 0; text-transform: uppercase; }
-    .cal-dia {
-      aspect-ratio: 1; border: 1px solid var(--borda); border-radius: 10px;
-      background: #fff; cursor: pointer; font-family: 'Lato', sans-serif;
-      font-size: 0.95rem; font-weight: 700; color: var(--texto);
-      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    .cal-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio-g);
+      padding: 24px;
+      box-shadow: var(--sombra-1);
+      max-width: 440px;
+      margin: 0 auto 22px;
     }
-    .cal-dia:hover:not(.vazio):not(.domingo) { border-color: var(--verde-claro); }
+    .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .cal-mes {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--verde-900);
+    }
+    .cal-nav {
+      background: var(--papel);
+      border: 1.5px solid var(--borda);
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--verde-800);
+      font-weight: 800;
+      transition: background var(--transicao), border-color var(--transicao);
+    }
+    .cal-nav:hover { background: var(--verde-100); border-color: var(--verde-600); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .cal-dow {
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--cinza);
+      padding: 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .cal-dia {
+      aspect-ratio: 1;
+      border: 1.5px solid var(--borda);
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--tinta);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color var(--transicao), background var(--transicao), transform var(--transicao);
+    }
+    .cal-dia:hover:not(.vazio):not(.domingo) { border-color: var(--verde-600); transform: scale(1.04); }
     .cal-dia.vazio { border: none; background: none; cursor: default; }
-    .cal-dia.fechado { background: #c0392b; color: #fff; border-color: #c0392b; }
-    .cal-dia.hoje { box-shadow: 0 0 0 2px var(--dourado); }
-    .cal-dia.domingo { background: #f0e6e6; color: #c99; cursor: default; }
+    .cal-dia.fechado { background: var(--erro); color: #fff; border-color: var(--erro); }
+    .cal-dia.hoje { box-shadow: 0 0 0 2.5px var(--dourado); }
+    .cal-dia.domingo { background: #f4ecea; color: #c4a49e; cursor: default; }
     .cal-dia.passado { opacity: 0.4; }
-    .cal-legenda { display: flex; gap: 18px; margin-top: 16px; font-size: 0.82rem; color: var(--cinza); justify-content: center; flex-wrap: wrap; }
+    .cal-legenda { display: flex; gap: 18px; margin-top: 16px; font-size: 0.84rem; color: var(--cinza); justify-content: center; flex-wrap: wrap; }
     .cal-legenda span { display: flex; align-items: center; gap: 6px; }
-    .cal-legenda i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
-    .cal-hint { text-align: center; font-size: 0.85rem; color: var(--cinza); margin-top: 6px; }
-    .lista-fechados { max-width: 420px; margin: 0 auto; }
-    .lista-fechados h3 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--verde); margin-bottom: 10px; }
-    .chip-data { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--borda); border-radius: 20px; padding: 6px 8px 6px 14px; font-size: 0.88rem; font-weight: 700; color: var(--texto); margin: 0 8px 8px 0; }
-    .chip-data button { background: #c0392b; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 0.9rem; line-height: 1; }
+    .cal-legenda i { width: 14px; height: 14px; border-radius: 5px; display: inline-block; }
+    .cal-hint { text-align: center; font-size: 0.86rem; color: var(--cinza); margin-top: 8px; }
 
-    .carregando-box { text-align: center; padding: 40px; color: var(--cinza); }
+    .lista-fechados { max-width: 440px; margin: 0 auto; }
+    .lista-fechados h3 {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--verde-800);
+      margin-bottom: 12px;
+      font-weight: 800;
+    }
+    .chip-data {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--borda);
+      border-radius: 999px;
+      padding: 8px 8px 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--tinta);
+      margin: 0 8px 8px 0;
+      box-shadow: var(--sombra-1);
+    }
+    .chip-data button {
+      background: #f6ece9;
+      color: var(--erro);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 800;
+      line-height: 1;
+      transition: background var(--transicao);
+    }
+    .chip-data button:hover { background: #f0dcd7; }
 
+    /* ===== RESPONSIVO ===== */
+    @media (max-width: 600px) {
+      body { font-size: 15px; }
+      .admin-header { padding: 0 12px; height: 54px; }
+      .admin-header-title { font-size: 0.9rem; }
+      .badge-total { display: none; }
+      .btn-imprimir, .btn-sair { padding: 8px 12px; font-size: 0.78rem; min-height: 38px; }
+      .admin-tabs { top: 54px; padding: 0 8px; }
+      .admin-tab { font-size: 0.82rem; padding: 11px 12px; min-height: 44px; }
+      .admin-body { padding: 16px 10px 44px; }
+      .admin-info-bar { margin-bottom: 14px; }
+      .admin-info-bar h2 { font-size: 1.2rem; }
+      .status-atualizacao { font-size: 0.76rem; }
 
+      /* Pedidos */
+      .pedido-card { padding: 15px 13px 13px; margin-bottom: 20px; }
+      .pedido-cliente { font-size: 1.08rem; }
+      .pedido-hora, .pedido-total-tag { font-size: 0.72rem; padding: 4px 10px; }
+      .marmita-badge { font-size: 0.74rem; padding: 4px 11px; }
+      .marmita-itens { font-size: 0.85rem; }
+
+      /* Resumo */
+      .resumo-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stat-card { padding: 12px 11px; }
+      .stat-num { font-size: 1.5rem; }
+      .stat-valor { font-size: 1.2rem; }
+      .stat-label { font-size: 0.6rem; }
+      .stat-sub { font-size: 0.74rem; }
+      .barra-prop { height: 9px; }
+      .legenda { font-size: 0.76rem; gap: 12px; }
+
+      /* Previsão */
+      .prev-card { padding: 15px 13px; }
+      .prev-eyebrow { font-size: 0.6rem; }
+      .prev-dia { font-size: 1.1rem; margin-bottom: 10px; }
+      .prev-nums { gap: 12px 16px; }
+      .prev-n b { font-size: 1.25rem; }
+      .prev-n span { font-size: 0.66rem; }
+      .prev-conf { font-size: 0.7rem; margin-top: 10px; }
+
+      /* Tabela do histórico */
+      table.hist th { font-size: 0.56rem; padding: 7px 3px; letter-spacing: 0.01em; }
+      table.hist td { font-size: 0.74rem; padding: 7px 3px; }
+      table.hist td.dia { font-size: 0.72rem; }
+
+      /* Calendário */
+      .cal-wrap { padding: 13px 9px; }
+      .cal-grid { gap: 2px; }
+      .cal-dia { font-size: 0.8rem; border-radius: 8px; border-width: 1px; }
+      .cal-dow { font-size: 0.6rem; }
+      .cal-nav { width: 38px; height: 38px; font-size: 1.05rem; }
+      .cal-mes { font-size: 0.98rem; }
+      .cal-legenda { gap: 10px; font-size: 0.7rem; margin-top: 12px; }
+      .cal-legenda i { width: 11px; height: 11px; }
+      .cal-hint { font-size: 0.76rem; }
+      .lista-fechados h3 { font-size: 0.66rem; }
+      .chip-data { font-size: 0.78rem; padding: 6px 6px 6px 13px; }
+      .chip-data button { width: 25px; height: 25px; font-size: 0.8rem; }
+    }
   </style>
 </head>
 <body>
@@ -414,7 +758,7 @@ async function buscarPedidos() {
   } catch (e) {
     console.warn('Erro ao buscar pedidos:', e);
     document.getElementById('listaPedidos').innerHTML =
-      `<div class="pedido-vazio">⚠️ Erro ao conectar. Verifique a URL do Apps Script.</div>`;
+      `<div class="pedido-vazio">Erro ao conectar. Verifique a URL do Apps Script.</div>`;
   }
 }
 
@@ -458,7 +802,7 @@ function renderizarPedidos() {
     let marmitasHTML = marmitasAgrupadas.map(m => `
       <div class="marmita-linha">
         <div class="marmita-badge">${m.qty > 1 ? m.qty + 'x ' : ''}${m.tipo}</div>
-        <div class="marmita-itens">${m.itens}</div>
+        <div class="marmita-itens">${String(m.itens).replace('⚠️ Obs:', '<span class="obs-destaque">Obs:</span>')}</div>
       </div>
     `).join('');
 
@@ -835,7 +1179,12 @@ async function toggleDia(iso) {
     });
     const d = await res.json();
     if (d && d.error === 'unauthorized') { sair(); return; }
-    if (d && Array.isArray(d.dias)) { diasFechados = d.dias; renderCalendario(); }
+    if (d && Array.isArray(d.dias)) {
+      // Só aceita a lista do servidor se ela refletir a ação que acabamos
+      // de fazer; senão mantém o estado local (evita a data "sumir").
+      const refletiu = estaFechado ? !d.dias.includes(iso) : d.dias.includes(iso);
+      if (refletiu) { diasFechados = d.dias; renderCalendario(); }
+    }
   } catch (e) {
     if (estaFechado) diasFechados = [...diasFechados, iso].sort();
     else diasFechados = diasFechados.filter(x => x !== iso);
