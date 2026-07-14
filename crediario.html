@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crediário — Restaurante do Mário</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --preto:#141210; --papel:#faf6ee; --carta:#fffdf8;
+  --linha:#e0d8c8; --tinta:#4a4237;
+  --verde:#1f7a4c; --amarelo:#c98a00; --vermelho:#b3261e;
+  --azul:#1a5490; --destaque:#d94f04;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--papel); color:var(--preto);
+  font-size:15px; line-height:1.5;
+}
+button{font-family:inherit;font-size:14px;cursor:pointer;border:none;border-radius:6px;padding:9px 16px;font-weight:600;transition:.12s}
+button:active{transform:translateY(1px)}
+.btn{background:var(--preto);color:#fff}
+.btn:hover{background:#2c2823}
+.btn-2{background:#fff;color:var(--preto);border:1.5px solid var(--linha)}
+.btn-2:hover{border-color:var(--preto)}
+.btn-verde{background:var(--verde);color:#fff}
+.btn-vermelho{background:var(--vermelho);color:#fff}
+.btn-azul{background:var(--azul);color:#fff}
+.btn-mini{padding:5px 10px;font-size:12.5px}
+input,select,textarea{
+  font-family:inherit;font-size:14px;padding:9px 11px;
+  border:1.5px solid var(--linha);border-radius:6px;
+  background:#fff;width:100%;color:var(--preto);
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--preto)}
+label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta);margin-bottom:5px}
+.campo{margin-bottom:14px}
+.grade{display:grid;gap:12px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+#login{position:fixed;inset:0;background:var(--preto);display:flex;align-items:center;justify-content:center;z-index:200}
+#login .box{background:var(--carta);padding:36px;border-radius:12px;width:340px}
+#login h1{font-size:22px;margin-bottom:4px}
+#login p{font-size:13px;color:var(--tinta);margin-bottom:22px}
+
+header{
+  background:var(--preto);color:#fff;padding:14px 22px;
+  display:flex;align-items:center;gap:20px;
+  position:sticky;top:0;z-index:50;
+}
+header h1{font-size:18px;font-weight:800;letter-spacing:-.02em}
+header .tag{font-size:11px;background:var(--destaque);padding:3px 8px;border-radius:4px;font-weight:700}
+nav{display:flex;gap:4px;margin-left:auto}
+nav button{background:transparent;color:#a49a8c;padding:7px 14px}
+nav button:hover{color:#fff}
+nav button.on{background:#2c2823;color:#fff}
+main{max-width:1180px;margin:0 auto;padding:24px 22px 80px}
+
+.cartao{background:var(--carta);border:1.5px solid var(--linha);border-radius:10px;padding:20px;margin-bottom:18px}
+.cartao h2{font-size:16px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+
+.resumo{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.metrica{background:var(--carta);border:1.5px solid var(--linha);border-radius:10px;padding:16px}
+.metrica .rot{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta);font-weight:700}
+.metrica .val{font-size:26px;font-weight:800;margin-top:5px;letter-spacing:-.02em}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta);padding:9px 10px;border-bottom:2px solid var(--linha)}
+td{padding:11px 10px;border-bottom:1px solid var(--linha)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f5f0e4}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.clicavel{cursor:pointer}
+
+.pin{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.pin.v{background:var(--verde)} .pin.a{background:var(--amarelo)} .pin.r{background:var(--vermelho)}
+.selo{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.03em}
+.selo.pf{background:#e8eef5;color:var(--azul)}
+.selo.pj{background:#f5ece8;color:var(--destaque)}
+.selo.pago{background:#e3f2e9;color:var(--verde)}
+.selo.aberto{background:#fdf2dd;color:var(--amarelo)}
+.selo.venc{background:#fbe6e5;color:var(--vermelho)}
+.selo.off{background:#eee;color:#777}
+
+.modal{position:fixed;inset:0;background:rgba(20,18,16,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:120;overflow-y:auto}
+.modal .janela{background:var(--carta);border-radius:12px;width:100%;max-width:640px;padding:26px}
+.modal .janela.larga{max-width:900px}
+.modal h3{font-size:18px;margin-bottom:18px}
+.rodape{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1.5px solid var(--linha)}
+
+.vazio{text-align:center;padding:40px;color:var(--tinta);font-size:14px}
+.barra{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.barra input[type=search]{flex:1;min-width:200px}
+.aviso{padding:11px 14px;border-radius:6px;font-size:13.5px;margin-bottom:14px}
+.aviso.erro{background:#fbe6e5;color:var(--vermelho)}
+.aviso.ok{background:#e3f2e9;color:var(--verde)}
+.aviso.info{background:#e8eef5;color:var(--azul)}
+.total-linha{font-weight:800;font-size:16px;border-top:2px solid var(--preto)!important}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--preto);color:#fff;padding:12px 22px;border-radius:8px;font-size:14px;z-index:300;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1}
+.carregando{text-align:center;padding:50px;color:var(--tinta)}
+#overlay{position:fixed;inset:0;background:rgba(20,18,16,.55);display:none;align-items:center;justify-content:center;z-index:400;backdrop-filter:blur(2px)}
+#overlay.on{display:flex}
+#overlay .cx{background:var(--carta);padding:26px 34px;border-radius:12px;display:flex;align-items:center;gap:14px;font-weight:600}
+.roda{width:22px;height:22px;border:3px solid var(--linha);border-top-color:var(--preto);border-radius:50%;animation:gira .7s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+button:disabled{opacity:.5;cursor:not-allowed}
+mark{background:#ffe9a8;color:inherit;padding:0 1px;border-radius:2px}
+.acoes{display:flex;gap:6px;flex-wrap:wrap}
+h4.sub{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta);margin:20px 0 10px;font-weight:700}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="box">
+    <h1>Crediário</h1>
+    <p>Restaurante do Mário</p>
+    <div class="campo">
+      <label>Senha</label>
+      <input type="password" id="senha" onkeydown="if(event.key==='Enter')entrar()">
+    </div>
+    <div id="loginErro"></div>
+    <button class="btn" style="width:100%" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<header>
+  <h1>Crediário</h1>
+  <span class="tag">RDM</span>
+  <nav>
+    <button id="nav-painel"  class="on" onclick="ir('painel')">Painel</button>
+    <button id="nav-clientes"        onclick="ir('clientes')">Clientes</button>
+    <button id="nav-fechamentos"     onclick="ir('fechamentos')">Fechamentos</button>
+  </nav>
+</header>
+
+<main id="app"><div class="carregando">Carregando…</div></main>
+<div id="toast"></div>
+<div id="overlay"><div class="cx"><div class="roda"></div><span id="overlayMsg">Salvando…</span></div></div>
+<script>
+/* ================= ESTADO ================= */
+const URL_API = 'https://script.google.com/macros/s/AKfycbydXEs_sOT8NQxwiz7yJASs5f8Bk6GZjc3asUzwVaUxj9mCF3AJZgfolm0Y6uYy22Xu1Q/exec';
+
+let SENHA = '';
+let DB = { clientes:[], lancamentos:[], pagamentos:[], fechamentos:[], config:{} };
+let TELA = 'painel';
+let CLIENTE_ABERTO = null;
+let BUSCA = '';
+let MOSTRAR_INATIVOS = false;
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const brl = v => (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const dbr = d => { if(!d) return '—'; const p=String(d).split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : String(d); };
+const hoje = () => new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});
+const cliente = id => DB.clientes.find(c => String(c.id)===String(id));
+
+function toast(msg, erro){
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.background = erro ? 'var(--vermelho)' : 'var(--preto)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* --- Normaliza: tira acento, minúsculo, tira pontuação --- */
+function norm(s){
+  return String(s??'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+/* --- Distância de Levenshtein (tolera erro de digitação) --- */
+function lev(a,b){
+  if(a===b) return 0;
+  if(!a.length) return b.length;
+  if(!b.length) return a.length;
+  let ant = Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const at=[i];
+    for(let j=1;j<=b.length;j++){
+      at[j] = Math.min(ant[j]+1, at[j-1]+1, ant[j-1] + (a[i-1]===b[j-1]?0:1));
+    }
+    ant = at;
+  }
+  return ant[b.length];
+}
+
+/* --- Busca por aproximação. Retorna pontuação (0 = não bate) --- */
+function pontua(nome, termo){
+  const n = norm(nome), t = norm(termo);
+  if(!t) return 1;
+  if(n === t) return 100;
+  if(n.startsWith(t)) return 90;
+  if(n.includes(t)) return 80;
+
+  const palavrasN = n.split(' ');
+  const palavrasT = t.split(' ');
+
+  let bateTudo = true, soma = 0;
+  for(const pt of palavrasT){
+    let melhor = 0;
+    for(const pn of palavrasN){
+      if(pn === pt)              melhor = Math.max(melhor, 70);
+      else if(pn.startsWith(pt)) melhor = Math.max(melhor, 60);
+      else if(pn.includes(pt))   melhor = Math.max(melhor, 50);
+      else if(pt.length >= 4){
+        const d = lev(pn, pt);
+        const lim = pt.length <= 5 ? 1 : 2;
+        if(d <= lim) melhor = Math.max(melhor, 45 - d*5);
+      }
+    }
+    if(!melhor){ bateTudo = false; break; }
+    soma += melhor;
+  }
+  if(bateTudo) return soma / palavrasT.length;
+
+  if(t.length >= 4){
+    const d = lev(n, t);
+    if(d <= 2) return 40 - d*5;
+  }
+  return 0;
+}
+
+function filtrar(lista, termo){
+  if(!termo || !termo.trim()) return lista;
+  return lista
+    .map(c => ({ c, p: pontua(c.nome, termo) }))
+    .filter(x => x.p > 0)
+    .sort((a,b) => b.p - a.p || String(a.c.nome).localeCompare(String(b.c.nome),'pt-BR'))
+    .map(x => x.c);
+}
+
+function realce(nome, termo){
+  if(!termo || !termo.trim()) return esc(nome);
+  const n = norm(nome), t = norm(termo);
+  const i = n.indexOf(t);
+  if(i < 0 || !t) return esc(nome);
+  return esc(nome.slice(0,i)) + '<mark>' + esc(nome.slice(i, i+t.length)) + '</mark>' + esc(nome.slice(i+t.length));
+}
+
+/* --- Overlay de carregamento (trava a tela durante o envio) --- */
+let ENVIANDO = false;
+function travar(msg){
+  ENVIANDO = true;
+  $('overlayMsg').textContent = msg || 'Salvando…';
+  $('overlay').classList.add('on');
+  document.querySelectorAll('.modal button').forEach(b => b.disabled = true);
+}
+function destravar(){
+  ENVIANDO = false;
+  $('overlay').classList.remove('on');
+  document.querySelectorAll('.modal button').forEach(b => b.disabled = false);
+}
+
+async function api(acao, dados){
+  const r = await fetch(URL_API, {
+    method:'POST',
+    body: JSON.stringify({ acao, senha:SENHA, dados: dados||{} })
+  });
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.erro);
+  return j.dados;
+}
+
+async function recarregar(){
+  DB = await api('carregar');
+  render();
+}
+
+/* ================= LOGIN ================= */
+async function entrar(){
+  const s = $('senha').value;
+  if(!s) return;
+  SENHA = s;
+  $('loginErro').innerHTML = '<div class="aviso info">Conectando…</div>';
+  document.querySelector('#login button').disabled = true;
+  try{
+    DB = await api('carregar');
+    document.querySelector('#login button').disabled = false;
+    $('login').style.display = 'none';
+    render();
+  }catch(e){
+    document.querySelector('#login button').disabled = false;
+    SENHA = '';
+    $('loginErro').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+  }
+}
+
+/* ================= NAVEGAÇÃO ================= */
+function ir(t){
+  TELA = t;
+  CLIENTE_ABERTO = null;
+  BUSCA = '';
+  ['painel','clientes','fechamentos'].forEach(x =>
+    $('nav-'+x).classList.toggle('on', x===t));
+  render();
+}
+
+function abrirCliente(id){
+  CLIENTE_ABERTO = id;
+  TELA = 'cliente';
+  render();
+}
+
+/* ================= CÁLCULOS ================= */
+function lancsDe(id, apenasAbertos){
+  return DB.lancamentos
+    .filter(l => String(l.cliente_id)===String(id) && (!apenasAbertos || !l.fechamento_id))
+    .sort((a,b) => String(a.data).localeCompare(String(b.data)));
+}
+function pagsDe(id){
+  return DB.pagamentos
+    .filter(p => String(p.cliente_id)===String(id))
+    .sort((a,b) => String(a.data).localeCompare(String(b.data)));
+}
+function fechsDe(id){
+  return DB.fechamentos
+    .filter(f => String(f.cliente_id)===String(id))
+    .sort((a,b) => String(b.periodo_fim).localeCompare(String(a.periodo_fim)));
+}
+function statusCliente(c){
+  const temVencido = DB.fechamentos.some(f =>
+    String(f.cliente_id)===String(c.id) && f.status==='ABERTO' && String(f.vencimento) < hoje());
+  if(temVencido) return 'r';
+  const temAberto = DB.fechamentos.some(f =>
+    String(f.cliente_id)===String(c.id) && f.status==='ABERTO');
+  if(temAberto) return 'a';
+  return 'v';
+}
+function descLanc(l){
+  const p = [];
+  if(Number(l.qtd_media))         p.push(`${l.qtd_media}× Média`);
+  if(Number(l.qtd_grande))        p.push(`${l.qtd_grande}× Grande`);
+  if(Number(l.qtd_refeicao))      p.push(`${l.qtd_refeicao}× Refeição`);
+  if(Number(l.qtd_personalizada)) p.push(`${l.qtd_personalizada}× Personalizada`);
+  if(l.descricao)                 p.push(l.descricao);
+  return p.join(' · ') || '—';
+}
+
+/* ================= RENDER ================= */
+function render(){
+  if(TELA==='painel'){
+    $('app').innerHTML = telaPainel();
+    filtrarPainel();
+  } else if(TELA==='clientes'){
+    $('app').innerHTML = telaClientes();
+    filtrarClientes();
+  } else if(TELA==='cliente'){
+    $('app').innerHTML = telaCliente();
+  } else if(TELA==='fechamentos'){
+    $('app').innerHTML = telaFechamentos();
+  }
+}
+
+/* ---------- PAINEL ---------- */
+function telaPainel(){
+  const ativos = DB.clientes.filter(c => c.ativo!==false);
+  const devedores = ativos.filter(c => Number(c.saldo) > 0.005)
+    .sort((a,b) => Number(b.saldo) - Number(a.saldo));
+
+  const total    = devedores.reduce((s,c) => s + Number(c.saldo), 0);
+  const aberto   = ativos.reduce((s,c) => s + Number(c.em_aberto||0), 0);
+  const vencidos = DB.fechamentos.filter(f => f.status==='ABERTO' && String(f.vencimento) < hoje());
+  const totalVenc = vencidos.reduce((s,f) => s + Number(f.total), 0);
+
+  return `
+  <div class="resumo">
+    <div class="metrica"><div class="rot">Total a receber</div><div class="val">${brl(total)}</div></div>
+    <div class="metrica"><div class="rot">Não faturado</div><div class="val">${brl(aberto)}</div></div>
+    <div class="metrica"><div class="rot">Vencido</div><div class="val" style="color:${totalVenc>0?'var(--vermelho)':'inherit'}">${brl(totalVenc)}</div></div>
+    <div class="metrica"><div class="rot">Devedores</div><div class="val">${devedores.length}</div></div>
+  </div>
+
+  <div class="cartao">
+    <div class="barra">
+      <input type="search" id="buscaPainel" placeholder="Buscar cliente… (ignora acento e maiúscula)"
+             value="${esc(BUSCA)}" oninput="BUSCA=this.value;filtrarPainel()">
+      <button class="btn" onclick="modalLancamento()">+ Lançamento</button>
+      <button class="btn-2" onclick="modalPagamento()">Registrar pagamento</button>
+    </div>
+    ${devedores.length===0 ? '<div class="vazio">Nenhum cliente devendo. 🎉</div>' : `
+    <table>
+      <thead><tr>
+        <th>Cliente</th><th>Tipo</th>
+        <th class="num">Não faturado</th>
+        <th class="num">Saldo devedor</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="corpoPainel"></tbody>
+    </table>
+    <div id="vazioPainel" class="vazio" style="display:none">Nenhum cliente encontrado.</div>`}
+  </div>`;
+}
+
+/* Atualiza SÓ o tbody — o input de busca não é recriado, o foco não se perde */
+function filtrarPainel(){
+  const corpo = $('corpoPainel');
+  if(!corpo) return;
+  const devedores = DB.clientes
+    .filter(c => c.ativo!==false && Number(c.saldo) > 0.005)
+    .sort((a,b) => Number(b.saldo) - Number(a.saldo));
+  const lista = filtrar(devedores, BUSCA);
+
+  $('vazioPainel').style.display = lista.length ? 'none' : '';
+  corpo.innerHTML = lista.map(c => `
+    <tr class="clicavel" onclick="abrirCliente('${c.id}')">
+      <td><span class="pin ${statusCliente(c)}"></span><strong>${realce(c.nome, BUSCA)}</strong></td>
+      <td><span class="selo ${c.tipo==='PJ'?'pj':'pf'}">${c.tipo}</span></td>
+      <td class="num">${brl(c.em_aberto)}</td>
+      <td class="num"><strong>${brl(c.saldo)}</strong></td>
+      <td class="num"><button class="btn-2 btn-mini">Abrir →</button></td>
+    </tr>`).join('');
+}
+
+/* ---------- CLIENTES ---------- */
+function telaClientes(){
+  return `
+  <div class="cartao">
+    <div class="barra">
+      <input type="search" id="buscaClientes" placeholder="Buscar pelo nome ou sobrenome… (ignora acento e maiúscula)"
+             value="${esc(BUSCA)}" oninput="BUSCA=this.value;filtrarClientes()">
+      <label style="display:flex;align-items:center;gap:6px;margin:0;text-transform:none;font-size:13px;white-space:nowrap">
+        <input type="checkbox" style="width:auto" ${MOSTRAR_INATIVOS?'checked':''}
+               onchange="MOSTRAR_INATIVOS=this.checked;filtrarClientes()"> Mostrar inativos
+      </label>
+      <button class="btn" onclick="modalCliente()">+ Novo cliente</button>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Nome</th><th>Tipo</th><th>Telefone</th>
+        <th class="num">Saldo</th><th></th>
+      </tr></thead>
+      <tbody id="corpoClientes"></tbody>
+    </table>
+    <div id="vazioClientes" class="vazio" style="display:none"></div>
+  </div>`;
+}
+
+function filtrarClientes(){
+  const corpo = $('corpoClientes');
+  if(!corpo) return;
+  let base = DB.clientes.filter(c => MOSTRAR_INATIVOS ? true : c.ativo!==false);
+  base.sort((a,b) => String(a.nome).localeCompare(String(b.nome),'pt-BR'));
+  const lista = filtrar(base, BUSCA);
+
+  const vazio = $('vazioClientes');
+  if(!lista.length){
+    vazio.style.display = '';
+    vazio.textContent = BUSCA ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado.';
+  } else {
+    vazio.style.display = 'none';
+  }
+
+  corpo.innerHTML = lista.map(c => `
+    <tr>
+      <td class="clicavel" onclick="abrirCliente('${c.id}')">
+        <strong>${realce(c.nome, BUSCA)}</strong>
+        ${c.ativo===false ? '<span class="selo off" style="margin-left:6px">Inativo</span>' : ''}
+      </td>
+      <td><span class="selo ${c.tipo==='PJ'?'pj':'pf'}">${c.tipo}</span></td>
+      <td>${esc(c.telefone)||'—'}</td>
+      <td class="num">${brl(c.saldo)}</td>
+      <td class="num acoes" style="justify-content:flex-end">
+        <button class="btn-2 btn-mini" onclick="modalCliente('${c.id}')">Editar</button>
+        ${c.ativo===false
+          ? `<button class="btn-verde btn-mini" onclick="reativar('${c.id}')">Reativar</button>`
+          : `<button class="btn-2 btn-mini" onclick="desativar('${c.id}')">Desativar</button>`}
+      </td>
+    </tr>`).join('');
+}
+
+/* ---------- CLIENTE (extrato) ---------- */
+function telaCliente(){
+  const c = cliente(CLIENTE_ABERTO);
+  if(!c) return '<div class="vazio">Cliente não encontrado.</div>';
+
+  const lancs = lancsDe(c.id);
+  const pags  = pagsDe(c.id);
+  const fechs = fechsDe(c.id);
+
+  const extrato = [
+    ...lancs.map(l => ({ tipo:'L', data:l.data, obj:l })),
+    ...pags .map(p => ({ tipo:'P', data:p.data, obj:p }))
+  ].sort((a,b) => String(b.data).localeCompare(String(a.data)));
+
+  return `
+  <button class="btn-2 btn-mini" style="margin-bottom:16px" onclick="ir('clientes')">← Voltar</button>
+
+  <div class="cartao">
+    <h2>
+      ${esc(c.nome)}
+      <span class="selo ${c.tipo==='PJ'?'pj':'pf'}">${c.tipo}</span>
+      ${c.ativo===false ? '<span class="selo off">Inativo</span>' : ''}
+    </h2>
+    <div class="resumo" style="margin-bottom:16px">
+      <div class="metrica"><div class="rot">Saldo devedor</div>
+        <div class="val" style="color:${Number(c.saldo)>0?'var(--vermelho)':'var(--verde)'}">${brl(c.saldo)}</div></div>
+      <div class="metrica"><div class="rot">Não faturado</div><div class="val">${brl(c.em_aberto)}</div></div>
+      <div class="metrica"><div class="rot">Total lançado</div><div class="val">${brl(c.total_lancado)}</div></div>
+      <div class="metrica"><div class="rot">Total pago</div><div class="val">${brl(c.total_pago)}</div></div>
+    </div>
+    <div class="acoes">
+      <button class="btn" onclick="modalLancamento(null,'${c.id}')">+ Lançamento</button>
+      <button class="btn-verde" onclick="modalPagamento(null,'${c.id}')">Registrar pagamento</button>
+      <button class="btn-azul" onclick="modalFechar('${c.id}')">Fechar período</button>
+      <button class="btn-2" onclick="modalCliente('${c.id}')">Editar cadastro</button>
+    </div>
+    ${c.telefone ? `<p style="margin-top:14px;font-size:13px;color:var(--tinta)">Telefone: ${esc(c.telefone)}</p>` : ''}
+    ${c.obs ? `<p style="margin-top:6px;font-size:13px;color:var(--tinta)">Obs: ${esc(c.obs)}</p>` : ''}
+    <p style="margin-top:6px;font-size:12.5px;color:var(--tinta)">
+      Preços: Média ${brl(c.preco_media)} · Grande ${brl(c.preco_grande)} · Refeição ${brl(c.preco_refeicao)} · Personalizada ${brl(c.preco_personalizada)}
+    </p>
+  </div>
+
+  ${fechs.length ? `
+  <div class="cartao">
+    <h2>Fechamentos</h2>
+    <table>
+      <thead><tr><th>Período</th><th>Vencimento</th><th class="num">Total</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        ${fechs.map(f => {
+          const venc = f.status==='ABERTO' && String(f.vencimento) < hoje();
+          return `<tr>
+            <td>${dbr(f.periodo_inicio)} — ${dbr(f.periodo_fim)}</td>
+            <td>${dbr(f.vencimento)}</td>
+            <td class="num"><strong>${brl(f.total)}</strong></td>
+            <td><span class="selo ${f.status==='PAGO'?'pago':(venc?'venc':'aberto')}">${f.status==='PAGO'?'Pago':(venc?'Vencido':'Aberto')}</span></td>
+            <td class="num acoes" style="justify-content:flex-end">
+              <button class="btn-2 btn-mini" onclick="gerarPDF('${f.id}')">PDF</button>
+              ${f.status==='ABERTO' ? `
+                <button class="btn-verde btn-mini" onclick="marcarPago('${f.id}')">Quitar</button>
+                <button class="btn-2 btn-mini" onclick="cancelarFech('${f.id}')">Cancelar</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>` : ''}
+
+  <div class="cartao">
+    <h2>Extrato</h2>
+    ${extrato.length===0 ? '<div class="vazio">Nenhuma movimentação.</div>' : `
+    <table>
+      <thead><tr>
+        <th>Data</th><th>Descrição</th>
+        ${c.tipo==='PJ' ? '<th>Funcionário</th>' : ''}
+        <th class="num">Débito</th><th class="num">Crédito</th><th>Situação</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${extrato.map(e => {
+          if(e.tipo==='L'){
+            const l = e.obj;
+            return `<tr>
+              <td>${dbr(l.data)}</td>
+              <td>${esc(descLanc(l))}</td>
+              ${c.tipo==='PJ' ? `<td>${esc(l.funcionario)||'—'}</td>` : ''}
+              <td class="num">${brl(l.valor)}</td>
+              <td class="num">—</td>
+              <td>${l.fechamento_id ? '<span class="selo aberto">Faturado</span>' : '<span class="selo off">Em aberto</span>'}</td>
+              <td class="num acoes" style="justify-content:flex-end">
+                ${!l.fechamento_id ? `
+                  <button class="btn-2 btn-mini" onclick="modalLancamento('${l.id}')">Editar</button>
+                  <button class="btn-2 btn-mini" onclick="excluirLanc('${l.id}')">Excluir</button>` : ''}
+              </td>
+            </tr>`;
+          }
+          const p = e.obj;
+          return `<tr style="background:#f2f8f4">
+            <td>${dbr(p.data)}</td>
+            <td><strong>Pagamento</strong> — ${esc(p.forma)}${p.obs?` · ${esc(p.obs)}`:''}</td>
+            ${c.tipo==='PJ' ? '<td>—</td>' : ''}
+            <td class="num">—</td>
+            <td class="num" style="color:var(--verde)"><strong>${brl(p.valor)}</strong></td>
+            <td><span class="selo pago">Pago</span></td>
+            <td class="num acoes" style="justify-content:flex-end">
+              <button class="btn-2 btn-mini" onclick="modalPagamento('${p.id}')">Editar</button>
+              <button class="btn-2 btn-mini" onclick="excluirPag('${p.id}')">Excluir</button>
+            </td>
+          </tr>`;
+        }).join('')}
+        <tr class="total-linha">
+          <td colspan="${c.tipo==='PJ'?3:2}">SALDO DEVEDOR</td>
+          <td class="num">${brl(c.total_lancado)}</td>
+          <td class="num">${brl(c.total_pago)}</td>
+          <td colspan="2" class="num"><strong>${brl(c.saldo)}</strong></td>
+        </tr>
+      </tbody>
+    </table>`}
+  </div>`;
+}
+
+/* ---------- FECHAMENTOS ---------- */
+function telaFechamentos(){
+  const fechs = [...DB.fechamentos].sort((a,b) =>
+    String(b.data_geracao).localeCompare(String(a.data_geracao)));
+
+  return `
+  <div class="cartao">
+    <div class="barra">
+      <h2 style="margin:0">Todos os fechamentos</h2>
+      <button class="btn" style="margin-left:auto" onclick="modalFecharLote()">Fechar mês (todos)</button>
+    </div>
+    ${fechs.length===0 ? '<div class="vazio">Nenhum fechamento gerado.</div>' : `
+    <table>
+      <thead><tr>
+        <th>Cliente</th><th>Período</th><th>Vencimento</th>
+        <th class="num">Total</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${fechs.map(f => {
+          const c = cliente(f.cliente_id);
+          const venc = f.status==='ABERTO' && String(f.vencimento) < hoje();
+          return `<tr>
+            <td class="clicavel" onclick="abrirCliente('${f.cliente_id}')"><strong>${esc(c?c.nome:'?')}</strong></td>
+            <td>${dbr(f.periodo_inicio)} — ${dbr(f.periodo_fim)}</td>
+            <td>${dbr(f.vencimento)}</td>
+            <td class="num"><strong>${brl(f.total)}</strong></td>
+            <td><span class="selo ${f.status==='PAGO'?'pago':(venc?'venc':'aberto')}">${f.status==='PAGO'?'Pago':(venc?'Vencido':'Aberto')}</span></td>
+            <td class="num acoes" style="justify-content:flex-end">
+              <button class="btn-2 btn-mini" onclick="gerarPDF('${f.id}')">PDF</button>
+              ${f.status==='ABERTO' ? `<button class="btn-verde btn-mini" onclick="marcarPago('${f.id}')">Quitar</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`}
+  </div>`;
+}
+/* ================= MODAIS ================= */
+function fecharModal(){
+  if(ENVIANDO) return;
+  const m = document.querySelector('.modal');
+  if(m) m.remove();
+}
+function abrirModal(html, larga){
+  fecharModal();
+  const d = document.createElement('div');
+  d.className = 'modal';
+  d.onclick = e => { if(e.target===d) fecharModal(); };
+  d.innerHTML = `<div class="janela ${larga?'larga':''}">${html}</div>`;
+  document.body.appendChild(d);
+}
+
+/* ---------- Cliente ---------- */
+function modalCliente(id){
+  const c = id ? cliente(id) : {
+    tipo:'PF', preco_media:26, preco_grande:28,
+    preco_refeicao:26, preco_personalizada:26
+  };
+  abrirModal(`
+    <h3>${id?'Editar cliente':'Novo cliente'}</h3>
+    <div id="erroC"></div>
+    <div class="grade g2">
+      <div class="campo">
+        <label>Tipo</label>
+        <select id="cTipo">
+          <option value="PF" ${c.tipo==='PF'?'selected':''}>Pessoa Física</option>
+          <option value="PJ" ${c.tipo==='PJ'?'selected':''}>Empresa</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Telefone</label>
+        <input id="cTel" value="${esc(c.telefone||'')}">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Nome *</label>
+      <input id="cNome" value="${esc(c.nome||'')}" oninput="checarDuplicado(${id?`'${id}'`:'null'})">
+    </div>
+    <div id="avisoDup"></div>
+
+    <h4 class="sub">Tabela de preços deste cliente</h4>
+    <div class="grade g3">
+      <div class="campo"><label>Marmita média</label><input type="number" step="0.01" id="pMedia" value="${c.preco_media||0}"></div>
+      <div class="campo"><label>Marmita grande</label><input type="number" step="0.01" id="pGrande" value="${c.preco_grande||0}"></div>
+      <div class="campo"><label>Refeição no local</label><input type="number" step="0.01" id="pRef" value="${c.preco_refeicao||0}"></div>
+      <div class="campo"><label>Personalizada</label><input type="number" step="0.01" id="pPers" value="${c.preco_personalizada||0}"></div>
+      <div class="campo"><label>Limite de crédito</label><input type="number" step="0.01" id="cLim" value="${c.limite||0}"></div>
+    </div>
+    <div class="campo">
+      <label>Observação</label>
+      <input id="cObs" value="${esc(c.obs||'')}">
+    </div>
+    <div class="rodape">
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      <button class="btn" onclick="salvarCliente(${id?`'${id}'`:'null'})">Salvar</button>
+    </div>
+  `);
+  setTimeout(()=>$('cNome').focus(), 50);
+  checarDuplicado(id||null);
+}
+
+/* Avisa se já existe alguém com nome igual ou muito parecido, enquanto digita */
+function checarDuplicado(id){
+  const nome = $('cNome').value.trim();
+  const box = $('avisoDup');
+  if(!box) return;
+  if(!nome){ box.innerHTML = ''; return; }
+
+  const outros = DB.clientes.filter(c => String(c.id) !== String(id||''));
+  const exato = outros.find(c => norm(c.nome) === norm(nome));
+
+  if(exato){
+    box.innerHTML = `<div class="aviso erro">
+      <strong>Já existe:</strong> "${esc(exato.nome)}" (${exato.tipo}${exato.ativo===false?', inativo':''}).
+      Não é possível cadastrar dois clientes com o mesmo nome.
+    </div>`;
+    return;
+  }
+
+  const parecidos = outros.filter(c => pontua(c.nome, nome) >= 45).slice(0,3);
+  box.innerHTML = parecidos.length ? `<div class="aviso info">
+      <strong>Parecido com:</strong> ${parecidos.map(c => esc(c.nome)).join(' · ')}.
+      Confira se não é a mesma pessoa.
+    </div>` : '';
+}
+
+async function salvarCliente(id){
+  if(ENVIANDO) return;
+  const nome = $('cNome').value.trim();
+  if(!nome){ $('erroC').innerHTML = '<div class="aviso erro">Informe o nome.</div>'; return; }
+
+  const dup = DB.clientes.find(c =>
+    String(c.id) !== String(id||'') && norm(c.nome) === norm(nome));
+  if(dup){
+    $('erroC').innerHTML = `<div class="aviso erro">
+      <strong>Nome duplicado.</strong> Já existe o cliente "${esc(dup.nome)}"${dup.ativo===false?' (inativo)':''}.
+      Use outro nome (ex: acrescente o sobrenome) ou edite o cadastro existente.
+    </div>`;
+    return;
+  }
+
+  const c = id ? cliente(id) : null;
+  const d = {
+    id: id||undefined,
+    tipo: $('cTipo').value,
+    nome,
+    telefone: $('cTel').value.trim(),
+    preco_media: $('pMedia').value,
+    preco_grande: $('pGrande').value,
+    preco_refeicao: $('pRef').value,
+    preco_personalizada: $('pPers').value,
+    limite: $('cLim').value,
+    obs: $('cObs').value.trim(),
+    ativo: c ? c.ativo!==false : true,
+    criado_em: c ? c.criado_em : undefined
+  };
+  try{
+    travar('Salvando cliente…');
+    await api('salvarCliente', d);
+    await recarregar();
+    destravar();
+    fecharModal();
+    toast('Cliente salvo.');
+  }catch(e){
+    destravar();
+    $('erroC').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+  }
+}
+
+async function desativar(id){
+  if(ENVIANDO) return;
+  const c = cliente(id);
+  if(!confirm(`Desativar "${c.nome}"?\n\nO histórico e o saldo continuam salvos. O cliente some da lista mas pode ser reativado depois.`)) return;
+  try{ travar('Desativando…'); await api('desativarCliente',{id}); await recarregar(); destravar(); toast('Cliente desativado.'); }
+  catch(e){ destravar(); toast(e.message, true); }
+}
+async function reativar(id){
+  if(ENVIANDO) return;
+  try{ travar('Reativando…'); await api('reativarCliente',{id}); await recarregar(); destravar(); toast('Cliente reativado.'); }
+  catch(e){ destravar(); toast(e.message, true); }
+}
+
+/* ---------- Lançamento ---------- */
+function modalLancamento(lancId, clienteId){
+  const l = lancId ? DB.lancamentos.find(x => String(x.id)===String(lancId)) : null;
+  const cid = l ? l.cliente_id : (clienteId || '');
+  const ativos = DB.clientes.filter(c => c.ativo!==false)
+    .sort((a,b) => String(a.nome).localeCompare(String(b.nome),'pt-BR'));
+
+  abrirModal(`
+    <h3>${lancId?'Editar lançamento':'Novo lançamento'}</h3>
+    <div id="erroL"></div>
+    <div class="grade g2">
+      <div class="campo">
+        <label>Cliente *</label>
+        <select id="lCli" onchange="atualizaPreco()" ${lancId?'disabled':''}>
+          <option value="">Selecione…</option>
+          ${ativos.map(c => `<option value="${c.id}" ${String(c.id)===String(cid)?'selected':''}>${esc(c.nome)} (${c.tipo})</option>`).join('')}
+        </select>
+      </div>
+      <div class="campo">
+        <label>Data</label>
+        <input type="date" id="lData" value="${l?l.data:hoje()}">
+      </div>
+    </div>
+
+    <h4 class="sub">Itens</h4>
+    <div class="grade g4">
+      <div class="campo"><label>Média</label><input type="number" min="0" id="qMedia" value="${l?(l.qtd_media||0):0}" oninput="atualizaPreco()"></div>
+      <div class="campo"><label>Grande</label><input type="number" min="0" id="qGrande" value="${l?(l.qtd_grande||0):0}" oninput="atualizaPreco()"></div>
+      <div class="campo"><label>Refeição</label><input type="number" min="0" id="qRef" value="${l?(l.qtd_refeicao||0):0}" oninput="atualizaPreco()"></div>
+      <div class="campo"><label>Personalizada</label><input type="number" min="0" id="qPers" value="${l?(l.qtd_personalizada||0):0}" oninput="atualizaPreco()"></div>
+    </div>
+    <div class="campo"><label>Valor extra (R$) — bebida, sobremesa, etc.</label><input type="number" step="0.01" min="0" id="lExtra" value="0" oninput="atualizaPreco()"></div>
+
+    <div class="grade g2">
+      <div class="campo">
+        <label>Descrição (opcional)</label>
+        <input id="lDesc" value="${esc(l?l.descricao:'')}" placeholder="Ex: refrigerante, sobremesa…">
+      </div>
+      <div class="campo" id="boxFunc">
+        <label>Funcionário (opcional)</label>
+        <input id="lFunc" value="${esc(l?l.funcionario:'')}" placeholder="Quem consumiu">
+      </div>
+    </div>
+
+    <div class="aviso info" id="previaL" style="font-size:16px;font-weight:700">Total: R$ 0,00</div>
+
+    <div class="rodape">
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      <button class="btn" onclick="salvarLancamento(${lancId?`'${lancId}'`:'null'})">Salvar</button>
+    </div>
+  `);
+  atualizaPreco();
+}
+
+function atualizaPreco(){
+  const c = cliente($('lCli').value);
+  const box = $('boxFunc');
+  if(box) box.style.display = (c && c.tipo==='PJ') ? '' : 'none';
+
+  if(!c){ $('previaL').textContent = 'Selecione um cliente para calcular.'; return; }
+
+  const v = (+$('qMedia').value||0) * (+c.preco_media||0)
+          + (+$('qGrande').value||0) * (+c.preco_grande||0)
+          + (+$('qRef').value||0)    * (+c.preco_refeicao||0)
+          + (+$('qPers').value||0)   * (+c.preco_personalizada||0)
+          + (+$('lExtra').value||0);
+
+  const novoSaldo = Number(c.saldo||0) + v;
+  const estourou = Number(c.limite) > 0 && novoSaldo > Number(c.limite);
+
+  $('previaL').innerHTML = `Total: ${brl(v)}` +
+    (estourou ? `<div style="font-size:13px;font-weight:400;margin-top:5px;color:var(--vermelho)">
+       ⚠ Estoura o limite de ${brl(c.limite)} (saldo ficaria em ${brl(novoSaldo)}).</div>` : '');
+}
+
+async function salvarLancamento(id){
+  if(ENVIANDO) return;
+  const cid = $('lCli').value;
+  if(!cid){ $('erroL').innerHTML = '<div class="aviso erro">Selecione o cliente.</div>'; return; }
+  const d = {
+    id: id||undefined,
+    cliente_id: cid,
+    data: $('lData').value,
+    descricao: $('lDesc').value.trim(),
+    funcionario: $('lFunc').value.trim(),
+    qtd_media: $('qMedia').value,
+    qtd_grande: $('qGrande').value,
+    qtd_refeicao: $('qRef').value,
+    qtd_personalizada: $('qPers').value,
+    valor_extra: $('lExtra').value
+  };
+  try{
+    travar('Salvando lançamento…');
+    await api('salvarLancamento', d);
+    await recarregar();
+    destravar();
+    fecharModal();
+    toast('Lançamento salvo.');
+  }catch(e){
+    destravar();
+    $('erroL').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+  }
+}
+
+async function excluirLanc(id){
+  if(ENVIANDO) return;
+  if(!confirm('Excluir este lançamento?')) return;
+  try{ travar('Excluindo…'); await api('excluirLancamento',{id}); await recarregar(); destravar(); toast('Lançamento excluído.'); }
+  catch(e){ destravar(); toast(e.message, true); }
+}
+
+/* ---------- Pagamento ---------- */
+function modalPagamento(pagId, clienteId){
+  const p = pagId ? DB.pagamentos.find(x => String(x.id)===String(pagId)) : null;
+  const cid = p ? p.cliente_id : (clienteId || '');
+  const devedores = DB.clientes.filter(c => c.ativo!==false)
+    .sort((a,b) => String(a.nome).localeCompare(String(b.nome),'pt-BR'));
+
+  abrirModal(`
+    <h3>${pagId?'Editar pagamento':'Registrar pagamento'}</h3>
+    <div id="erroP"></div>
+    <div class="campo">
+      <label>Cliente *</label>
+      <select id="pCli" onchange="mostraSaldo()" ${pagId?'disabled':''}>
+        <option value="">Selecione…</option>
+        ${devedores.map(c => `<option value="${c.id}" ${String(c.id)===String(cid)?'selected':''}>${esc(c.nome)} — deve ${brl(c.saldo)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="grade g3">
+      <div class="campo"><label>Data</label><input type="date" id="pData" value="${p?p.data:hoje()}"></div>
+      <div class="campo"><label>Valor *</label><input type="number" step="0.01" min="0.01" id="pValor" value="${p?p.valor:''}" oninput="mostraSaldo()"></div>
+      <div class="campo">
+        <label>Forma</label>
+        <select id="pForma">
+          ${['Dinheiro','PIX','Cartão','Transferência','Outro'].map(f =>
+            `<option ${p&&p.forma===f?'selected':''}>${f}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="campo"><label>Observação</label><input id="pObs" value="${esc(p?p.obs:'')}"></div>
+    <div class="aviso info" id="previaP">Pagamento parcial é aceito — o saldo restante continua no crediário.</div>
+    <div class="rodape">
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-verde" onclick="salvarPagamento(${pagId?`'${pagId}'`:'null'})">Salvar</button>
+    </div>
+  `);
+  mostraSaldo();
+}
+
+function mostraSaldo(){
+  const c = cliente($('pCli').value);
+  if(!c){ $('previaP').textContent = 'Pagamento parcial é aceito — o saldo restante continua no crediário.'; return; }
+  const v = +$('pValor').value || 0;
+  const restante = Number(c.saldo) - v;
+  $('previaP').innerHTML = `Saldo atual: <strong>${brl(c.saldo)}</strong> → após o pagamento: <strong>${brl(restante)}</strong>` +
+    (restante < -0.005 ? `<div style="margin-top:5px;color:var(--verde)">Cliente ficará com crédito de ${brl(Math.abs(restante))}.</div>` : '') +
+    (restante > 0.005 ? `<div style="margin-top:5px">Pagamento parcial — resta ${brl(restante)}.</div>` : '');
+}
+
+async function salvarPagamento(id){
+  if(ENVIANDO) return;
+  const cid = $('pCli').value;
+  const valor = +$('pValor').value;
+  if(!cid){ $('erroP').innerHTML = '<div class="aviso erro">Selecione o cliente.</div>'; return; }
+  if(!(valor > 0)){ $('erroP').innerHTML = '<div class="aviso erro">Informe um valor válido.</div>'; return; }
+  try{
+    travar('Registrando pagamento…');
+    await api('salvarPagamento', {
+      id: id||undefined, cliente_id: cid,
+      data: $('pData').value, valor,
+      forma: $('pForma').value, obs: $('pObs').value.trim()
+    });
+    await recarregar();
+    destravar();
+    fecharModal();
+    toast('Pagamento registrado.');
+  }catch(e){
+    destravar();
+    $('erroP').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+  }
+}
+
+async function excluirPag(id){
+  if(ENVIANDO) return;
+  if(!confirm('Excluir este pagamento?')) return;
+  try{ travar('Excluindo…'); await api('excluirPagamento',{id}); await recarregar(); destravar(); toast('Pagamento excluído.'); }
+  catch(e){ destravar(); toast(e.message, true); }
+}
+
+/* ---------- Fechamento ---------- */
+function periodoPadrao(){
+  const h = new Date(hoje() + 'T12:00:00');
+  const ano = h.getFullYear(), mes = h.getMonth();
+  const ini = new Date(ano, mes, 1);
+  const fim = new Date(ano, mes + 1, 0);
+  const f = d => d.toLocaleDateString('en-CA');
+  return { ini: f(ini), fim: f(fim) };
+}
+
+function modalFechar(clienteId){
+  const c = cliente(clienteId);
+  const p = periodoPadrao();
+  abrirModal(`
+    <h3>Fechar período — ${esc(c.nome)}</h3>
+    <div id="erroF"></div>
+    <div class="aviso info">
+      Fecha dia ${DB.config.dia_fechamento||30}, vence dia ${DB.config.dia_vencimento||5} do mês seguinte.
+      Os lançamentos do período serão travados (não poderão mais ser editados).
+    </div>
+    <div class="grade g2">
+      <div class="campo"><label>Início</label><input type="date" id="fIni" value="${p.ini}" onchange="previaFech('${clienteId}')"></div>
+      <div class="campo"><label>Fim</label><input type="date" id="fFim" value="${p.fim}" onchange="previaFech('${clienteId}')"></div>
+    </div>
+    <div id="previaF"></div>
+    <div class="rodape">
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-azul" onclick="confirmarFechamento('${clienteId}')">Gerar fechamento</button>
+    </div>
+  `, true);
+  previaFech(clienteId);
+}
+
+function previaFech(clienteId){
+  const ini = $('fIni').value, fim = $('fFim').value;
+  const c = cliente(clienteId);
+  const itens = lancsDe(clienteId, true).filter(l => l.data >= ini && l.data <= fim);
+  const total = itens.reduce((s,l) => s + Number(l.valor), 0);
+
+  $('previaF').innerHTML = itens.length===0
+    ? '<div class="aviso erro">Nenhum lançamento em aberto neste período.</div>'
+    : `<table>
+        <thead><tr><th>Data</th><th>Descrição</th>${c.tipo==='PJ'?'<th>Funcionário</th>':''}<th class="num">Valor</th></tr></thead>
+        <tbody>
+          ${itens.map(l => `<tr>
+            <td>${dbr(l.data)}</td><td>${esc(descLanc(l))}</td>
+            ${c.tipo==='PJ'?`<td>${esc(l.funcionario)||'—'}</td>`:''}
+            <td class="num">${brl(l.valor)}</td>
+          </tr>`).join('')}
+          <tr class="total-linha">
+            <td colspan="${c.tipo==='PJ'?3:2}">TOTAL (${itens.length} lançamento${itens.length>1?'s':''})</td>
+            <td class="num">${brl(total)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+}
+
+async function confirmarFechamento(clienteId){
+  if(ENVIANDO) return;
+  const ini = $('fIni').value, fim = $('fFim').value;
+  try{
+    travar('Gerando fechamento…');
+    const r = await api('gerarFechamento', { cliente_id: clienteId, periodo_inicio: ini, periodo_fim: fim });
+    await recarregar();
+    destravar();
+    fecharModal();
+    toast('Fechamento gerado.');
+    gerarPDF(r.fechamento.id);
+  }catch(e){
+    destravar();
+    $('erroF').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+  }
+}
+
+function modalFecharLote(){
+  const p = periodoPadrao();
+  const candidatos = DB.clientes.filter(c =>
+    c.ativo!==false && lancsDe(c.id, true).some(l => l.data >= p.ini && l.data <= p.fim));
+
+  abrirModal(`
+    <h3>Fechar mês — todos os clientes</h3>
+    <div id="erroFL"></div>
+    <div class="grade g2">
+      <div class="campo"><label>Início</label><input type="date" id="flIni" value="${p.ini}"></div>
+      <div class="campo"><label>Fim</label><input type="date" id="flFim" value="${p.fim}"></div>
+    </div>
+    ${candidatos.length===0 ? '<div class="aviso erro">Nenhum cliente com lançamentos em aberto neste período.</div>' : `
+    <div class="aviso info">${candidatos.length} cliente(s) serão fechados. Um PDF será gerado para cada um.</div>
+    <table>
+      <thead><tr><th>Cliente</th><th class="num">A faturar</th></tr></thead>
+      <tbody>
+        ${candidatos.map(c => {
+          const t = lancsDe(c.id, true).filter(l => l.data >= p.ini && l.data <= p.fim)
+            .reduce((s,l) => s + Number(l.valor), 0);
+          return `<tr><td>${esc(c.nome)}</td><td class="num">${brl(t)}</td></tr>`;
+        }).join('')}
+      </tbody>
+    </table>`}
+    <div class="rodape">
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      ${candidatos.length ? `<button class="btn-azul" onclick="executarLote()">Fechar todos</button>` : ''}
+    </div>
+  `, true);
+}
+
+async function executarLote(){
+  if(ENVIANDO) return;
+  const ini = $('flIni').value, fim = $('flFim').value;
+  const alvos = DB.clientes.filter(c =>
+    c.ativo!==false && lancsDe(c.id, true).some(l => l.data >= ini && l.data <= fim));
+
+  travar('Gerando fechamentos…');
+  const gerados = [];
+  let i = 0;
+  for(const c of alvos){
+    i++;
+    $('overlayMsg').textContent = `Fechando ${i} de ${alvos.length} — ${c.nome}`;
+    try{
+      const r = await api('gerarFechamento', { cliente_id: c.id, periodo_inicio: ini, periodo_fim: fim });
+      gerados.push(r.fechamento.id);
+    }catch(e){ /* pula quem não tem itens */ }
+  }
+  $('overlayMsg').textContent = 'Atualizando…';
+  await recarregar();
+  destravar();
+  fecharModal();
+  toast(`${gerados.length} fechamento(s) gerado(s).`);
+  gerados.forEach((id, k) => setTimeout(() => gerarPDF(id), k * 700));
+}
+
+async function marcarPago(id){
+  if(ENVIANDO) return;
+  const f = DB.fechamentos.find(x => String(x.id)===String(id));
+  const forma = prompt(`Quitar fechamento de ${brl(f.total)}.\n\nForma de pagamento:`, 'Dinheiro');
+  if(forma === null) return;
+  try{
+    travar('Quitando…');
+    await api('marcarPago', { id, registrar_pagamento:true, forma, data: hoje() });
+    await recarregar();
+    destravar();
+    toast('Fechamento quitado.');
+  }catch(e){ destravar(); toast(e.message, true); }
+}
+
+async function cancelarFech(id){
+  if(ENVIANDO) return;
+  if(!confirm('Cancelar este fechamento?\n\nOs lançamentos voltam a ficar em aberto e poderão ser editados.')) return;
+  try{ travar('Cancelando…'); await api('cancelarFechamento',{id}); await recarregar(); destravar(); toast('Fechamento cancelado.'); }
+  catch(e){ destravar(); toast(e.message, true); }
+}
+
+/* ================= PDF ================= */
+function gerarPDF(fechId){
+  const f = DB.fechamentos.find(x => String(x.id)===String(fechId));
+  const c = cliente(f.cliente_id);
+  const itens = DB.lancamentos
+    .filter(l => String(l.fechamento_id)===String(fechId))
+    .sort((a,b) => String(a.data).localeCompare(String(b.data)));
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const M = 15;
+  let y = 18;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(17);
+  doc.text('RESTAURANTE DO MÁRIO', M, y);
+  y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  doc.setTextColor(110);
+  doc.text('Demonstrativo de Crediário', M, y);
+  doc.setTextColor(0);
+
+  doc.setDrawColor(200);
+  doc.line(M, y+4, 195, y+4);
+  y += 14;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text(String(c.nome), M, y);
+  y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  doc.text(`${c.tipo==='PJ'?'Empresa':'Pessoa Física'}${c.telefone?'  ·  Tel: '+c.telefone:''}`, M, y);
+  y += 5;
+  doc.text(`Período: ${dbr(f.periodo_inicio)} a ${dbr(f.periodo_fim)}`, M, y);
+  y += 5;
+  doc.setFont('helvetica','bold');
+  doc.text(`Vencimento: ${dbr(f.vencimento)}`, M, y);
+  y += 9;
+
+  const temFunc = c.tipo==='PJ' && itens.some(l => l.funcionario);
+  const cabecalho = temFunc
+    ? [['Data','Descrição','Funcionário','Valor']]
+    : [['Data','Descrição','Valor']];
+  const corpo = itens.map(l => temFunc
+    ? [dbr(l.data), descLanc(l), l.funcionario||'—', brl(l.valor)]
+    : [dbr(l.data), descLanc(l), brl(l.valor)]);
+
+  doc.autoTable({
+    startY: y,
+    head: cabecalho,
+    body: corpo,
+    theme: 'striped',
+    styles: { fontSize: 9, cellPadding: 2.6 },
+    headStyles: { fillColor: [20,18,16], textColor: 255, fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [250,246,238] },
+    columnStyles: temFunc
+      ? { 0:{cellWidth:22}, 3:{halign:'right', cellWidth:28} }
+      : { 0:{cellWidth:24}, 2:{halign:'right', cellWidth:32} },
+    margin: { left:M, right:M }
+  });
+
+  y = doc.lastAutoTable.finalY + 8;
+
+  doc.setFillColor(20,18,16);
+  doc.rect(M, y, 180, 12, 'F');
+  doc.setTextColor(255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('TOTAL A PAGAR', M+4, y+8);
+  doc.text(brl(f.total), 191, y+8, { align:'right' });
+  doc.setTextColor(0);
+  y += 20;
+
+  if(temFunc){
+    const porFunc = {};
+    itens.forEach(l => {
+      const k = l.funcionario || 'Sem identificação';
+      porFunc[k] = (porFunc[k]||0) + Number(l.valor);
+    });
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text('Resumo por funcionário', M, y);
+    y += 3;
+    doc.autoTable({
+      startY: y,
+      head: [['Funcionário','Total']],
+      body: Object.entries(porFunc)
+        .sort((a,b) => a[0].localeCompare(b[0],'pt-BR'))
+        .map(([n,v]) => [n, brl(v)]),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 2.4 },
+      headStyles: { fillColor: [74,66,55], textColor: 255, fontSize: 8.5 },
+      columnStyles: { 1:{halign:'right', cellWidth:35} },
+      margin: { left:M, right:M }
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  }
+
+  doc.setFontSize(8); doc.setTextColor(130);
+  doc.text(`Emitido em ${new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`, M, 285);
+  doc.text(`Documento ${String(f.id).slice(0,8).toUpperCase()}`, 195, 285, { align:'right' });
+
+  const nomeArq = `Crediario_${String(c.nome).replace(/[^\w]/g,'_')}_${f.periodo_fim}.pdf`;
+  doc.save(nomeArq);
+}
+
+/* ================= INÍCIO ================= */
+setTimeout(()=>$('senha').focus(), 100);
+</script>
+</body>
+</html>
