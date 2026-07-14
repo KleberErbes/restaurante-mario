@@ -1189,7 +1189,28 @@ function gerarPDF(fechId){
   doc.text('TOTAL A PAGAR', M+4, y+8);
   doc.text(brl(f.total), 191, y+8, { align:'right' });
   doc.setTextColor(0);
-  y += 20;
+  y += 18;
+
+  // ----- Bloco PIX -----
+  const pix = (DB.config && DB.config.chave_pix) ? DB.config.chave_pix : '72.214.901/0001-97';
+  const nomePix = (DB.config && DB.config.nome_pix) ? DB.config.nome_pix : 'Restaurante Scholl LTDA';
+
+  doc.setDrawColor(31,122,76);
+  doc.setLineWidth(0.5);
+  doc.setFillColor(240,248,244);
+  doc.roundedRect(M, y, 180, 22, 2, 2, 'FD');
+  doc.setLineWidth(0.2);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.setTextColor(31,122,76);
+  doc.text('PAGUE COM PIX', M+5, y+7);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  doc.setTextColor(40);
+  doc.text('Chave (CNPJ): ' + pix, M+5, y+13.5);
+  doc.text('Favorecido: ' + nomePix, M+5, y+18.5);
+  doc.setTextColor(0);
+  y += 30;
 
   if(temFunc){
     const porFunc = {};
