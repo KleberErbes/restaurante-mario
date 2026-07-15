@@ -120,12 +120,15 @@ h4.sub{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--
   <div class="box">
     <h1>Crediário</h1>
     <p>Restaurante do Mário</p>
-    <div class="campo">
-      <label>Senha</label>
-      <input type="password" id="senha" onkeydown="if(event.key==='Enter')entrar()">
-    </div>
-    <div id="loginErro"></div>
-    <button class="btn" style="width:100%" onclick="entrar()">Entrar</button>
+    <form autocomplete="off" onsubmit="return false">
+      <div class="campo">
+        <label>Senha</label>
+        <input type="password" id="senha" autocomplete="new-password" name="crediario-acesso"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();entrar()}">
+      </div>
+      <div id="loginErro"></div>
+      <button type="button" class="btn" style="width:100%" onclick="entrar()">Entrar</button>
+    </form>
   </div>
 </div>
 
@@ -152,6 +155,7 @@ let TELA = 'painel';
 let CLIENTE_ABERTO = null;
 let BUSCA = '';
 let MOSTRAR_INATIVOS = false;
+let PENDENTES = [];   // lançamentos que falharam ao enviar
 
 /* ================= HELPERS ================= */
 const $ = id => document.getElementById(id);
@@ -288,6 +292,9 @@ async function entrar(){
     DB = await api('carregar');
     document.querySelector('#login button').disabled = false;
     $('login').style.display = 'none';
+    // Remove o campo de senha do DOM para o navegador parar de oferecer "salvar/atualizar senha"
+    const campoSenha = $('senha');
+    if(campoSenha) campoSenha.remove();
     render();
   }catch(e){
     document.querySelector('#login button').disabled = false;
@@ -655,7 +662,7 @@ function abrirModal(html, larga){
 function modalCliente(id){
   const c = id ? cliente(id) : {
     tipo:'PF', preco_media:26, preco_grande:28,
-    preco_refeicao:26, preco_personalizada:26
+    preco_refeicao:39, preco_personalizada:26
   };
   abrirModal(`
     <h3>${id?'Editar cliente':'Novo cliente'}</h3>
@@ -860,6 +867,20 @@ async function salvarLancamento(id){
   if(ENVIANDO) return;
   const cid = $('lCli').value;
   if(!cid){ $('erroL').innerHTML = '<div class="aviso erro">Selecione o cliente.</div>'; return; }
+  const c = cliente(cid);
+
+  // Calcula o valor no navegador (mesma conta da prévia)
+  const valorLocal = (+$('qMedia').value||0) * (+c.preco_media||0)
+    + (+$('qGrande').value||0) * (+c.preco_grande||0)
+    + (+$('qRef').value||0)    * (+c.preco_refeicao||0)
+    + (+$('qPers').value||0)   * (+c.preco_personalizada||0)
+    + (+$('lExtra').value||0);
+
+  if(!(valorLocal > 0)){
+    $('erroL').innerHTML = '<div class="aviso erro">O valor precisa ser maior que zero.</div>';
+    return;
+  }
+
   const d = {
     id: id||undefined,
     cliente_id: cid,
@@ -872,17 +893,93 @@ async function salvarLancamento(id){
     qtd_personalizada: $('qPers').value,
     valor_extra: $('lExtra').value
   };
-  try{
-    travar('Salvando lançamento…');
-    await api('salvarLancamento', d);
-    await recarregar();
-    destravar();
-    fecharModal();
-    toast('Lançamento salvo.');
-  }catch(e){
-    destravar();
-    $('erroL').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+
+  // Edição de lançamento existente continua síncrona (é raro)
+  if(id){
+    try{
+      travar('Salvando lançamento…');
+      await api('salvarLancamento', d);
+      await recarregar();
+      destravar();
+      fecharModal();
+      toast('Lançamento salvo.');
+    }catch(e){
+      destravar();
+      $('erroL').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+    }
+    return;
   }
+
+  // NOVO lançamento: otimista — fecha na hora, envia por trás
+  fecharModal();
+  enviarLancamento(d, valorLocal, c.nome);
+}
+
+/* Envia em segundo plano. Em caso de falha, entra na fila de pendentes. */
+async function enviarLancamento(d, valorLocal, nomeCli){
+  const chave = 'env_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  toast(`Lançando ${brl(valorLocal)} — ${nomeCli}…`);
+  try{
+    await api('salvarLancamento', d);
+    DB = await api('carregar');
+    render();
+    renderPendentes();
+    toast('✓ Lançamento salvo.');
+  }catch(e){
+    PENDENTES.push({ chave, d, valorLocal, nomeCli, erro: String(e.message||e) });
+    renderPendentes();
+    render();
+  }
+}
+
+async function reenviar(chave){
+  const item = PENDENTES.find(p => p.chave === chave);
+  if(!item) return;
+  const btn = document.querySelector(`[data-reenviar="${chave}"]`);
+  if(btn){ btn.disabled = true; btn.textContent = 'Enviando…'; }
+  try{
+    await api('salvarLancamento', item.d);
+    PENDENTES = PENDENTES.filter(p => p.chave !== chave);
+    DB = await api('carregar');
+    render();
+    renderPendentes();
+    toast('✓ Lançamento salvo.');
+  }catch(e){
+    item.erro = String(e.message||e);
+    renderPendentes();
+    toast('Ainda não foi possível salvar.', true);
+  }
+}
+
+function descartarPendente(chave){
+  if(!confirm('Descartar este lançamento não salvo?\n\nEle NÃO será registrado no crediário.')) return;
+  PENDENTES = PENDENTES.filter(p => p.chave !== chave);
+  renderPendentes();
+}
+
+/* Faixa fixa no rodapé listando o que falhou */
+function renderPendentes(){
+  let barra = $('barraPendentes');
+  if(!PENDENTES.length){
+    if(barra) barra.remove();
+    return;
+  }
+  if(!barra){
+    barra = document.createElement('div');
+    barra.id = 'barraPendentes';
+    document.body.appendChild(barra);
+  }
+  barra.innerHTML = `
+    <div class="pend-cabec">⚠ ${PENDENTES.length} lançamento(s) NÃO salvo(s) no crediário</div>
+    ${PENDENTES.map(p => `
+      <div class="pend-item">
+        <span><strong>${esc(p.nomeCli)}</strong> — ${brl(p.valorLocal)}
+          <span class="pend-erro">${esc(p.erro)}</span></span>
+        <span class="acoes">
+          <button class="btn-verde btn-mini" data-reenviar="${p.chave}" onclick="reenviar('${p.chave}')">Reenviar</button>
+          <button class="btn-2 btn-mini" onclick="descartarPendente('${p.chave}')">Descartar</button>
+        </span>
+      </div>`).join('')}`;
 }
 
 async function excluirLanc(id){
