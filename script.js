@@ -1,803 +1,868 @@
-const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv';
+/**
+ * Restaurante do Mário — Script Principal
+ * Arquitetura: Modular com estado centralizado e DOM cache
+ */
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
+// ============ CONFIG ============
+const CONFIG = {
+  sheetsUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv',
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec',
+  whatsappNumber: '554733752227',
+  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 14, m: 0 }, fechamento: { h: 14, m: 0 } },
+  cartExpireHours: 4,
+  limits: { acompMax: 5, carneMax: 3, saladaMax: 3 }
+};
 
-const WHATSAPP_NUMBER = "554733752227";
+// ============ STATE (centralizado) ============
+const state = {
+  cart: [],
+  cardapio: { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] },
+  cardapioAtualizado: '',
+  diasFechados: [],
+  personalizadaSel: { acomp: [], carne: {}, salada: [] },
+  qtyPadrao: { media: 1, grande: 1 },
+  qtyPersonalizada: 1,
+  selectedSize: 'media'
+};
 
-// ========== CONFIGURAÇÃO DE HORÁRIO ==========
-const HORARIO_PEDIDOS    = { h: 8,  m: 0  };
-// Buffet / atendimento presencial: 11h00
-const HORARIO_ABERTURA   = { h: 14, m: 0  };
-// Fechamento: 14h00
-const HORARIO_FECHAMENTO = { h: 14, m: 0  };
+// ============ DOM CACHE ============
+const dom = {
+  cartPanel: null,
+  cartItems: null,
+  cartCount: null,
+  cartTotal: null,
+  overlay: null,
+  badgeHorario: null,
+  avisoBalcao: null,
+  modalNome: null,
+  modalOverlay: null,
+  inputNome: null,
+  modalConfirm: null,
+  modalConfirmOverlay: null,
+  header: null,
+  toastContainer: null,
 
-let DIAS_FECHADOS_ESPECIAIS = [];
-
-let cart = [];
-let selectedSize = 'media';
-
-// ========== ID ÚNICO DE PEDIDO ==========
-function gerarIdPedido() {
-  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-    return window.crypto.randomUUID();
+  init() {
+    this.cartPanel = document.getElementById('cartPanel');
+    this.cartItems = document.getElementById('cartItems');
+    this.cartCount = document.getElementById('cartCount');
+    this.cartTotal = document.getElementById('cartTotal');
+    this.overlay = document.getElementById('overlay');
+    this.badgeHorario = document.getElementById('badgeHorario');
+    this.avisoBalcao = document.getElementById('avisoBalcao');
+    this.modalNome = document.getElementById('modalNome');
+    this.modalOverlay = document.getElementById('modalOverlay');
+    this.inputNome = document.getElementById('inputNomeCliente');
+    this.modalConfirm = document.getElementById('modalConfirm');
+    this.modalConfirmOverlay = document.getElementById('modalConfirmOverlay');
+    this.header = document.querySelector('header');
   }
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-let selAcomp  = [];
-let selCarne  = {};   
-let selSalada = [];
-
-let CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
-let CARDAPIO_ATUALIZADO_EM = '';
-
-function showToast(msg, tipo = 'info', duracao = 3000) {
-  let container = document.getElementById('toastContainer');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toastContainer';
-    document.body.appendChild(container);
-  }
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${tipo}`;
-  toast.innerHTML = msg;
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('toast-show'));
-  setTimeout(() => {
-    toast.classList.remove('toast-show');
-    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-  }, duracao);
-}
-
-function getEstado() {
-  const agora = new Date();
-
-  // Data e hora no fuso de Brasília
-  const partesBR = new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit',
-    hour12: false
-  }).formatToParts(agora);
-
-  const get = (tipo) => partesBR.find(p => p.type === tipo)?.value ?? '';
-  const hora    = parseInt(get('hour'),   10);
-  const minuto  = parseInt(get('minute'), 10);
-  const dataHoje = `${get('year')}-${get('month')}-${get('day')}`;
-
-  const dataBR = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const diaSem = dataBR.getDay();
-
-  if (DIAS_FECHADOS_ESPECIAIS.includes(dataHoje)) return 'fechado';
-
-  if (diaSem === 0) return 'fechado';
-
-  const totalMin      = hora * 60 + minuto;
-  const inicioPedidos = HORARIO_PEDIDOS.h    * 60 + HORARIO_PEDIDOS.m;
-  const abre          = HORARIO_ABERTURA.h   * 60 + HORARIO_ABERTURA.m;
-  const fecha         = HORARIO_FECHAMENTO.h * 60 + HORARIO_FECHAMENTO.m;
-
-  if (totalMin >= inicioPedidos && totalMin < abre)  return 'pedidos'; // 08h–10h30
-  if (totalMin >= abre          && totalMin < fecha)  return 'aberto';  // 10h30–14h
-  return 'fechado'; // antes das 8h ou depois das 14h
-}
-function estaAberto() {
-  return getEstado() === 'pedidos';
-}
-
-function atualizarBadgeHorario() {
-  const badge = document.getElementById('badgeHorario');
-  if (!badge) return;
-  const estado = getEstado();
-  if (estado === 'aberto') {
-    badge.textContent = 'Aberto agora';
-    badge.className = 'badge-horario badge-aberto';
-  } else if (estado === 'pedidos') {
-    badge.textContent = 'Pedidos disponíveis';
-    badge.className = 'badge-horario badge-pedidos';
-  } else {
-    badge.textContent = 'Fechado agora';
-    badge.className = 'badge-horario badge-fechado';
-  }
-}
-
-// ========== CARREGAR CARDÁPIO DO GOOGLE SHEETS (TSV) ==========
-function parseDateBR(str) {
-  const partes = str.trim().split('/');
-  if (partes.length !== 3) return null;
-  const [d, m, a] = partes;
-  if (!d || !m || !a) return null;
-  return `${a.padStart(4,'0')}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-}
-
-async function carregarCardapio() {
-  mostrarSkeleton(true);
-  try {
-    const res = await fetch(SHEETS_URL);
-    const tsv = await res.text();
-
-    CARDAPIO = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
-    DIAS_FECHADOS_ESPECIAIS = [];
-
-    const linhas = tsv.split('\n').slice(1);
-    linhas.forEach(linha => {
-      if (!linha.trim()) return;
-      const partes = linha.split('\t');
-      const categoria = (partes[0] || '').trim().replace(/"/g, '').toLowerCase();
-      const item = (partes[1] || '').trim().replace(/"/g, '');
-      if (!item) return;
-
-      if (categoria === 'acompanhamentos' || categoria === 'acompanhamento') CARDAPIO.acompanhamentos.push(item);
-      else if (categoria === 'carnes' || categoria === 'carne') CARDAPIO.carnes.push(item);
-      else if (categoria === 'saladas' || categoria === 'salada') CARDAPIO.saladas.push(item);
-      else if (categoria === 'sobremesas' || categoria === 'sobremesa') CARDAPIO.sobremesas.push(item);
-      else if (categoria === 'fechado') {
-        const iso = item.includes('/') ? parseDateBR(item) : item;
-        if (iso) DIAS_FECHADOS_ESPECIAIS.push(iso);
-      }
-      else if (categoria === 'atualizado') {
-        CARDAPIO_ATUALIZADO_EM = item;
-      }
-    });
-
-    buildCardapio();
-    buildGrids();
-    updatePrecoPersonalizada();
-    atualizarBadgeHorario();
-    mostrarCardapioAtualizado();
-  } catch (e) {
-    console.error('Erro ao carregar cardápio:', e);
-    CARDAPIO = {
-      acompanhamentos: ["Arroz branco", "Feijão", "Macarrão espaguete", "Aipim com bacon"],
-      carnes: ["Carne do dia"],
-      saladas: ["Salada da casa"],
-      sobremesas: ["Sobremesa do dia"]
-    };
-    buildCardapio();
-    buildGrids();
-    updatePrecoPersonalizada();
-    showToast('Cardápio padrão carregado. Verifique sua conexão.', 'aviso', 5000);
-  } finally {
-    mostrarSkeleton(false);
-  }
-}
-
-function mostrarSkeleton(show) {
-  if (show) {
-    document.querySelectorAll('.cardapio-box-list, .cpg-list').forEach(el => {
-      el.innerHTML = '<span class="skeleton-item"></span><span class="skeleton-item"></span><span class="skeleton-item"></span>';
-    });
-  } else {
-    document.querySelectorAll('.skeleton-item').forEach(el => el.remove());
-  }
-}
-
-function showSection(id, btn) {
-  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  const sec = document.getElementById(id);
-  if (sec) sec.classList.add('active');
-  if (btn) btn.classList.add('active');
-  window.scrollTo(0, 0);
-  const aviso = document.getElementById('avisoBalcao');
-  if (aviso) aviso.classList.toggle('visible', id === 'pedidos');
-}
-
-function goToMarmitas() { showSection('pedidos', document.querySelector('nav button:nth-child(3)')); }
-function goToCardapio()  { showSection('cardapio-dia-sec', document.querySelector('nav button:nth-child(2)')); }
-
-// ========== CARDÁPIO ==========
-function buildCardapio() {
-  const grupos = [
-    { id: 'listaAcomp',     items: CARDAPIO.acompanhamentos, cls: 'tag-acomp' },
-    { id: 'listaCarne',     items: CARDAPIO.carnes,          cls: 'tag-carne' },
-    { id: 'listaSalada',    items: CARDAPIO.saladas,         cls: 'tag-salada' },
-    { id: 'listaSobremesa', items: CARDAPIO.sobremesas,      cls: 'tag-sobremesa' },
-  ];
-  grupos.forEach(({ id, items, cls }) => {
-    const div = document.getElementById(id);
-    if (!div) return;
-    div.innerHTML = '';
-    if (!items.length) { div.innerHTML = '<span style="color:#aaa;font-size:0.85rem;">Nenhum item hoje</span>'; return; }
-    items.forEach(item => {
-      const tag = document.createElement('span');
-      tag.className = `cardapio-item-tag ${cls}`;
-      tag.textContent = item;
-      div.appendChild(tag);
-    });
-  });
-
-  const cpgGrupos = [
-    { id: 'cpgAcomp',  items: CARDAPIO.acompanhamentos, cls: 'tag-acomp' },
-    { id: 'cpgCarne',  items: CARDAPIO.carnes,          cls: 'tag-carne' },
-    { id: 'cpgSalada', items: CARDAPIO.saladas,         cls: 'tag-salada' },
-  ];
-  cpgGrupos.forEach(({ id, items, cls }) => {
-    const div = document.getElementById(id);
-    if (!div) return;
-    div.innerHTML = '';
-    items.forEach(item => {
-      const tag = document.createElement('span');
-      tag.className = `cardapio-item-tag ${cls}`;
-      tag.textContent = item;
-      div.appendChild(tag);
-    });
-  });
-}
-
-function buildGrids() {
-  buildGrid('acompGrid',  CARDAPIO.acompanhamentos, 'acomp');
-  buildGrid('carneGrid',  CARDAPIO.carnes,          'carne');
-  buildGrid('saladaGrid', CARDAPIO.saladas,          'salada');
-}
-
-function buildGrid(containerId, items, type) {
-  const div = document.getElementById(containerId);
-  if (!div) return;
-  div.innerHTML = '';
-  items.forEach(item => {
-    if (type === 'carne') {
-      const card = document.createElement('div');
-      card.className = 'carne-card';
-      card.dataset.item = item;
-
-      const nome = document.createElement('span');
-      nome.className = 'carne-nome';
-      nome.textContent = item;
-
-      const counter = document.createElement('div');
-      counter.className = 'carne-counter';
-      counter.style.display = 'none';
-
-      const btnMinus = document.createElement('button');
-      btnMinus.className = 'carne-btn carne-btn-minus';
-      btnMinus.textContent = '−';
-      btnMinus.onclick = (e) => { e.stopPropagation(); alterarCarne(card, item, -1); };
-
-      const qty = document.createElement('span');
-      qty.className = 'carne-qty';
-      qty.textContent = '0';
-
-      const btnPlus = document.createElement('button');
-      btnPlus.className = 'carne-btn carne-btn-plus';
-      btnPlus.textContent = '+';
-      btnPlus.onclick = (e) => { e.stopPropagation(); alterarCarne(card, item, 1); };
-
-      counter.appendChild(btnMinus);
-      counter.appendChild(qty);
-      counter.appendChild(btnPlus);
-      card.appendChild(nome);
-      card.appendChild(counter);
-      card.onclick = () => alterarCarne(card, item, 1);
-      div.appendChild(card);
-    } else {
-      const chip = document.createElement('button');
-      chip.className = 'item-chip';
-      chip.textContent = item;
-      chip.dataset.item = item;
-      chip.dataset.type = type;
-      chip.onclick = () => toggleItem(chip, type, item);
-      div.appendChild(chip);
-    }
-  });
-}
-
-function alterarCarne(card, item, delta) {
-  const atual = selCarne[item] || 0;
-  const novo = Math.max(0, atual + delta);
-
-  if (novo === 0) {
-    delete selCarne[item];
-    card.classList.remove('carne-selecionada');
-    card.querySelector('.carne-counter').style.display = 'none';
-    card.querySelector('.carne-qty').textContent = '0';
-  } else {
-    selCarne[item] = novo;
-    card.classList.add('carne-selecionada');
-    card.querySelector('.carne-counter').style.display = 'flex';
-    card.querySelector('.carne-qty').textContent = novo;
-  }
-
-  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
-  const extras = Math.max(0, totalPedacos - 3);
-  const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
-  const counter = document.getElementById('carneCounter');
-  counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}${extraInfo}`;
-  counter.classList.toggle('warn', extras > 0);
-  updatePrecoPersonalizada();
-}
-
-function toggleItem(chip, type, item) {
-  if (type === 'acomp') {
-    if (selAcomp.includes(item)) {
-      selAcomp = selAcomp.filter(i => i !== item);
-      chip.classList.remove('selected');
-    } else {
-      if (selAcomp.length >= 6) { showToast('Máximo de 6 acompanhamentos!', 'aviso'); return; }
-
-      selAcomp.push(item);
-      chip.classList.add('selected');
-    }
-    const extras = Math.max(0, selAcomp.length - 5);
-    const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${(extras * 4).toFixed(0)})` : '';
-    document.getElementById('acompCounter').textContent = `Selecionados: ${selAcomp.length} / 5${extraInfo}`;
-    document.getElementById('acompCounter').classList.toggle('warn', selAcomp.length > 5);
-  } else if (type === 'salada') {
-    if (selSalada.includes(item)) {
-      selSalada = selSalada.filter(i => i !== item);
-      chip.classList.remove('selected-salada');
-    } else {
-      if (selSalada.length >= 3) { showToast('Máximo de 3 saladas!', 'aviso'); return; }
-      selSalada.push(item);
-      chip.classList.add('selected-salada');
-    }
-    document.getElementById('saladaCounter').textContent =
-      `Selecionadas: ${selSalada.length} / 3${selSalada.length > 0 ? ` (+R$${(selSalada.length * 2).toFixed(0)})` : ''}`;
-  }
-  updatePrecoPersonalizada();
-}
-
-function selectSize(size) {
-  selectedSize = size;
-  document.getElementById('sizeMedia').classList.toggle('selected', size === 'media');
-  document.getElementById('sizeGrande').classList.toggle('selected', size === 'grande');
-  updatePrecoPersonalizada();
-}
-
-function isModoPesar() {
-  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
-
-  if (selAcomp.length === 4 && totalPedacos === 3) return false;
-
-  return true;
-}
-
-function calcularBasePersonalizada(totalAcomp, totalPedacos, tamanho) {
-  const offset = tamanho === 'grande' ? 2 : 0;
-  const base = 26 + offset;
-  const difAcomp = (totalAcomp - 4) * 2;
-  const difCarne = (totalPedacos - 3) * 4;
-  return base + difAcomp + difCarne;
-}
-
-function updatePrecoPersonalizada() {
-  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
-  const el = document.getElementById('precoPersonalizada');
-  const infoEl = document.getElementById('infoPesar');
-
-  const nadaSelecionado = selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0;
-
-  if (nadaSelecionado) {
-    el.textContent = 'R$ 0,00';
-    el.classList.remove('preco-a-pesar');
-    if (infoEl) infoEl.style.display = 'none';
-    return;
-  }
-
-  if (isModoPesar()) {
-    el.textContent = 'A pesar';
-    el.classList.add('preco-a-pesar');
-    if (infoEl) infoEl.style.display = 'block';
-  } else {
-    el.classList.remove('preco-a-pesar');
-    if (infoEl) infoEl.style.display = 'none';
-
-    const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
-    const total = base + (selSalada.length * 2);
-    el.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-  }
-}
-
-let qtyPadrao = { media: 1, grande: 1 };
-let qtyPersonalizada = 1;
-
-function changeQtyPersonalizada(delta) {
-  qtyPersonalizada = Math.max(1, qtyPersonalizada + delta);
-  document.getElementById('qtyPersonalizada').textContent = qtyPersonalizada;
-}
-
-function changeQty(size, delta) {
-  qtyPadrao[size] = Math.max(1, qtyPadrao[size] + delta);
-  document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = qtyPadrao[size];
-}
-
-function ordenarPelaplanilha(itens) {
-  return [...itens].sort((a, b) => {
-    const ia = CARDAPIO.acompanhamentos.indexOf(a);
-    const ib = CARDAPIO.acompanhamentos.indexOf(b);
-    const posA = ia === -1 ? 9999 : ia;
-    const posB = ib === -1 ? 9999 : ib;
-    return posA - posB;
-  });
-}
-
-function montarDescricaoOrdenada({ carnes, acompanhamentos, saladas, obs, incluiFixos, carnesOpcoes }) {
-  const partes = [];
-
-  if (incluiFixos) {
-
-    const hoje = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-    const ehSabado = hoje.getDay() === 6;
-    let fixos = ['Arroz branco', 'Macarrão', 'Aipim com bacon', 'Feijão'];
-    if (ehSabado) fixos = ['Lasanha de Frango', ...fixos];
-    partes.push(fixos.join(', '));
-    if (carnesOpcoes && carnesOpcoes.length > 0) {
-      const carnesDesc = carnesOpcoes.map(c => `1x ${c}`).join(', ');
-      partes.push(`Carnes: ${carnesDesc}`);
-    }
-  } else {
-    if (acompanhamentos.length > 0) {
-      const acompOrdenados = ordenarPelaplanilha(acompanhamentos);
-      partes.push(acompOrdenados.join(', '));
-    }
-    if (carnes && Object.keys(carnes).length > 0) {
-      const carnesDesc = Object.entries(carnes).map(([c, q]) => `${q}x ${c}`).join(', ');
-      partes.push(`Carnes: ${carnesDesc}`);
-    }
-  }
-
-  if (saladas && saladas.length > 0) partes.push('Salada: ' + saladas.join(', '));
-  if (obs) partes.push(`⚠️ Obs: ${obs}`);
-
-  return partes.join(' | ');
-}
-
-
-function addPadrao(size) {
-  if (!estaAberto()) {
-    const msg = getEstado() === 'fechado'
-      ? 'Estamos fechados'
-      : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
-    showToast(msg, 'aviso', 5000);
-    return;
-  }
-  const precoUnit = size === 'media' ? 26 : 28;
-  const label = size === 'media' ? 'Média' : 'Grande';
-  const qty = qtyPadrao[size];
-  const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
-  const obs = document.getElementById(obsId).value.trim();
-
-  const carnesOpcoes = CARDAPIO.carnes.length > 0 ? CARDAPIO.carnes.slice(0, 3) : ['Carne do dia'];
-
-  const desc = montarDescricaoOrdenada({
-    carnes: {}, acompanhamentos: [], saladas: [], obs,
-    incluiFixos: true, carnesOpcoes, tamanho: label
-  });
-  const descPlanilha = desc;
-
-  cart.push({
-    tipo: `Marmita ${label}`, desc, descPlanilha, preco: precoUnit * qty, qty,
-    composicao: { tipoPedido: 'padrao', tamanho: size, pesar: false }
-  });
-
-  salvarCarrinhoLocal();
-  qtyPadrao[size] = 1;
-  document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = '1';
-  document.getElementById(obsId).value = '';
-  updateCart();
-
-  showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
-}
-
-function addPersonalizada() {
-  if (!estaAberto()) {
-    const msg = getEstado() === 'fechado'
-      ? 'Estamos fechados'
-      : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
-    showToast(msg, 'aviso', 5000);
-    return;
-  }
-  const totalPedacos = Object.values(selCarne).reduce((a, b) => a + b, 0);
-
-  if (selAcomp.length === 0 && totalPedacos === 0 && selSalada.length === 0) {
-    showToast('Selecione ao menos um item para montar sua marmita!', 'aviso');
-    return;
-  }
-
-  const label = selectedSize === 'media' ? 'Média' : 'Grande';
-  const pesar = isModoPesar();
-
-  let preco;
-  if (pesar) {
-    preco = 0; 
-  } else {
-    const base = calcularBasePersonalizada(selAcomp.length, totalPedacos, selectedSize);
-    preco = base + (selSalada.length * 2);
-  }
-
-  const obs = document.getElementById('obsPersonalizada') ? document.getElementById('obsPersonalizada').value.trim() : '';
-  const descCompleta = montarDescricaoOrdenada({
-    carnes: selCarne, acompanhamentos: selAcomp, saladas: selSalada, obs,
-    incluiFixos: false
-  });
-  const qty = qtyPersonalizada;
-
-  cart.push({
-    tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta,
-    preco: pesar ? 0 : preco * qty, qty, aPesar: pesar,
-    composicao: {
-      tipoPedido: 'personalizada', tamanho: selectedSize, pesar,
-      qtyAcomp: selAcomp.length, qtyCarnePedacos: totalPedacos, qtySalada: selSalada.length
-    }
-  });
-
-  salvarCarrinhoLocal();
-  updateCart();
-  clearPersonalizada();
-  showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
-}
-
-function clearPersonalizada() {
-  selAcomp = []; selCarne = {}; selSalada = [];
-  qtyPersonalizada = 1;
-  const qtyEl = document.getElementById('qtyPersonalizada');
-  if (qtyEl) qtyEl.textContent = '1';
-  buildGrids();
-  document.getElementById('acompCounter').textContent  = 'Selecionados: 0 / 5';
-  document.getElementById('carneCounter').textContent  = 'Selecionados: 0 pedaços';
-  document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
-  document.getElementById('acompCounter').classList.remove('warn');
-  document.getElementById('carneCounter').classList.remove('warn');
-  const obsP = document.getElementById('obsPersonalizada');
-  if (obsP) obsP.value = '';
-  updatePrecoPersonalizada();
-}
-
-// ========== CARRINHO ==========
-function updateCart() {
-  const container = document.getElementById('cartItems');
-  document.getElementById('cartCount').textContent = cart.length;
-
-  if (cart.length === 0) {
-    container.innerHTML = '<p class="cart-empty">Seu carrinho está vazio.</p>';
-    document.getElementById('cartTotal').textContent = 'R$ 0,00';
-    return;
-  }
-
-  container.innerHTML = '';
-  let total = 0;
-  let temAPesar = false;
-  cart.forEach((item, i) => {
-    total += item.preco;
-    if (item.aPesar) temAPesar = true;
+};
+
+// ============ UTILS ============
+const Utils = {
+  gerarIdPedido() {
+    return window.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  },
+
+  parseDateBR(str) {
+    const partes = str.trim().split('/');
+    if (partes.length !== 3) return null;
+    const [d, m, a] = partes;
+    return d && m && a ? `${a.padStart(4,'0')}-${m.padStart(2,'0')}-${d.padStart(2,'0')}` : null;
+  },
+
+  formatPrice(value) {
+    return `R$ ${value.toFixed(2).replace('.', ',')}`;
+  },
+
+  sanitizeHTML(str) {
     const div = document.createElement('div');
-    div.className = 'cart-item';
-    const precoExibido = item.aPesar
-      ? `<span class="cart-item-price-pesar">A pesar</span>`
-      : `<div class="cart-item-price">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>`;
-    div.innerHTML = `
-      <div class="cart-item-title">${item.qty > 1 ? item.qty + 'x ' : ''}${item.tipo}</div>
-      <div class="cart-item-desc">${item.desc}</div>
-      ${precoExibido}
-      <button class="remove-item" onclick="confirmarRemocao(${i})" title="Remover">✕</button>
-    `;
-    container.appendChild(div);
-  });
-
-  const totalEl = document.getElementById('cartTotal');
-  if (temAPesar) {
-    totalEl.innerHTML = `R$ ${total.toFixed(2).replace('.', ',')} <span class="total-pesar-aviso">+ itens a pesar</span>`;
-  } else {
-    totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    div.textContent = str;
+    return div.innerHTML;
   }
-}
+};
 
-function confirmarRemocao(i) {
-  abrirModalConfirm(
-    'Remover item?',
-    `Deseja remover <strong>${cart[i].tipo}</strong> do carrinho?`,
-    () => removeItem(i)
-  );
-}
+// ============ UI MANAGER ============
+const UI = {
+  showToast(msg, tipo = 'info', duracao = 3000) {
+    if (!dom.toastContainer) {
+      dom.toastContainer = document.createElement('div');
+      dom.toastContainer.id = 'toastContainer';
+      document.body.appendChild(dom.toastContainer);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${tipo}`;
+    toast.textContent = msg;
+    dom.toastContainer.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('toast-show'));
+    setTimeout(() => {
+      toast.classList.remove('toast-show');
+      toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+    }, duracao);
+  },
 
-function removeItem(i) {
-  cart.splice(i, 1);
-  salvarCarrinhoLocal();
-  updateCart();
-}
+  toggleOverlay(show) {
+    dom.overlay.classList.toggle('open', show);
+  },
 
-function toggleCart() {
-  const panel   = document.getElementById('cartPanel');
-  const overlay = document.getElementById('overlay');
-  const aviso   = document.getElementById('avisoBalcao');
-  panel.classList.toggle('open');
-  overlay.classList.toggle('open');
-  if (aviso) aviso.classList.toggle('hidden-by-cart', panel.classList.contains('open'));
-}
+  toggleCart(show) {
+    const shouldOpen = show !== undefined ? show : !dom.cartPanel.classList.contains('open');
+    dom.cartPanel.classList.toggle('open', shouldOpen);
+    dom.overlay.classList.toggle('open', shouldOpen);
+  },
 
-function salvarCarrinhoLocal() {
-  try {
-    localStorage.setItem('rdm_cart', JSON.stringify(cart));
-    localStorage.setItem('rdm_cart_ts', Date.now());
-  } catch(e) {}
-}
+  toggleModal(modalEl, overlayEl, show) {
+    if (!modalEl || !overlayEl) return;
+    const shouldOpen = show !== undefined ? show : !modalEl.classList.contains('open');
+    modalEl.classList.toggle('open', shouldOpen);
+    overlayEl.classList.toggle('open', shouldOpen);
+    if (shouldOpen && modalEl === dom.modalNome) {
+      setTimeout(() => dom.inputNome?.focus(), 100);
+    }
+  },
 
-function carregarCarrinhoLocal() {
-  try {
-    const ts = parseInt(localStorage.getItem('rdm_cart_ts') || '0');
-    if (Date.now() - ts > 4 * 60 * 60 * 1000) {
-      localStorage.removeItem('rdm_cart');
-      localStorage.removeItem('rdm_cart_ts');
+  updateCartUI() {
+    dom.cartCount.textContent = state.cart.length;
+    const container = dom.cartItems;
+
+    if (state.cart.length === 0) {
+      container.innerHTML = '<p class="cart-empty">Seu carrinho está vazio.</p>';
+      dom.cartTotal.textContent = 'R$ 0,00';
       return;
     }
-    const salvo = localStorage.getItem('rdm_cart');
-    if (salvo) {
-      const parsed = JSON.parse(salvo);
-      if (Array.isArray(parsed) && parsed.every(i => i && typeof i.tipo === 'string' && typeof i.preco === 'number')) {
-        cart = parsed;
-        updateCart();
-        if (cart.length > 0) showToast(`Você tem ${cart.length} item(ns) do seu último acesso!`, 'info', 4000);
+
+    container.innerHTML = '';
+    let total = 0;
+    let temAPesar = false;
+
+    state.cart.forEach((item, i) => {
+      total += item.preco;
+      if (item.aPesar) temAPesar = true;
+
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      const precoHTML = item.aPesar
+        ? '<span class="cart-item-price-pesar">A pesar</span>'
+        : `<div class="cart-item-price">${Utils.formatPrice(item.preco)}</div>`;
+
+      div.innerHTML = `
+        <div class="cart-item-title">${item.qty > 1 ? item.qty + 'x ' : ''}${item.tipo}</div>
+        <div class="cart-item-desc">${item.desc}</div>
+        ${precoHTML}
+        <button class="remove-item" onclick="CartManager.removerItem(${i})" title="Remover" aria-label="Remover item do carrinho">✕</button>
+      `;
+      container.appendChild(div);
+    });
+
+    const totalEl = dom.cartTotal;
+    if (temAPesar) {
+      totalEl.innerHTML = `${Utils.formatPrice(total)} <span class="total-pesar-aviso">+ itens a pesar</span>`;
+    } else {
+      totalEl.textContent = Utils.formatPrice(total);
+    }
+  }
+};
+
+// ============ SCHEDULE MANAGER ============
+const Schedule = {
+  getEstado() {
+    const agora = new Date();
+    const partesBR = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(agora);
+
+    const get = tipo => partesBR.find(p => p.type === tipo)?.value ?? '';
+    const hora = parseInt(get('hour'), 10);
+    const minuto = parseInt(get('minute'), 10);
+    const dataHoje = `${get('year')}-${get('month')}-${get('day')}`;
+    const dataBR = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const diaSem = dataBR.getDay();
+
+    if (state.diasFechados.includes(dataHoje) || diaSem === 0) return 'fechado';
+
+    const totalMin = hora * 60 + minuto;
+    const { pedidos, abertura, fechamento } = CONFIG.horario;
+    const inicioPedidos = pedidos.h * 60 + pedidos.m;
+    const abre = abertura.h * 60 + abertura.m;
+    const fecha = fechamento.h * 60 + fechamento.m;
+
+    if (totalMin >= inicioPedidos && totalMin < abre) return 'pedidos';
+    if (totalMin >= abre && totalMin < fecha) return 'aberto';
+    return 'fechado';
+  },
+
+  isAberto() {
+    return this.getEstado() === 'pedidos';
+  },
+
+  atualizarBadge() {
+    if (!dom.badgeHorario) return;
+    const estado = this.getEstado();
+    const estadoMap = {
+      aberto: { text: 'Aberto agora', class: 'badge-aberto' },
+      pedidos: { text: 'Pedidos disponíveis', class: 'badge-pedidos' },
+      fechado: { text: 'Fechado agora', class: 'badge-fechado' }
+    };
+    const { text, class: cls } = estadoMap[estado];
+    dom.badgeHorario.textContent = text;
+    dom.badgeHorario.className = `badge-horario ${cls}`;
+  }
+};
+
+// ============ CARDÁPIO MANAGER ============
+const CardapioManager = {
+  async carrega() {
+    this.mostrarSkeleton(true);
+    try {
+      const res = await fetch(CONFIG.sheetsUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const tsv = await res.text();
+      state.cardapio = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
+      state.diasFechados = [];
+
+      tsv.split('\n').slice(1).forEach(linha => {
+        if (!linha.trim()) return;
+        const [categoria, item] = linha.split('\t').map(s => (s || '').trim().replace(/"/g, ''));
+        if (!item) return;
+
+        const cat = categoria.toLowerCase();
+        if (cat.includes('acomp')) state.cardapio.acompanhamentos.push(item);
+        else if (cat.includes('carne')) state.cardapio.carnes.push(item);
+        else if (cat.includes('salada')) state.cardapio.saladas.push(item);
+        else if (cat.includes('sobremesa')) state.cardapio.sobremesas.push(item);
+        else if (cat === 'fechado') {
+          const iso = item.includes('/') ? Utils.parseDateBR(item) : item;
+          if (iso) state.diasFechados.push(iso);
+        }
+        else if (cat === 'atualizado') state.cardapioAtualizado = item;
+      });
+
+      this.renderizar();
+      this.mostrarSkeleton(false);
+    } catch (e) {
+      console.error('Erro ao carregar cardápio:', e);
+      state.cardapio = {
+        acompanhamentos: ["Arroz branco", "Feijão", "Macarrão espaguete", "Aipim com bacon"],
+        carnes: ["Carne do dia"],
+        saladas: ["Salada da casa"],
+        sobremesas: ["Sobremesa do dia"]
+      };
+      this.renderizar();
+      this.mostrarSkeleton(false);
+      UI.showToast('Cardápio padrão carregado. Verifique sua conexão.', 'aviso', 5000);
+    }
+  },
+
+  mostrarSkeleton(show) {
+    document.querySelectorAll('.cardapio-box-list, .cpg-list').forEach(el => {
+      if (show) {
+        el.innerHTML = '<span class="skeleton-item"></span><span class="skeleton-item"></span><span class="skeleton-item"></span>';
       } else {
-        localStorage.removeItem('rdm_cart');
-        localStorage.removeItem('rdm_cart_ts');
+        el.querySelectorAll('.skeleton-item').forEach(s => s.remove());
+      }
+    });
+  },
+
+  renderizar() {
+    this.renderCardapioVisao();
+    this.renderGridsPedidos();
+    this.atualizarPrecoPersonalizada();
+    Schedule.atualizarBadge();
+    this.mostrarSelo();
+  },
+
+  renderCardapioVisao() {
+    const grupos = [
+      { id: 'listaAcomp', items: state.cardapio.acompanhamentos, cls: 'tag-acomp' },
+      { id: 'listaCarne', items: state.cardapio.carnes, cls: 'tag-carne' },
+      { id: 'listaSalada', items: state.cardapio.saladas, cls: 'tag-salada' },
+      { id: 'listaSobremesa', items: state.cardapio.sobremesas, cls: 'tag-sobremesa' },
+    ];
+
+    grupos.forEach(({ id, items, cls }) => {
+      const div = document.getElementById(id);
+      if (!div) return;
+      div.innerHTML = '';
+      if (!items.length) {
+        div.innerHTML = '<span style="color:#aaa;font-size:0.85rem;">Nenhum item hoje</span>';
+        return;
+      }
+      items.forEach(item => {
+        const tag = document.createElement('span');
+        tag.className = `cardapio-item-tag ${cls}`;
+        tag.textContent = item;
+        div.appendChild(tag);
+      });
+    });
+
+    const cpgGrupos = [
+      { id: 'cpgAcomp', items: state.cardapio.acompanhamentos, cls: 'tag-acomp' },
+      { id: 'cpgCarne', items: state.cardapio.carnes, cls: 'tag-carne' },
+      { id: 'cpgSalada', items: state.cardapio.saladas, cls: 'tag-salada' },
+    ];
+    cpgGrupos.forEach(({ id, items, cls }) => {
+      const div = document.getElementById(id);
+      if (!div) return;
+      div.innerHTML = '';
+      items.forEach(item => {
+        const tag = document.createElement('span');
+        tag.className = `cardapio-item-tag ${cls}`;
+        tag.textContent = item;
+        div.appendChild(tag);
+      });
+    });
+  },
+
+  renderGridsPedidos() {
+    this.renderGrid('acompGrid', state.cardapio.acompanhamentos, 'acomp');
+    this.renderGrid('carneGrid', state.cardapio.carnes, 'carne');
+    this.renderGrid('saladaGrid', state.cardapio.saladas, 'salada');
+  },
+
+  renderGrid(containerId, items, type) {
+    const div = document.getElementById(containerId);
+    if (!div) return;
+    div.innerHTML = '';
+
+    items.forEach(item => {
+      if (type === 'carne') {
+        const card = this.criarCarneCard(item);
+        div.appendChild(card);
+      } else {
+        const chip = document.createElement('button');
+        chip.className = 'item-chip';
+        chip.textContent = item;
+        chip.dataset.item = item;
+        chip.dataset.type = type;
+        chip.onclick = () => PersonalizadaManager.toggleItem(chip, type, item);
+        div.appendChild(chip);
+      }
+    });
+  },
+
+  criarCarneCard(item) {
+    const card = document.createElement('div');
+    card.className = 'carne-card';
+    card.dataset.item = item;
+
+    const nome = document.createElement('span');
+    nome.className = 'carne-nome';
+    nome.textContent = item;
+
+    const counter = document.createElement('div');
+    counter.className = 'carne-counter';
+    counter.style.display = 'none';
+
+    const btnMinus = document.createElement('button');
+    btnMinus.className = 'carne-btn';
+    btnMinus.textContent = '−';
+    btnMinus.onclick = (e) => { e.stopPropagation(); PersonalizadaManager.alterarCarne(item, -1); };
+
+    const qty = document.createElement('span');
+    qty.className = 'carne-qty';
+    qty.textContent = '0';
+
+    const btnPlus = document.createElement('button');
+    btnPlus.className = 'carne-btn';
+    btnPlus.textContent = '+';
+    btnPlus.onclick = (e) => { e.stopPropagation(); PersonalizadaManager.alterarCarne(item, 1); };
+
+    counter.appendChild(btnMinus);
+    counter.appendChild(qty);
+    counter.appendChild(btnPlus);
+    card.appendChild(nome);
+    card.appendChild(counter);
+    card.onclick = () => PersonalizadaManager.alterarCarne(item, 1);
+    return card;
+  },
+
+  atualizarPrecoPersonalizada() {
+    PersonalizadaManager.atualizarPreco();
+  },
+
+  mostrarSelo() {
+    const selo = document.getElementById('cardapioAtualizado');
+    if (!selo) return;
+    if (!state.cardapioAtualizado) {
+      selo.hidden = true;
+      return;
+    }
+    let dataBR = state.cardapioAtualizado;
+    if (/^\d{4}-\d{2}-\d{2}/.test(state.cardapioAtualizado)) {
+      const [a, m, d] = state.cardapioAtualizado.slice(0, 10).split('-');
+      dataBR = `${d}/${m}/${a}`;
+    }
+    selo.textContent = `Cardápio atualizado em ${dataBR}`;
+    selo.hidden = false;
+  }
+};
+
+// ============ PERSONALIZADA MANAGER ============
+const PersonalizadaManager = {
+  alterarCarne(item, delta) {
+    const atual = state.personalizadaSel.carne[item] || 0;
+    const novo = Math.max(0, atual + delta);
+
+    if (novo === 0) {
+      delete state.personalizadaSel.carne[item];
+    } else {
+      state.personalizadaSel.carne[item] = novo;
+    }
+    this.atualizarUICarnes();
+    this.atualizarPreco();
+  },
+
+  atualizarUICarnes() {
+    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
+    const extras = Math.max(0, totalPedacos - CONFIG.limits.carneMax);
+    const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
+    const counter = document.getElementById('carneCounter');
+    counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}${extraInfo}`;
+    counter.classList.toggle('warn', extras > 0);
+  },
+
+  toggleItem(chip, type, item) {
+    const arr = type === 'acomp' ? state.personalizadaSel.acomp : state.personalizadaSel.salada;
+    const maxLimit = type === 'acomp' ? CONFIG.limits.acompMax : CONFIG.limits.saladaMax;
+
+    if (arr.includes(item)) {
+      state.personalizadaSel[type === 'acomp' ? 'acomp' : 'salada'] = arr.filter(i => i !== item);
+      chip.classList.remove(type === 'acomp' ? 'selected' : 'selected-salada');
+    } else {
+      if (arr.length >= maxLimit) {
+        UI.showToast(`Máximo de ${maxLimit} itens!`, 'aviso');
+        return;
+      }
+      arr.push(item);
+      chip.classList.add(type === 'acomp' ? 'selected' : 'selected-salada');
+    }
+    this.atualizarUIItems(type);
+    this.atualizarPreco();
+  },
+
+  atualizarUIItems(type) {
+    if (type === 'acomp') {
+      const extras = Math.max(0, state.personalizadaSel.acomp.length - CONFIG.limits.acompMax);
+      const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
+      document.getElementById('acompCounter').textContent = `Selecionados: ${state.personalizadaSel.acomp.length} / ${CONFIG.limits.acompMax}${extraInfo}`;
+      document.getElementById('acompCounter').classList.toggle('warn', extras > 0);
+    } else if (type === 'salada') {
+      const priceExtra = state.personalizadaSel.salada.length > 0 ? ` (+R$${state.personalizadaSel.salada.length * 2})` : '';
+      document.getElementById('saladaCounter').textContent = `Selecionadas: ${state.personalizadaSel.salada.length} / ${CONFIG.limits.saladaMax}${priceExtra}`;
+    }
+  },
+
+  selecionarTamanho(size) {
+    state.selectedSize = size;
+    document.getElementById('sizeMedia').classList.toggle('selected', size === 'media');
+    document.getElementById('sizeGrande').classList.toggle('selected', size === 'grande');
+    this.atualizarPreco();
+  },
+
+  mudarQty(delta) {
+    state.qtyPersonalizada = Math.max(1, state.qtyPersonalizada + delta);
+    document.getElementById('qtyPersonalizada').textContent = state.qtyPersonalizada;
+  },
+
+  isModoPesar() {
+    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
+    return !(state.personalizadaSel.acomp.length === 4 && totalPedacos === 3);
+  },
+
+  calcularBase(totalAcomp, totalPedacos, tamanho) {
+    const offset = tamanho === 'grande' ? 2 : 0;
+    const base = 26 + offset;
+    const difAcomp = (totalAcomp - 4) * 2;
+    const difCarne = (totalPedacos - 3) * 4;
+    return base + difAcomp + difCarne;
+  },
+
+  atualizarPreco() {
+    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
+    const el = document.getElementById('precoPersonalizada');
+    const infoEl = document.getElementById('infoPesar');
+
+    const nadaSelecionado = !state.personalizadaSel.acomp.length && !totalPedacos && !state.personalizadaSel.salada.length;
+
+    if (nadaSelecionado) {
+      el.textContent = 'R$ 0,00';
+      el.classList.remove('preco-a-pesar');
+      if (infoEl) infoEl.style.display = 'none';
+      return;
+    }
+
+    if (this.isModoPesar()) {
+      el.textContent = 'A pesar';
+      el.classList.add('preco-a-pesar');
+      if (infoEl) infoEl.style.display = 'block';
+    } else {
+      el.classList.remove('preco-a-pesar');
+      if (infoEl) infoEl.style.display = 'none';
+      const base = this.calcularBase(state.personalizadaSel.acomp.length, totalPedacos, state.selectedSize);
+      const total = base + (state.personalizadaSel.salada.length * 2);
+      el.textContent = Utils.formatPrice(total);
+    }
+  },
+
+  limpar() {
+    state.personalizadaSel = { acomp: [], carne: {}, salada: [] };
+    state.qtyPersonalizada = 1;
+    document.getElementById('qtyPersonalizada').textContent = '1';
+    CardapioManager.renderGridsPedidos();
+    document.getElementById('acompCounter').textContent = 'Selecionados: 0 / 5';
+    document.getElementById('carneCounter').textContent = 'Selecionados: 0 pedaços';
+    document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
+    ['acompCounter', 'carneCounter'].forEach(id => document.getElementById(id).classList.remove('warn'));
+    const obsP = document.getElementById('obsPersonalizada');
+    if (obsP) obsP.value = '';
+    this.atualizarPreco();
+  }
+};
+
+// ============ CART MANAGER ============
+const CartManager = {
+  adicionarPadrao(size) {
+    if (!Schedule.isAberto()) {
+      const msg = Schedule.getEstado() === 'fechado'
+        ? 'Estamos fechados'
+        : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+      UI.showToast(msg, 'aviso', 5000);
+      return;
+    }
+
+    const precoUnit = size === 'media' ? 26 : 28;
+    const label = size === 'media' ? 'Média' : 'Grande';
+    const qty = state.qtyPadrao[size];
+    const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
+    const obs = (document.getElementById(obsId)?.value || '').trim();
+    const carnesOpcoes = state.cardapio.carnes.length > 0 ? state.cardapio.carnes.slice(0, 3) : ['Carne do dia'];
+
+    const desc = this.montarDescricao({
+      carnes: {}, acompanhamentos: [], saladas: [], obs,
+      incluiFixos: true, carnesOpcoes, tamanho: label
+    });
+
+    state.cart.push({
+      tipo: `Marmita ${label}`, desc, descPlanilha: desc,
+      preco: precoUnit * qty, qty,
+      composicao: { tipoPedido: 'padrao', tamanho: size, pesar: false }
+    });
+
+    this.salvarLocal();
+    state.qtyPadrao[size] = 1;
+    document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = '1';
+    document.getElementById(obsId).value = '';
+    UI.updateCartUI();
+    UI.showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
+  },
+
+  adicionarPersonalizada() {
+    if (!Schedule.isAberto()) {
+      const msg = Schedule.getEstado() === 'fechado'
+        ? 'Estamos fechados'
+        : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+      UI.showToast(msg, 'aviso', 5000);
+      return;
+    }
+
+    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
+    if (!state.personalizadaSel.acomp.length && !totalPedacos && !state.personalizadaSel.salada.length) {
+      UI.showToast('Selecione ao menos um item!', 'aviso');
+      return;
+    }
+
+    const label = state.selectedSize === 'media' ? 'Média' : 'Grande';
+    const pesar = PersonalizadaManager.isModoPesar();
+    let preco = 0;
+
+    if (!pesar) {
+      const base = PersonalizadaManager.calcularBase(state.personalizadaSel.acomp.length, totalPedacos, state.selectedSize);
+      preco = base + (state.personalizadaSel.salada.length * 2);
+    }
+
+    const obs = (document.getElementById('obsPersonalizada')?.value || '').trim();
+    const descCompleta = this.montarDescricao({
+      carnes: state.personalizadaSel.carne,
+      acompanhamentos: state.personalizadaSel.acomp,
+      saladas: state.personalizadaSel.salada,
+      obs, incluiFixos: false
+    });
+
+    const qty = state.qtyPersonalizada;
+    state.cart.push({
+      tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta,
+      preco: pesar ? 0 : preco * qty, qty, aPesar: pesar,
+      composicao: {
+        tipoPedido: 'personalizada', tamanho: state.selectedSize, pesar,
+        qtyAcomp: state.personalizadaSel.acomp.length,
+        qtyCarnePedacos: totalPedacos,
+        qtySalada: state.personalizadaSel.salada.length
+      }
+    });
+
+    this.salvarLocal();
+    UI.updateCartUI();
+    PersonalizadaManager.limpar();
+    UI.showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
+  },
+
+  montarDescricao({ carnes, acompanhamentos, saladas, obs, incluiFixos, carnesOpcoes }) {
+    const partes = [];
+
+    if (incluiFixos) {
+      const hoje = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+      const ehSabado = hoje.getDay() === 6;
+      let fixos = ['Arroz branco', 'Macarrão', 'Aipim com bacon', 'Feijão'];
+      if (ehSabado) fixos = ['Lasanha de Frango', ...fixos];
+      partes.push(fixos.join(', '));
+      if (carnesOpcoes?.length > 0) {
+        partes.push('Carnes: ' + carnesOpcoes.map(c => `1x ${c}`).join(', '));
+      }
+    } else {
+      if (acompanhamentos.length > 0) {
+        const ordenados = [...acompanhamentos].sort((a, b) =>
+          state.cardapio.acompanhamentos.indexOf(a) - state.cardapio.acompanhamentos.indexOf(b)
+        );
+        partes.push(ordenados.join(', '));
+      }
+      if (Object.keys(carnes).length > 0) {
+        partes.push('Carnes: ' + Object.entries(carnes).map(([c, q]) => `${q}x ${c}`).join(', '));
       }
     }
-  } catch(e) {
-    localStorage.removeItem('rdm_cart');
-    localStorage.removeItem('rdm_cart_ts');
-  }
-}
 
+    if (saladas?.length > 0) partes.push('Salada: ' + saladas.join(', '));
+    if (obs) partes.push(`⚠️ Obs: ${obs}`);
+
+    return partes.join(' | ');
+  },
+
+  removerItem(i) {
+    state.cart.splice(i, 1);
+    this.salvarLocal();
+    UI.updateCartUI();
+  },
+
+  salvarLocal() {
+    try {
+      localStorage.setItem('rdm_cart', JSON.stringify(state.cart));
+      localStorage.setItem('rdm_cart_ts', Date.now().toString());
+    } catch (e) {
+      console.warn('localStorage indisponível:', e);
+    }
+  },
+
+  carregarLocal() {
+    try {
+      const ts = parseInt(localStorage.getItem('rdm_cart_ts') || '0');
+      if (Date.now() - ts > CONFIG.cartExpireHours * 60 * 60 * 1000) {
+        localStorage.removeItem('rdm_cart');
+        localStorage.removeItem('rdm_cart_ts');
+        return;
+      }
+      const salvo = localStorage.getItem('rdm_cart');
+      if (salvo) {
+        const parsed = JSON.parse(salvo);
+        if (Array.isArray(parsed) && parsed.every(i => i?.tipo && typeof i.preco === 'number')) {
+          state.cart = parsed;
+          UI.updateCartUI();
+          if (state.cart.length > 0) {
+            UI.showToast(`Você tem ${state.cart.length} item(ns) do seu último acesso!`, 'info', 4000);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar carrinho:', e);
+    }
+  },
+
+  confirmarRemocao(i) {
+    const item = state.cart[i];
+    if (!item) return;
+    abrirModalConfirm(
+      'Remover item?',
+      `Deseja remover <strong>${item.tipo}</strong> do carrinho?`,
+      () => this.removerItem(i)
+    );
+  }
+};
+
+// ============ WHATSAPP / PEDIDO ============
+const PedidoManager = {
+  abrirModalNome() {
+    if (state.cart.length === 0) {
+      UI.showToast('Seu carrinho está vazio!', 'aviso');
+      return;
+    }
+    if (!Schedule.isAberto()) {
+      UI.showToast('Estamos fechados', 'aviso', 5000);
+      return;
+    }
+    dom.inputNome.value = '';
+    UI.toggleModal(dom.modalNome, dom.modalOverlay, true);
+  },
+
+  fecharModalNome() {
+    UI.toggleModal(dom.modalNome, dom.modalOverlay, false);
+  },
+
+  confirmarPedido() {
+    const nome = (dom.inputNome?.value || '').trim();
+    if (!nome) {
+      UI.showToast('Digite seu nome', 'aviso');
+      dom.inputNome?.focus();
+      return;
+    }
+    this.fecharModalNome();
+    this.enviarWhatsApp(nome);
+  },
+
+  enviarWhatsApp(nomeCliente) {
+    if (state.cart.length === 0) return;
+
+    const total = state.cart.reduce((sum, item) => sum + item.preco, 0);
+    const temAPesar = state.cart.some(item => item.aPesar);
+    const pedidoId = Utils.gerarIdPedido();
+
+    // Salvar no Drive (não-blocking)
+    fetch(CONFIG.appsScriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        pedidoId, nomeCliente,
+        itens: state.cart.map(item => ({
+          tipo: item.tipo, desc: item.descPlanilha,
+          preco: item.aPesar ? 'A pesar' : item.preco,
+          qty: item.qty || 1,
+          composicao: item.composicao || null
+        })),
+        total: temAPesar ? `${total.toFixed(2)} + itens a pesar` : total.toFixed(2),
+        totalMarmitas: state.cart.reduce((sum, item) => sum + (item.qty || 1), 0)
+      })
+    }).catch(err => console.warn('Erro ao salvar:', err));
+
+    // Montar mensagem WhatsApp
+    const totalMarmitas = state.cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+    let msg = `*Pedido — Restaurante do Mário*\n`;
+    msg += `*Cliente: ${nomeCliente}*\n`;
+    msg += `*Total de marmitas: ${totalMarmitas}*\n\n`;
+    state.cart.forEach((item, i) => {
+      const prefixo = item.qty > 1 ? `${item.qty}x ` : '';
+      const precoStr = item.aPesar ? 'A pesar' : Utils.formatPrice(item.preco);
+      msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\n${precoStr}\n\n`;
+    });
+    const totalStr = temAPesar
+      ? `${Utils.formatPrice(total)} + itens a pesar`
+      : Utils.formatPrice(total);
+    msg += `*Total: ${totalStr}*\n`;
+
+    state.cart = [];
+    this.salvarLocal();
+    UI.updateCartUI();
+
+    const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  },
+
+  salvarLocal() {
+    CartManager.salvarLocal();
+  }
+};
+
+// ============ MODAIS ============
 function abrirModalConfirm(titulo, mensagem, onConfirm) {
-  const overlay = document.getElementById('modalConfirmOverlay');
-  const modal   = document.getElementById('modalConfirm');
-  if (!overlay || !modal) { onConfirm(); return; }
-  modal.querySelector('.modal-confirm-title').textContent = titulo;
-  modal.querySelector('.modal-confirm-msg').innerHTML = mensagem;
-  modal.querySelector('.modal-confirm-ok').onclick = () => { fecharModalConfirm(); onConfirm(); };
-  overlay.classList.add('open');
-  modal.classList.add('open');
+  if (!dom.modalConfirm || !dom.modalConfirmOverlay) {
+    onConfirm();
+    return;
+  }
+  dom.modalConfirm.querySelector('.modal-confirm-title').textContent = titulo;
+  dom.modalConfirm.querySelector('.modal-confirm-msg').innerHTML = mensagem;
+  dom.modalConfirm.querySelector('.modal-confirm-ok').onclick = () => {
+    fecharModalConfirm();
+    onConfirm();
+  };
+  UI.toggleModal(dom.modalConfirm, dom.modalConfirmOverlay, true);
 }
 
 function fecharModalConfirm() {
-  document.getElementById('modalConfirmOverlay').classList.remove('open');
-  document.getElementById('modalConfirm').classList.remove('open');
+  UI.toggleModal(dom.modalConfirm, dom.modalConfirmOverlay, false);
 }
 
-function abrirModalNome() {
-  if (cart.length === 0) { showToast('Seu carrinho está vazio!', 'aviso'); return; }
-  if (!estaAberto()) { showToast('Estamos fechados', 'aviso', 5000); return; }
-  document.getElementById('inputNomeCliente').value = '';
-  document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('modalNome').classList.add('open');
-  setTimeout(() => document.getElementById('inputNomeCliente').focus(), 100);
+// ============ NAVEGAÇÃO ============
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const headerHeight = dom.header?.offsetHeight || 120;
+  const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+  window.scrollTo({ top, behavior: 'smooth' });
 }
 
-function fecharModalNome() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.getElementById('modalNome').classList.remove('open');
-}
+function atualizarNavAtiva() {
+  const headerH = dom.header?.offsetHeight || 120;
+  const secoes = [
+    { id: 'inicio', navIdx: 0 },
+    { id: 'cardapio-dia-sec', navIdx: 1 },
+    { id: 'pedidos', navIdx: 2 },
+    { id: 'localizacao', navIdx: 3 },
+  ];
 
-function confirmarPedido() {
-  const nome = document.getElementById('inputNomeCliente').value.trim();
-  if (!nome) {
-    showToast('Por favor, digite seu nome antes de continuar.', 'aviso');
-    document.getElementById('inputNomeCliente').focus();
-    return;
-  }
-  fecharModalNome();
-  enviarWhatsApp(nome);
-}
-function enviarWhatsApp(nomeCliente) {
-  if (cart.length === 0) { showToast('Carrinho vazio!', 'aviso'); return; }
-
-  const total = cart.reduce((sum, item) => sum + item.preco, 0);
-  const temAPesar = cart.some(item => item.aPesar);
-  const pedidoId = gerarIdPedido();
-
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({
-      pedidoId,
-      nomeCliente,
-      itens: cart.map(item => ({
-        tipo: item.tipo,
-        desc: item.descPlanilha,
-        preco: item.aPesar ? 'A pesar' : item.preco,
-        qty: item.qty || 1,
-        composicao: item.composicao || null
-      })),
-      total: temAPesar ? `${total.toFixed(2)} + itens a pesar` : total.toFixed(2),
-      totalMarmitas: cart.reduce((sum, item) => sum + (item.qty || 1), 0)
-    })
-  }).catch(err => console.warn('Erro ao salvar no Drive:', err));
-
-  const totalMarmitas = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
-  let msg = `*Pedido — Restaurante do Mário*\n`;
-  msg += `*Cliente: ${nomeCliente}*\n`;
-  msg += `*Total de marmitas: ${totalMarmitas}*\n\n`;
-  cart.forEach((item, i) => {
-    const prefixo = item.qty > 1 ? `${item.qty}x ` : '';
-    const precoStr = item.aPesar ? 'A pesar' : `R$ ${item.preco.toFixed(2).replace('.', ',')}`;
-    msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\n${precoStr}\n\n`;
+  let ativa = 0;
+  secoes.forEach(({ id, navIdx }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= headerH + 10) ativa = navIdx;
   });
-  const totalStr = temAPesar
-    ? `R$ ${total.toFixed(2).replace('.', ',')} + itens a pesar`
-    : `R$ ${total.toFixed(2).replace('.', ',')}`;
-  msg += `*Total: ${totalStr}*\n`;
 
-  cart = [];
-  salvarCarrinhoLocal();
-  updateCart();
+  document.querySelectorAll('nav button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === ativa);
+  });
 
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
-}
-    // ===== SCROLL SUAVE PARA SEÇÕES =====
-    function scrollToSection(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      // Calcula a posição levando em conta o header fixo
-      const headerHeight = document.querySelector('header').offsetHeight;
-      const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
-
-    function atualizarNavAtiva() {
-      const headerH = document.querySelector('header').offsetHeight;
-      const secoes = [
-        { id: 'inicio', navIdx: 0 },
-        { id: 'cardapio-dia-sec', navIdx: 1 },
-        { id: 'pedidos', navIdx: 2 },
-        { id: 'localizacao', navIdx: 3 },
-      ];
-
-      let ativa = 0;
-      secoes.forEach(({ id, navIdx }) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= headerH + 10) ativa = navIdx;
-      });
-
-      document.querySelectorAll('nav button').forEach((btn, i) => {
-        btn.classList.toggle('active', i === ativa);
-      });
-
-      const pedidosEl = document.getElementById('pedidos');
-      const aviso = document.getElementById('avisoBalcao');
-      if (pedidosEl && aviso) {
-        const rect = pedidosEl.getBoundingClientRect();
-        const visivel = rect.top < window.innerHeight && rect.bottom > headerH;
-        aviso.classList.toggle('visible', visivel);
-      }
-    }
-
-    window.addEventListener('scroll', atualizarNavAtiva, { passive: true });
-    window.addEventListener('load', atualizarNavAtiva);
-
-    function goToMarmitas() { scrollToSection('pedidos'); }
-    function goToCardapio() { scrollToSection('cardapio-dia-sec'); }
-
-    function showSection(id) { scrollToSection(id); }
-
-
-// ========== INIT ==========
-document.addEventListener('DOMContentLoaded', () => {
-  carregarCardapio();
-  carregarCarrinhoLocal();
-  atualizarBadgeHorario();
-  setInterval(atualizarBadgeHorario, 60000);
-});
-// ========== SELO "CARDÁPIO ATUALIZADO EM..." ==========
-// Lê a data da categoria "atualizado" da planilha do cardápio e mostra
-// no selo acima do Cardápio do Dia. Aceita "11/07/2026" ou "2026-07-11".
-// Se a planilha não tiver a linha, o selo permanece oculto.
-function mostrarCardapioAtualizado() {
-  const selo = document.getElementById('cardapioAtualizado');
-  if (!selo) return;
-
-  const bruto = String(CARDAPIO_ATUALIZADO_EM || '').trim();
-  if (!bruto) { selo.hidden = true; return; }
-
-  // Normaliza para DD/MM/AAAA
-  let dataBR = bruto;
-  if (/^\d{4}-\d{2}-\d{2}/.test(bruto)) {
-    const [a, m, d] = bruto.slice(0, 10).split('-');
-    dataBR = `${d}/${m}/${a}`;
+  const pedidosEl = document.getElementById('pedidos');
+  if (pedidosEl && dom.avisoBalcao) {
+    const rect = pedidosEl.getBoundingClientRect();
+    const visivel = rect.top < window.innerHeight && rect.bottom > headerH;
+    dom.avisoBalcao.classList.toggle('visible', visivel);
   }
-
-  selo.textContent = `Cardápio atualizado em ${dataBR}`;
-  selo.hidden = false;
 }
+
+// ============ EXPOSIÇÃO GLOBAL (para onclick no HTML) ============
+window.toggleCart = () => UI.toggleCart();
+window.scrollToSection = scrollToSection;
+window.changeQty = (size, delta) => {
+  state.qtyPadrao[size] = Math.max(1, state.qtyPadrao[size] + delta);
+  document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = state.qtyPadrao[size];
+};
+window.changeQtyPersonalizada = (delta) => PersonalizadaManager.mudarQty(delta);
+window.selectSize = (size) => PersonalizadaManager.selecionarTamanho(size);
+window.addPadrao = (size) => CartManager.adicionarPadrao(size);
+window.addPersonalizada = () => CartManager.adicionarPersonalizada();
+window.abrirModalNome = () => PedidoManager.abrirModalNome();
+window.fecharModalNome = () => PedidoManager.fecharModalNome();
+window.confirmarPedido = () => PedidoManager.confirmarPedido();
+window.confirmarRemocao = (i) => CartManager.confirmarRemocao(i);
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+  dom.init();
+  CardapioManager.carrega();
+  CartManager.carregarLocal();
+  Schedule.atualizarBadge();
+  setInterval(() => Schedule.atualizarBadge(), 60000);
+  window.addEventListener('scroll', atualizarNavAtiva, { passive: true });
+  window.addEventListener('load', atualizarNavAtiva);
+
+  // Close cart on overlay click
+  dom.overlay?.addEventListener('click', () => UI.toggleCart(false));
+  dom.modalOverlay?.addEventListener('click', () => PedidoManager.fecharModalNome());
+  dom.modalConfirmOverlay?.addEventListener('click', fecharModalConfirm);
+
+  // Allow Enter key in name input
+  dom.inputNome?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') PedidoManager.confirmarPedido();
+  });
+});
