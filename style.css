@@ -1011,8 +1011,9 @@ nav button.active {
   line-height: 1;
   transition: background var(--transicao), transform var(--transicao);
 }
-.carne-btn:hover { background: var(--verde-700); }
-.carne-btn:active { transform: scale(0.92); }
+.carne-btn:hover:not(:disabled) { background: var(--verde-700); }
+.carne-btn:active:not(:disabled) { transform: scale(0.92); }
+.carne-btn:disabled { background: #cfcfcf; color: #fff; cursor: default; }
 .carne-qty { min-width: 22px; text-align: center; font-weight: 800; font-size: 1.05rem; }
 
 #carneGrid { display: flex; flex-direction: column; gap: 10px; }
@@ -1284,15 +1285,28 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 8px;
   font-size: 1.05rem;
   font-weight: 700;
   margin-bottom: 12px;
 }
-.cart-total span:last-child {
+.cart-total > span:last-child {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 6px;
   font-family: var(--fonte-display);
   font-size: 1.7rem;
   font-weight: 700;
   color: var(--verde-800);
+}
+.cart-total .total-pesar-inline {
+  font-family: var(--fonte-base, inherit);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--dourado-texto);
+  white-space: nowrap;
 }
 
 .total-pesar-aviso {
@@ -1620,7 +1634,8 @@ footer {
   .cart-item-title { font-size: 0.92rem; }
   .cart-item-desc { font-size: 0.8rem; }
   .cart-footer { padding: 14px 15px calc(14px + env(safe-area-inset-bottom)); }
-  .cart-total span:last-child { font-size: 1.4rem; }
+  .cart-total > span:last-child { font-size: 1.4rem; }
+  .cart-total .total-pesar-inline { font-size: 0.72rem; }
   .pagamentos { font-size: 0.78rem; margin-bottom: 11px; }
   .whatsapp-btn { min-height: 50px; font-size: 0.92rem; }
 

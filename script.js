@@ -8,7 +8,7 @@ const CONFIG = {
   sheetsUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv',
   appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec',
   whatsappNumber: '554733752227',
-  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 14, m: 0 }, fechamento: { h: 14, m: 0 } },
+  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 18, m: 0 }, fechamento: { h: 18, m: 0 } },
   cartExpireHours: 4,
   limits: { acompMax: 5, carneMax: 3, saladaMax: 3 }
 };
@@ -157,7 +157,7 @@ const UI = {
 
     const totalEl = dom.cartTotal;
     if (temAPesar) {
-      totalEl.innerHTML = `${Utils.formatPrice(total)} <span class="total-pesar-aviso">+ itens a pesar</span>`;
+      totalEl.innerHTML = `<span>${Utils.formatPrice(total)}</span><span class="total-pesar-inline">+ itens a pesar</span>`;
     } else {
       totalEl.textContent = Utils.formatPrice(total);
     }
@@ -355,15 +355,16 @@ const CardapioManager = {
 
     const counter = document.createElement('div');
     counter.className = 'carne-counter';
-    counter.style.display = 'none';
 
     const btnMinus = document.createElement('button');
     btnMinus.className = 'carne-btn';
     btnMinus.textContent = '−';
+    btnMinus.disabled = true;
     btnMinus.onclick = (e) => { e.stopPropagation(); PersonalizadaManager.alterarCarne(item, -1); };
 
     const qty = document.createElement('span');
     qty.className = 'carne-qty';
+    qty.dataset.item = item;
     qty.textContent = '0';
 
     const btnPlus = document.createElement('button');
@@ -417,9 +418,23 @@ const PersonalizadaManager = {
   },
 
   atualizarUICarnes() {
-    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
+    const sel = state.personalizadaSel.carne;
+    const totalPedacos = Object.values(sel).reduce((a, b) => a + b, 0);
     const extras = Math.max(0, totalPedacos - CONFIG.limits.carneMax);
     const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
+
+    // Atualiza cada card: quantidade, botão − (desabilitado em 0) e destaque
+    document.querySelectorAll('#carneGrid .carne-card').forEach(card => {
+      const item = card.dataset.item;
+      const q = sel[item] || 0;
+      const qtyEl = card.querySelector('.carne-qty');
+      if (qtyEl) qtyEl.textContent = q;
+      const btnMinus = card.querySelector('.carne-btn');
+      if (btnMinus) btnMinus.disabled = q === 0;
+      card.classList.toggle('carne-selecionada', q > 0);
+    });
+
+    // Resumo em cima: só a contagem total de pedaços
     const counter = document.getElementById('carneCounter');
     counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}${extraInfo}`;
     counter.classList.toggle('warn', extras > 0);
