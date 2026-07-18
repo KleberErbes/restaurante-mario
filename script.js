@@ -8,9 +8,9 @@ const CONFIG = {
   sheetsUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv',
   appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec',
   whatsappNumber: '554733752227',
-  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 18, m: 0 }, fechamento: { h: 18, m: 0 } },
+  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 14, m: 0 }, fechamento: { h: 14, m: 0 } },
   cartExpireHours: 4,
-  limits: { acompMax: 5, carneMax: 3, saladaMax: 3 }
+  limits: { acompMax: 6, carneMax: 3, saladaMax: 3 }
 };
 
 // ============ STATE (centralizado) ============
@@ -420,8 +420,6 @@ const PersonalizadaManager = {
   atualizarUICarnes() {
     const sel = state.personalizadaSel.carne;
     const totalPedacos = Object.values(sel).reduce((a, b) => a + b, 0);
-    const extras = Math.max(0, totalPedacos - CONFIG.limits.carneMax);
-    const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
 
     // Atualiza cada card: quantidade, botão − (desabilitado em 0) e destaque
     document.querySelectorAll('#carneGrid .carne-card').forEach(card => {
@@ -436,8 +434,7 @@ const PersonalizadaManager = {
 
     // Resumo em cima: só a contagem total de pedaços
     const counter = document.getElementById('carneCounter');
-    counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}${extraInfo}`;
-    counter.classList.toggle('warn', extras > 0);
+    counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}`;
   },
 
   toggleItem(chip, type, item) {
@@ -461,13 +458,9 @@ const PersonalizadaManager = {
 
   atualizarUIItems(type) {
     if (type === 'acomp') {
-      const extras = Math.max(0, state.personalizadaSel.acomp.length - CONFIG.limits.acompMax);
-      const extraInfo = extras > 0 ? ` (+${extras} extra${extras > 1 ? 's' : ''} = +R$${extras * 4})` : '';
-      document.getElementById('acompCounter').textContent = `Selecionados: ${state.personalizadaSel.acomp.length} / ${CONFIG.limits.acompMax}${extraInfo}`;
-      document.getElementById('acompCounter').classList.toggle('warn', extras > 0);
+      document.getElementById('acompCounter').textContent = `Selecionados: ${state.personalizadaSel.acomp.length} / ${CONFIG.limits.acompMax}`;
     } else if (type === 'salada') {
-      const priceExtra = state.personalizadaSel.salada.length > 0 ? ` (+R$${state.personalizadaSel.salada.length * 2})` : '';
-      document.getElementById('saladaCounter').textContent = `Selecionadas: ${state.personalizadaSel.salada.length} / ${CONFIG.limits.saladaMax}${priceExtra}`;
+      document.getElementById('saladaCounter').textContent = `Selecionadas: ${state.personalizadaSel.salada.length} / ${CONFIG.limits.saladaMax}`;
     }
   },
 
@@ -528,10 +521,9 @@ const PersonalizadaManager = {
     state.qtyPersonalizada = 1;
     document.getElementById('qtyPersonalizada').textContent = '1';
     CardapioManager.renderGridsPedidos();
-    document.getElementById('acompCounter').textContent = 'Selecionados: 0 / 5';
+    document.getElementById('acompCounter').textContent = 'Selecionados: 0 / 6';
     document.getElementById('carneCounter').textContent = 'Selecionados: 0 pedaços';
     document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
-    ['acompCounter', 'carneCounter'].forEach(id => document.getElementById(id).classList.remove('warn'));
     const obsP = document.getElementById('obsPersonalizada');
     if (obsP) obsP.value = '';
     this.atualizarPreco();
