@@ -138,8 +138,8 @@ section#inicio { padding: 0; max-width: 100%; }
 section h2 {
   font-family: var(--fonte-display);
   font-weight: 700;
-  font-size: clamp(1.9rem, 4.5vw, 2.6rem);
-  line-height: 1.15;
+  font-size: clamp(2.15rem, 5vw, 3rem);
+  line-height: 1.12;
   color: var(--verde-900);
   margin: 0 0 6px;
   letter-spacing: -0.01em;
@@ -378,12 +378,11 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
       rgba(13, 30, 9, 0.58) 100%),
     url('IMG_4031.png') center / cover no-repeat;
   color: #fff;
-  /* PC: ocupa a tela toda (descontando o cabeçalho fixo) */
-  min-height: calc(100vh - 122px);
-  min-height: calc(100svh - 122px);
+  /* PC: altura ditada pelo conteúdo, sem sobra de viewport */
+  min-height: 0;
   display: flex;
   align-items: center;
-  padding: clamp(64px, 9vw, 104px) 24px clamp(40px, 6vw, 64px);
+  padding: clamp(44px, 5vw, 64px) 24px clamp(44px, 5vw, 64px);
   position: relative;
   overflow: hidden;
 }
@@ -469,18 +468,6 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   transition: text-decoration-color var(--transicao), color var(--transicao);
 }
 .hero-link:hover { text-decoration-color: var(--dourado); }
-
-.hero-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 44px;
-  padding-top: 16px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.22);
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.6);
-}
 
 
 /* ===== BLOCO ABAIXO DO HERO (horário + buffet) ===== */
@@ -752,32 +739,35 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 
 /* ===== PEDIDOS ===== */
 .kilo-banner {
-  background: linear-gradient(150deg, var(--verde-900), var(--verde-800));
-  color: #fff;
+  background: var(--papel-card);
+  border: 1px solid var(--borda);
+  color: var(--tinta);
   border-radius: var(--raio-g);
-  padding: 26px 26px 24px;
+  padding: 24px 26px 22px;
   margin-bottom: 28px;
-  box-shadow: var(--sombra-2);
+  box-shadow: var(--sombra-1);
 }
 .kilo-banner h3 {
   font-family: var(--fonte-display);
   font-weight: 700;
   font-size: 1.35rem;
   margin: 0 0 16px;
-  color: var(--dourado-claro);
+  color: var(--verde-900);
 }
 .kilo-options { display: flex; flex-wrap: wrap; gap: 10px; }
 .kilo-tag {
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--verde-050);
+  border: 1px solid #d5e3ce;
   border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 0.92rem;
+  padding: 11px 18px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--verde-700);
   display: inline-flex;
   align-items: center;
   gap: 10px;
 }
-.kilo-tag span { font-weight: 800; color: var(--dourado-claro); white-space: nowrap; }
+.kilo-tag span { font-weight: 800; color: var(--dourado-texto); white-space: nowrap; }
 
 /* Cardápio das marmitas (resumo) */
 .cardapio-pedidos-box {
@@ -985,7 +975,7 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 }
 
 .section-label {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1152,7 +1142,7 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 
 .loc-title {
   font-family: var(--fonte-display);
-  font-size: clamp(1.9rem, 4.5vw, 2.5rem);
+  font-size: clamp(2.15rem, 5vw, 2.9rem);
   font-weight: 700;
   color: var(--verde-900);
   margin: 0 0 8px;
@@ -1217,7 +1207,8 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 
 /* ===== RODAPÉ ===== */
 footer {
-  background: #0d2009;
+  background: var(--papel);
+  border-top: 1px solid var(--borda);
   padding: 44px 24px 30px;
   text-align: center;
 }
@@ -1225,13 +1216,13 @@ footer {
   font-family: var(--fonte-display);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--verde-900);
   margin-bottom: 8px;
 }
-.footer-logo em { color: var(--dourado); font-style: italic; }
+.footer-logo em { color: var(--dourado-texto); font-style: italic; }
 .footer-copy {
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--tinta-suave);
   letter-spacing: 0.04em;
 }
 
@@ -1565,10 +1556,11 @@ footer {
 
 /* ===== RESPONSIVO ===== */
 @media (max-width: 720px) {
-  body { font-size: 15px; }
-  section { padding: 40px 16px; }
-  section h2 { font-size: clamp(1.5rem, 5.5vw, 1.9rem); }
-  .subtitle { font-size: 0.92rem; margin-bottom: 24px; }
+  body { font-size: 14px; }
+  section { padding: 34px 14px; }
+  /* títulos de seção maiores, o resto do conteúdo menor */
+  section h2 { font-size: clamp(1.7rem, 6.4vw, 2.15rem); }
+  .subtitle { font-size: 0.88rem; margin-bottom: 20px; }
 
   /* Cabeçalho como na referência: logo + nome à esquerda,
      selo de horário empilhado sobre o carrinho à direita */
@@ -1610,11 +1602,10 @@ footer {
 
   /* Hero: ocupa a primeira tela inteira do celular */
   .hero {
-    min-height: calc(100vh - 100px);
-    min-height: calc(100svh - 100px);
+    min-height: 0;
     display: flex;
     align-items: center;
-    padding: 36px 20px 40px;
+    padding: 30px 18px 34px;
   }
   .hero-kicker { font-size: 0.66rem; margin-bottom: 18px; padding-bottom: 12px; }
   .hero-title { font-size: clamp(2rem, 9vw, 2.6rem); margin-bottom: 16px; }
@@ -1622,7 +1613,6 @@ footer {
   .hero-actions { gap: 18px; }
   .hero-btn-primary { min-height: 52px; padding: 14px 26px; font-size: 0.98rem; width: 100%; }
   .hero-link { font-size: 0.94rem; }
-  .hero-meta { margin-top: 34px; font-size: 0.74rem; flex-direction: column; gap: 6px; }
 
   /* Horário + buffet */
   .buffet-home { padding: 40px 16px 44px; }
@@ -1637,23 +1627,23 @@ footer {
   .aviso-icone svg { width: 17px; height: 17px; }
   .buffet-home-title { margin-top: 38px !important; }
   .buffet-grid { gap: 12px; }
-  .buffet-card { padding: 20px 18px; }
-  .buffet-price { font-size: 2rem; }
-  .buffet-card p { font-size: 0.85rem; }
+  .buffet-card { padding: 17px 15px; }
+  .buffet-price { font-size: 1.8rem; }
+  .buffet-card p { font-size: 0.82rem; }
 
   /* Cardápio empilhado no celular */
   .cardapio-atualizado { font-size: 0.76rem; padding: 6px 12px; }
   .cardapio-grid { grid-template-columns: 1fr; gap: 14px; }
   .cardapio-box-title { font-size: 0.68rem; padding: 6px 13px; letter-spacing: 0.08em; left: 10px; bottom: 10px; }
   .cardapio-box-list { padding: 11px 11px 14px; gap: 7px; }
-  .cardapio-item-tag { font-size: 0.84rem; padding: 7px 11px; gap: 6px; border-radius: 10px; }
+  .cardapio-item-tag { font-size: 0.8rem; padding: 6px 10px; gap: 6px; border-radius: 10px; }
   .cpg-list .cardapio-item-tag { font-size: 0.76rem; padding: 5px 10px; }
 
   /* Pedidos */
-  .kilo-banner { padding: 18px 16px; margin-bottom: 20px; }
+  .kilo-banner { padding: 17px 15px; margin-bottom: 20px; }
   .kilo-banner h3 { font-size: 1.1rem; margin-bottom: 12px; }
   .kilo-options { flex-direction: column; align-items: stretch; gap: 8px; }
-  .kilo-tag { justify-content: space-between; font-size: 0.84rem; padding: 9px 13px; }
+  .kilo-tag { justify-content: space-between; font-size: 0.82rem; padding: 9px 14px; }
 
   .cardapio-pedidos-box { padding: 16px 15px 18px; margin-bottom: 24px; }
   .cardapio-pedidos-title { font-size: 1.08rem; margin-bottom: 12px; }
@@ -1679,7 +1669,9 @@ footer {
   /* Personalizada */
   .personalizada-box { padding: 20px 15px 18px; }
   .personalizada-box h3 { font-size: 1.35rem; }
-  .section-label { font-size: 0.7rem; margin: 22px 0 8px; padding-top: 16px; }
+  .section-label { font-size: 0.88rem; margin: 20px 0 8px; padding-top: 15px; }
+  .btn-ajuda { width: 24px; height: 24px; }
+  .btn-ajuda svg { width: 16px; height: 16px; }
   .size-btn { min-height: 54px; font-size: 0.92rem; }
   .size-btn small { font-size: 0.76rem; }
   .counter-info { font-size: 0.8rem; }
@@ -1692,9 +1684,10 @@ footer {
   .info-pesar { font-size: 0.83rem; padding: 10px 13px; }
 
   /* Localização */
-  .loc-info-row { padding: 13px 2px; }
-  .loc-label { font-size: 0.62rem; }
-  .loc-value { font-size: 0.92rem; }
+  .loc-info-row { padding: 12px 2px; }
+  .loc-label { font-size: 0.6rem; }
+  .loc-value { font-size: 0.88rem; }
+  .loc-sub { font-size: 0.9rem; margin-bottom: 28px; }
   .loc-mapa-foto { height: 160px; }
   .loc-mapa-body { padding: 16px 17px; }
   .loc-mapa-btn { padding: 11px 19px; min-height: 44px; font-size: 0.86rem; }
@@ -1722,9 +1715,18 @@ footer {
   .toast { font-size: 0.86rem; padding: 12px 15px; }
   .aviso-balcao { font-size: 0.8rem; padding: 10px 15px; }
 
-  footer { padding: 32px 18px 22px; }
-  .footer-logo { font-size: 1.2rem; }
-  .footer-copy { font-size: 0.74rem; }
+  footer { padding: 28px 18px 20px; }
+  .footer-logo { font-size: 1.15rem; }
+  .footer-copy { font-size: 0.72rem; }
+
+  /* Painel de ajuda */
+  .modal-ajuda { padding: 22px 18px 18px; max-height: 84vh; }
+  .modal-ajuda h3 { font-size: 1.25rem; margin-bottom: 16px; }
+  .ajuda-passos li { font-size: 0.88rem; padding: 0 0 14px 40px; }
+  .ajuda-passos li strong { font-size: 0.96rem; }
+  .ajuda-passos li::before { width: 27px; height: 27px; font-size: 0.85rem; }
+  .ajuda-rodape { font-size: 0.85rem; padding: 11px 13px; }
+  .ajuda-ok { min-height: 47px; font-size: 0.94rem; }
 }
 /* ============================================================
    PEDIR MARMITAS — fluxo único de montagem (2026)
@@ -1742,27 +1744,29 @@ footer {
 .preco-card {
   background: var(--papel-card);
   border: 1px solid var(--borda);
-  border-top: 5px solid var(--verde-800);
-  border-radius: 6px 6px var(--raio) var(--raio);
-  padding: 18px 18px 16px;
+  border-radius: var(--raio-g);
+  padding: 22px 18px 20px;
   box-shadow: var(--sombra-1);
   display: flex;
   flex-direction: column;
   gap: 4px;
   text-align: center;
+  transition: transform var(--transicao), box-shadow var(--transicao);
 }
+.preco-card:hover { transform: translateY(-4px); box-shadow: var(--sombra-2); }
+
 .preco-card-nome {
   font-family: var(--fonte-display);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   color: var(--verde-900);
 }
 .preco-card-valor {
   font-family: var(--fonte-display);
   font-weight: 700;
-  font-size: 2rem;
+  font-size: 2.1rem;
   line-height: 1.1;
-  color: var(--verde-700);
+  color: var(--verde-800);
 }
 .preco-card-obs {
   font-size: 0.78rem;
@@ -1771,8 +1775,8 @@ footer {
   letter-spacing: 0.08em;
   font-weight: 700;
 }
-.preco-card-quilo { border-top-color: var(--dourado); }
-.preco-card-quilo .preco-card-valor { font-size: 1.6rem; color: var(--dourado-texto); }
+.preco-card-quilo .preco-card-nome { color: var(--dourado-texto); }
+.preco-card-quilo .preco-card-valor { font-size: 1.7rem; color: var(--dourado-texto); }
 
 /* ----- 2. Caixa de montagem ----- */
 .pedido-box {
@@ -1879,15 +1883,15 @@ footer {
 
 /* ----- Ajustes de celular ----- */
 @media (max-width: 720px) {
-  .precos-topo { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .preco-card { padding: 14px 12px 12px; }
-  .preco-card-nome { font-size: 0.92rem; }
-  .preco-card-valor { font-size: 1.55rem; }
+  .precos-topo { grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+  .preco-card { padding: 14px 10px 12px; }
+  .preco-card-nome { font-size: 0.86rem; }
+  .preco-card-valor { font-size: 1.45rem; }
   .preco-card-quilo { grid-column: 1 / -1; }
-  .preco-card-quilo .preco-card-valor { font-size: 1.3rem; }
-  .preco-card-obs { font-size: 0.68rem; }
+  .preco-card-quilo .preco-card-valor { font-size: 1.2rem; }
+  .preco-card-obs { font-size: 0.64rem; letter-spacing: 0.06em; }
 
-  .pedido-box { padding: 20px 15px 18px; }
+  .pedido-box { padding: 18px 13px 16px; }
   .tipo-selector { gap: 9px; }
   .tipo-btn { min-height: 62px; font-size: 0.88rem; padding: 10px 8px; }
   .tipo-btn small { font-size: 0.74rem; }
@@ -1896,3 +1900,143 @@ footer {
   .nome-marmita-input { font-size: 0.92rem; padding: 11px 12px; min-height: 46px; }
   .cart-item-nome { font-size: 0.7rem; padding: 2px 8px; }
 }
+
+/* ============================================================
+   AJUDA — "como pedir" (ícone ao lado de Escolha a marmita)
+   ============================================================ */
+.label-com-ajuda {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.btn-ajuda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--verde-100);
+  color: var(--verde-700);
+  transition: var(--transicao);
+}
+.btn-ajuda svg { width: 17px; height: 17px; }
+.btn-ajuda:hover { background: var(--verde-600); color: #fff; transform: scale(1.08); }
+.btn-ajuda:active { transform: scale(0.94); }
+
+/* Painel de ajuda */
+.modal-ajuda {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -46%) scale(0.97);
+  width: calc(100vw - 32px);
+  max-width: 460px;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--papel-card);
+  border-radius: var(--raio-g);
+  padding: 28px 26px 24px;
+  box-shadow: var(--sombra-3);
+  z-index: 320;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transicao), transform var(--transicao);
+}
+.modal-ajuda.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-ajuda h3 {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--verde-900);
+  margin: 0 0 20px;
+  padding-right: 34px;
+}
+
+.ajuda-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: var(--verde-050);
+  color: var(--verde-800);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: var(--transicao);
+}
+.ajuda-fechar:hover { background: var(--verde-100); }
+
+.ajuda-passos {
+  list-style: none;
+  counter-reset: passo;
+  margin: 0 0 20px;
+  padding: 0;
+}
+.ajuda-passos li {
+  counter-increment: passo;
+  position: relative;
+  padding: 0 0 16px 44px;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: var(--tinta-suave);
+}
+.ajuda-passos li::before {
+  content: counter(passo);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--verde-800);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ajuda-passos li strong {
+  display: block;
+  color: var(--verde-900);
+  font-size: 1.02rem;
+  margin-bottom: 2px;
+}
+
+.ajuda-rodape {
+  background: var(--aviso-bg);
+  border: 1px solid var(--aviso-borda);
+  border-radius: var(--raio);
+  padding: 12px 15px;
+  font-size: 0.9rem;
+  color: #5c4a14;
+  margin: 0 0 18px;
+}
+.ajuda-rodape strong { color: #4a3a0d; }
+
+.ajuda-ok {
+  width: 100%;
+  min-height: 50px;
+  border: none;
+  border-radius: var(--raio);
+  background: var(--verde-800);
+  color: #fff;
+  font-family: var(--fonte-corpo);
+  font-weight: 800;
+  font-size: 1rem;
+  transition: var(--transicao);
+}
+.ajuda-ok:hover { background: var(--verde-700); transform: translateY(-1px); }

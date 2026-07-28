@@ -88,10 +88,6 @@
           <button class="hero-btn-primary" onclick="scrollToSection('pedidos')">Pedir marmita</button>
           <button class="hero-link" onclick="scrollToSection('cardapio-dia-sec')">Ver o cardápio de hoje</button>
         </div>
-        <div class="hero-meta">
-          <span>Seg a Sáb · 10h30 às 14h00</span>
-          <span>Pedidos de marmita a partir das 8h</span>
-        </div>
       </div>
     </div>
 
@@ -233,7 +229,17 @@
     <div class="pedido-box">
 
       <!-- Escolha da marmita -->
-      <div class="section-label">Escolha a marmita</div>
+      <div class="section-label label-com-ajuda">
+        Escolha a marmita
+        <button type="button" class="btn-ajuda" onclick="abrirAjuda()"
+          aria-label="Como fazer o pedido" title="Como fazer o pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.2"/>
+            <path d="M9.6 9.3a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.3v.5"/>
+            <path d="M12 17h.01"/>
+          </svg>
+        </button>
+      </div>
       <div class="tipo-selector">
         <button class="tipo-btn selected" data-tipo="padrao-media" onclick="selTipo('padrao-media')">
           Média<small>R$ 26,00</small>
@@ -412,6 +418,41 @@
       <button class="modal-btn-cancelar" onclick="fecharModalConfirm()">Cancelar</button>
       <button class="modal-btn-confirmar modal-confirm-ok">Confirmar</button>
     </div>
+  </div>
+
+  <!-- ===================== MODAL AJUDA (como pedir) ===================== -->
+  <div class="modal-overlay" id="modalAjudaOverlay" onclick="fecharAjuda()"></div>
+  <div class="modal-ajuda" id="modalAjuda" role="dialog" aria-modal="true" aria-labelledby="ajudaTitulo">
+    <button class="ajuda-fechar" onclick="fecharAjuda()" aria-label="Fechar">✕</button>
+    <h3 id="ajudaTitulo">Como pedir sua marmita</h3>
+    <ol class="ajuda-passos">
+      <li>
+        <strong>Escolha a marmita</strong>
+        Média ou Grande já vêm prontas com o cardápio do dia. As personalizadas você monta do seu jeito e são pesadas no balcão.
+      </li>
+      <li>
+        <strong>Monte, se for personalizada</strong>
+        Toque nos acompanhamentos e saladas que quiser e use o + nas carnes para escolher quantos pedaços.
+      </li>
+      <li>
+        <strong>Diga a quantidade</strong>
+        Use o − e o + para pedir mais de uma marmita igual.
+      </li>
+      <li>
+        <strong>Escreva para quem é</strong>
+        Pedindo para outras pessoas? Coloque o nome de cada uma. Fica tudo no mesmo pedido, mas identificado.
+      </li>
+      <li>
+        <strong>Adicione ao carrinho</strong>
+        Repita para cada marmita. O carrinho fica no topo da tela.
+      </li>
+      <li>
+        <strong>Envie pelo WhatsApp</strong>
+        Abra o carrinho, confira, informe seu nome e envie. Depois é só retirar no balcão.
+      </li>
+    </ol>
+    <p class="ajuda-rodape">Pedidos das <strong>8h às 14h</strong>. Não fazemos entrega — a retirada é no balcão.</p>
+    <button class="ajuda-ok" onclick="fecharAjuda()">Entendi</button>
   </div>
 
   <!-- ===================== AVISO BALCÃO (fixo global) ===================== -->

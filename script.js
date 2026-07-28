@@ -41,6 +41,8 @@ const dom = {
   inputNome: null,
   modalConfirm: null,
   modalConfirmOverlay: null,
+  modalAjuda: null,
+  modalAjudaOverlay: null,
   header: null,
   toastContainer: null,
 
@@ -57,6 +59,8 @@ const dom = {
     this.inputNome = document.getElementById('inputNomeCliente');
     this.modalConfirm = document.getElementById('modalConfirm');
     this.modalConfirmOverlay = document.getElementById('modalConfirmOverlay');
+    this.modalAjuda = document.getElementById('modalAjuda');
+    this.modalAjudaOverlay = document.getElementById('modalAjudaOverlay');
     this.header = document.querySelector('header');
   }
 };
@@ -822,6 +826,15 @@ function fecharModalConfirm() {
   UI.toggleModal(dom.modalConfirm, dom.modalConfirmOverlay, false);
 }
 
+// ============ AJUDA (como pedir) ============
+function abrirAjuda() {
+  UI.toggleModal(dom.modalAjuda, dom.modalAjudaOverlay, true);
+}
+
+function fecharAjuda() {
+  UI.toggleModal(dom.modalAjuda, dom.modalAjudaOverlay, false);
+}
+
 // ============ NAVEGAÇÃO ============
 function scrollToSection(id) {
   const el = document.getElementById(id);
@@ -870,6 +883,8 @@ window.abrirModalNome = () => PedidoManager.abrirModalNome();
 window.fecharModalNome = () => PedidoManager.fecharModalNome();
 window.confirmarPedido = () => PedidoManager.confirmarPedido();
 window.confirmarRemocao = (i) => CartManager.confirmarRemocao(i);
+window.abrirAjuda = abrirAjuda;
+window.fecharAjuda = fecharAjuda;
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
@@ -885,6 +900,16 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.overlay?.addEventListener('click', () => UI.toggleCart(false));
   dom.modalOverlay?.addEventListener('click', () => PedidoManager.fecharModalNome());
   dom.modalConfirmOverlay?.addEventListener('click', fecharModalConfirm);
+  dom.modalAjudaOverlay?.addEventListener('click', fecharAjuda);
+
+  // Esc fecha o que estiver aberto
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (dom.modalAjuda?.classList.contains('open')) fecharAjuda();
+    else if (dom.modalConfirm?.classList.contains('open')) fecharModalConfirm();
+    else if (dom.modalNome?.classList.contains('open')) PedidoManager.fecharModalNome();
+    else if (dom.cartPanel?.classList.contains('open')) UI.toggleCart(false);
+  });
 
   // Allow Enter key in name input
   dom.inputNome?.addEventListener('keydown', (e) => {
