@@ -1652,3 +1652,173 @@ footer {
   .footer-logo { font-size: 1.2rem; }
   .footer-copy { font-size: 0.74rem; }
 }
+/* ============================================================
+   PEDIR MARMITAS — fluxo único de montagem (2026)
+   Ordem: valores → escolha → quantidade → nome → personalizada
+          → observações → adicionar ao carrinho
+   ============================================================ */
+
+/* ----- 1. Valores no topo ----- */
+.precos-topo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.preco-card {
+  background: var(--papel-card);
+  border: 1px solid var(--borda);
+  border-top: 5px solid var(--verde-800);
+  border-radius: 6px 6px var(--raio) var(--raio);
+  padding: 18px 18px 16px;
+  box-shadow: var(--sombra-1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+.preco-card-nome {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--verde-900);
+}
+.preco-card-valor {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--verde-700);
+}
+.preco-card-obs {
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.preco-card-quilo { border-top-color: var(--dourado); }
+.preco-card-quilo .preco-card-valor { font-size: 1.6rem; color: var(--dourado-texto); }
+
+/* ----- 2. Caixa de montagem ----- */
+.pedido-box {
+  background: var(--papel-card);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-g);
+  padding: 26px 26px 24px;
+  box-shadow: var(--sombra-2);
+  margin-bottom: 34px;
+}
+
+/* Escolha do tipo de marmita */
+.tipo-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.tipo-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 68px;
+  padding: 12px 10px;
+  border: 2px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--papel);
+  color: var(--verde-900);
+  font-family: var(--fonte-corpo);
+  font-weight: 800;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  text-align: center;
+  transition: var(--transicao);
+}
+.tipo-btn small {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--tinta-suave);
+}
+.tipo-btn:hover { border-color: var(--verde-600); }
+.tipo-btn:active { transform: scale(0.98); }
+.tipo-btn.selected {
+  border-color: var(--verde-700);
+  background: var(--verde-100);
+  box-shadow: inset 0 0 0 1px var(--verde-700);
+}
+.tipo-btn.selected small { color: var(--verde-700); }
+.tipo-btn-pers.selected {
+  border-color: var(--dourado-texto);
+  background: #fdf6e6;
+  box-shadow: inset 0 0 0 1px var(--dourado-texto);
+}
+.tipo-btn-pers.selected small { color: var(--dourado-texto); }
+
+.tipo-ajuda {
+  margin: 12px 0 0;
+  font-size: 0.88rem;
+  color: var(--tinta-suave);
+  line-height: 1.5;
+}
+
+/* Nome de quem vai comer */
+.nome-ajuda {
+  margin: 0 0 10px;
+  font-size: 0.86rem;
+  color: var(--tinta-suave);
+  line-height: 1.5;
+}
+.nome-marmita-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--papel);
+  font-family: var(--fonte-corpo);
+  font-size: 0.98rem;
+  color: var(--tinta);
+  transition: var(--transicao);
+}
+.nome-marmita-input:focus { outline: none; border-color: var(--verde-600); background: #fff; }
+.nome-marmita-input::placeholder { color: #a9a698; }
+
+/* Bloco da personalizada aparece/some */
+#blocoPers[hidden],
+.info-pesar[hidden] { display: none !important; }
+
+/* Nome da pessoa dentro do carrinho */
+.cart-item-nome {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--verde-100);
+  border: 1px solid #c9dfc0;
+  color: var(--verde-700);
+  font-family: var(--fonte-corpo);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
+/* ----- Ajustes de celular ----- */
+@media (max-width: 720px) {
+  .precos-topo { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .preco-card { padding: 14px 12px 12px; }
+  .preco-card-nome { font-size: 0.92rem; }
+  .preco-card-valor { font-size: 1.55rem; }
+  .preco-card-quilo { grid-column: 1 / -1; }
+  .preco-card-quilo .preco-card-valor { font-size: 1.3rem; }
+  .preco-card-obs { font-size: 0.68rem; }
+
+  .pedido-box { padding: 20px 15px 18px; }
+  .tipo-selector { gap: 9px; }
+  .tipo-btn { min-height: 62px; font-size: 0.88rem; padding: 10px 8px; }
+  .tipo-btn small { font-size: 0.74rem; }
+  .tipo-ajuda { font-size: 0.82rem; }
+  .nome-ajuda { font-size: 0.8rem; }
+  .nome-marmita-input { font-size: 0.92rem; padding: 11px 12px; min-height: 46px; }
+  .cart-item-nome { font-size: 0.7rem; padding: 2px 8px; }
+}

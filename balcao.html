@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comanda — Restaurante do Mário</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     COMANDA — Restaurante do Mário · Design 2026
+     Mesmo sistema do site e do admin: verde profundo + dourado,
+     Fraunces + Atkinson Hyperlegible, assinatura de cupom picotado.
+     ============================================================ */
+  :root{
+    --verde-900:#14350f; --verde-800:#1a4a14; --verde-700:#1e5216;
+    --verde-600:#2e7d20; --verde-100:#e9f1e5;
+    --dourado:#c9a050; --dourado-claro:#e6c887; --dourado-texto:#8a6b21;
+    --terra:#9e3b2b; --salada:#3e7c2f;
+    --papel:#faf8f2; --card:#ffffff; --tinta:#23281f; --cinza:#5c6355;
+    --borda:#e3e0d6; --erro:#b3372a; --azul:#1a56db;
+    --media:#2e7d20; --grande:#9e3b2b;
+    --sombra-1:0 1px 3px rgba(24,34,18,.08);
+    --sombra-2:0 6px 20px rgba(24,34,18,.10);
+    --sombra-3:0 14px 38px rgba(24,34,18,.16);
+    --raio:14px; --raio-g:20px;
+    --tr:200ms cubic-bezier(.2,.6,.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Atkinson Hyperlegible','Segoe UI',Arial,sans-serif;background:var(--papel);color:var(--tinta);min-height:100vh;padding-bottom:120px;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  :focus-visible{outline:3px solid var(--dourado);outline-offset:2px;border-radius:6px;}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+  /* ===== LOGIN ===== */
+  #telaLogin{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
+    background:radial-gradient(900px 420px at 85% -10%, rgba(201,160,80,.14), transparent 60%),
+               linear-gradient(160deg,var(--verde-900),var(--verde-800));}
+  .login-box{background:var(--card);border-radius:var(--raio-g);padding:44px 36px 36px;width:100%;max-width:380px;box-shadow:var(--sombra-3);text-align:center;}
+  .login-logo{font-family:'Fraunces',Georgia,serif;font-size:1.55rem;font-weight:700;color:var(--verde-900);}
+  .login-sub{font-size:.72rem;color:var(--cinza);margin:6px 0 28px;letter-spacing:.22em;}
+  .login-box input{width:100%;padding:14px 16px;border:2px solid var(--borda);border-radius:var(--raio);font-size:1rem;font-family:inherit;margin-bottom:12px;outline:none;transition:border-color var(--tr);}
+  .login-box input:focus{border-color:var(--verde-600);}
+  .login-btn{width:100%;min-height:52px;padding:14px;background:var(--verde-800);color:#fff;border:none;border-radius:999px;font-size:1rem;font-weight:800;font-family:inherit;cursor:pointer;transition:background var(--tr),transform var(--tr);}
+  .login-btn:hover{background:var(--verde-700);transform:translateY(-1px);}
+  .login-erro{color:var(--erro);font-size:.88rem;margin-top:12px;min-height:20px;}
+
+  /* ===== APP / TOPO ===== */
+  #app{display:none;}
+  header.top{background:var(--verde-900);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:50;box-shadow:0 2px 14px rgba(10,20,8,.35);}
+  .top-title{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.15rem;}
+  .top-right{display:flex;align-items:center;gap:10px;}
+  .pill{font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:999px;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+  .pill-on{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);}
+  .pill-off{background:var(--erro);}
+  .dot{width:8px;height:8px;border-radius:50%;background:#57d07f;}
+  .dot-off{background:#fff;}
+  .btn-sair{background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:999px;padding:8px 14px;min-height:38px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background var(--tr);}
+  .btn-sair:hover{background:rgba(255,255,255,.24);}
+
+  /* ===== ABAS ===== */
+  .tabs{display:flex;background:var(--verde-900);position:sticky;top:56px;z-index:49;box-shadow:inset 0 8px 8px -8px rgba(0,0,0,.35);}
+  .tabs::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.22);pointer-events:none;}
+  .tab{flex:1;position:relative;padding:13px 6px;min-height:48px;text-align:center;color:rgba(255,255,255,.62);font-weight:800;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:3px solid transparent;transition:color var(--tr),border-color var(--tr);}
+  .tab.active{color:#fff;border-bottom-color:var(--dourado);}
+
+  .panel{max-width:820px;margin:0 auto;padding:18px 14px;display:none;}
+  .panel.active{display:block;}
+
+  /* ===== CAMPO NOME ===== */
+  .nome-input{width:100%;border:1.5px solid var(--borda);border-radius:var(--raio);padding:13px 15px;font-family:inherit;font-size:1rem;outline:none;margin-bottom:14px;background:var(--card);box-shadow:var(--sombra-1);transition:border-color var(--tr);}
+  .nome-input:focus{border-color:var(--verde-600);}
+  .nome-input::placeholder{color:#a9a698;}
+
+  /* ===== SELETORES DE TIPO ===== */
+  .seg{display:flex;gap:8px;margin-bottom:12px;}
+  .seg-btn{flex:1;min-height:60px;padding:12px 8px;border:2px solid var(--borda);background:var(--card);border-radius:var(--raio);font-family:inherit;font-weight:800;font-size:.92rem;cursor:pointer;color:var(--tinta);line-height:1.3;transition:border-color var(--tr),background var(--tr),color var(--tr);}
+  .seg-btn small{display:block;font-weight:600;font-size:.76rem;color:var(--cinza);margin-top:2px;}
+  .seg-btn.sel{border-color:var(--verde-700);background:var(--verde-100);color:var(--verde-900);}
+  .seg-btn.sel small{color:var(--verde-700);}
+
+  /* ===== BLOCOS ===== */
+  .bloco{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio-g);padding:16px 16px 18px;box-shadow:var(--sombra-1);margin-bottom:14px;}
+  .bloco-tit{font-weight:800;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--verde-800);margin-bottom:10px;}
+  .bloco-tit .hint{font-weight:600;text-transform:none;color:var(--cinza);letter-spacing:0;font-size:.78rem;}
+
+  .contador{font-size:.84rem;color:var(--cinza);margin-bottom:8px;}
+  .contador.warn{color:var(--dourado-texto);font-weight:800;}
+
+  /* ===== CHIPS ===== */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{min-height:42px;padding:9px 15px;border:1.5px solid var(--borda);background:#fff;border-radius:999px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;color:var(--tinta);transition:background var(--tr),border-color var(--tr),color var(--tr),transform var(--tr);}
+  .chip:active{transform:scale(.97);}
+  .chip.sel{background:var(--verde-800);border-color:var(--verde-800);color:#fff;}
+  .chip.sel-salada{background:var(--salada);border-color:var(--salada);color:#fff;}
+
+  /* ===== CARNES ===== */
+  .carne-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1.5px solid var(--borda);border-radius:var(--raio);background:#fff;cursor:pointer;transition:border-color var(--tr),background var(--tr);}
+  .carne-card.sel{border-color:var(--terra);background:#fdf3f0;}
+  .carne-nome{font-size:.92rem;font-weight:700;}
+  .carne-ct{display:flex;align-items:center;gap:12px;}
+  .carne-ct button{width:38px;height:38px;border:none;border-radius:11px;background:var(--verde-800);color:#fff;font-size:1.15rem;font-weight:800;cursor:pointer;line-height:1;transition:background var(--tr),transform var(--tr);}
+  .carne-ct button:hover{background:var(--verde-700);}
+  .carne-ct button:active{transform:scale(.92);}
+  .carne-qt{min-width:20px;text-align:center;font-weight:800;font-size:1rem;}
+  .carne-grid{display:flex;flex-direction:column;gap:8px;}
+
+  /* ===== QUANTIDADE / OBS / PREÇO ===== */
+  .qty-row{display:flex;align-items:center;justify-content:center;gap:18px;margin:4px 0 2px;}
+  .qty-row button{width:46px;height:46px;border:2px solid var(--verde-700);background:#fff;color:var(--verde-700);border-radius:13px;font-size:1.4rem;font-weight:800;cursor:pointer;line-height:1;transition:background var(--tr),color var(--tr),transform var(--tr);}
+  .qty-row button:hover{background:var(--verde-700);color:#fff;}
+  .qty-row button:active{transform:scale(.94);}
+  .qty-row .val{font-size:1.45rem;font-weight:800;min-width:42px;text-align:center;}
+
+  .obs-input{width:100%;border:1.5px solid var(--borda);border-radius:var(--raio);padding:11px 13px;font-family:inherit;font-size:.92rem;background:var(--papel);resize:vertical;min-height:52px;margin-top:8px;outline:none;transition:border-color var(--tr),background var(--tr);}
+  .obs-input:focus{border-color:var(--verde-600);background:#fff;}
+  .obs-input::placeholder{color:#a9a698;}
+
+  .preco-linha{display:flex;align-items:baseline;justify-content:space-between;margin:14px 2px 2px;font-size:.98rem;}
+  .preco-val{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-weight:700;color:var(--verde-800);}
+  .preco-val.pesar{color:var(--dourado-texto);font-size:1.15rem;}
+
+  .btn-full{width:100%;min-height:52px;padding:14px;border:none;border-radius:999px;font-family:inherit;font-weight:800;font-size:.98rem;cursor:pointer;margin-top:12px;color:#fff;transition:background var(--tr),transform var(--tr),box-shadow var(--tr);}
+  .btn-add{background:var(--verde-800);}
+  .btn-add:hover{background:var(--verde-700);transform:translateY(-1px);box-shadow:var(--sombra-2);}
+  .btn-add:active{transform:translateY(0);}
+
+  /* ===== COMANDA ATUAL (cupom picotado) ===== */
+  .comanda-lista{display:flex;flex-direction:column;gap:16px;}
+  .comanda-item{background:#fff;border-radius:5px 5px var(--raio) var(--raio);border-top:4px solid var(--verde-800);padding:13px 14px;box-shadow:var(--sombra-2);position:relative;}
+  .comanda-item::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:10px;
+    background-image:radial-gradient(circle at 6px 0px, transparent 5px, #fff 5.5px);
+    background-size:14px 10px;background-repeat:repeat-x;}
+  .ci-tipo{font-weight:800;color:var(--verde-900);font-size:.98rem;}
+  .ci-desc{font-size:.85rem;color:var(--cinza);line-height:1.5;margin-top:3px;}
+  .ci-preco{font-weight:800;margin-top:5px;font-size:.92rem;color:var(--verde-800);}
+  .ci-preco.pesar{color:var(--dourado-texto);}
+  .ci-rem{position:absolute;top:8px;right:8px;width:34px;height:34px;background:#f6ece9;border:none;border-radius:50%;color:var(--erro);font-size:1rem;font-weight:800;cursor:pointer;transition:background var(--tr);}
+  .ci-rem:hover{background:#f0dcd7;}
+  .vazio{text-align:center;color:var(--cinza);padding:28px 10px;font-size:.95rem;}
+
+  /* ===== BARRA FIXA ===== */
+  .barra{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--borda);box-shadow:0 -4px 18px rgba(24,34,18,.12);padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:60;}
+  .barra-inner{max-width:820px;margin:0 auto;}
+  .barra-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
+  .barra-total{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:var(--verde-800);}
+  .barra-count{font-size:.8rem;color:var(--cinza);}
+  .barra-btns{display:flex;gap:10px;}
+  .barra-btns button{flex:1;min-height:56px;padding:13px 8px;border:none;border-radius:var(--raio);font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer;line-height:1.25;transition:background var(--tr),transform var(--tr);}
+  .b-armazenar{background:var(--verde-100);color:var(--verde-800);border:2px solid var(--verde-700)!important;}
+  .b-armazenar:hover{background:#dcead5;}
+  .b-imprimir{background:var(--verde-800);color:#fff;}
+  .b-imprimir:hover{background:var(--verde-700);}
+  .b-imprimir small,.b-armazenar small{display:block;font-weight:600;font-size:.7rem;opacity:.85;margin-top:2px;}
+  .barra-btns button:disabled{opacity:.4;cursor:default;transform:none;}
+
+  /* ===== RESUMO ===== */
+  .resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .stat{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio-g);padding:16px;box-shadow:var(--sombra-1);}
+  .stat.wide{grid-column:1/-1;}
+  .stat-lbl{font-size:.7rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.1em;font-weight:700;}
+  .stat-num{font-family:'Fraunces',Georgia,serif;font-size:2rem;font-weight:700;margin-top:4px;line-height:1.05;}
+  .stat-num.media{color:var(--media);}
+  .stat-num.grande{color:var(--grande);}
+  .stat-num.verde{color:var(--verde-800);}
+  .stat-sub{font-size:.78rem;color:var(--cinza);margin-top:5px;}
+  .stat-valor{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-weight:700;color:var(--verde-800);}
+
+  .barra-mini{height:10px;border-radius:6px;background:var(--borda);overflow:hidden;display:flex;margin-top:10px;}
+  .barra-mini i{display:block;height:100%;}
+  .barra-mini .fm{background:var(--media);}
+  .barra-mini .fg{background:var(--grande);}
+  .legenda{display:flex;gap:16px;margin-top:8px;font-size:.8rem;color:var(--cinza);flex-wrap:wrap;}
+  .legenda span{display:flex;align-items:center;gap:5px;}
+  .legenda i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+  /* ===== HISTÓRICO / PREVISÃO ===== */
+  .prev-card{background:radial-gradient(700px 300px at 90% -20%, rgba(201,160,80,.18), transparent 60%),
+             linear-gradient(150deg,var(--verde-900),var(--verde-800));
+    color:#fff;border-radius:var(--raio-g);padding:20px;margin-bottom:16px;box-shadow:var(--sombra-2);}
+  .prev-eyebrow{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--dourado-claro);font-weight:700;}
+  .prev-dia{font-family:'Fraunces',Georgia,serif;font-size:1.35rem;font-weight:700;margin:4px 0 12px;}
+  .prev-nums{display:flex;gap:14px 22px;flex-wrap:wrap;}
+  .prev-n b{display:block;font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:700;line-height:1;}
+  .prev-n span{font-size:.7rem;opacity:.85;}
+  .prev-conf{margin-top:12px;font-size:.72rem;opacity:.85;}
+
+  table.hist{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--raio);overflow:hidden;box-shadow:var(--sombra-1);}
+  table.hist th{background:var(--verde-800);color:#fff;font-size:.62rem;padding:9px 5px;text-transform:uppercase;letter-spacing:.04em;}
+  table.hist td{padding:9px 5px;font-size:.8rem;text-align:center;border-top:1px solid var(--borda);}
+  table.hist td.dia{text-align:left;font-weight:700;color:var(--verde-800);white-space:nowrap;font-size:.76rem;}
+  table.hist tr:last-child td{border-bottom:none;}
+
+  .carregando{text-align:center;padding:40px;color:var(--cinza);}
+  .spin{width:32px;height:32px;border:3px solid var(--borda);border-top-color:var(--verde-700);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 12px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  /* ===== TOAST ===== */
+  #toasts{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;width:calc(100% - 28px);max-width:400px;pointer-events:none;}
+  .toast{padding:13px 16px;border-radius:var(--raio);color:#fff;font-weight:700;font-size:.9rem;box-shadow:var(--sombra-3);opacity:0;transform:translateY(14px);transition:opacity var(--tr),transform var(--tr);text-align:center;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .t-ok{background:var(--verde-700);}
+  .t-erro{background:var(--erro);}
+  .t-aviso{background:#8a6b21;}
+  .t-info{background:#313830;}
+
+  @media(min-width:560px){ .carne-grid{display:grid;grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="telaLogin">
+  <div class="login-box">
+    <div class="login-logo">Restaurante do Mário</div>
+    <div class="login-sub">COMANDA — BALCÃO</div>
+    <input type="text" id="inUser" placeholder="Usuário" autocapitalize="off" autocorrect="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')document.getElementById('inPass').focus()">
+    <input type="password" id="inPass" placeholder="Senha" autocapitalize="off" autocorrect="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Entrar</button>
+    <div class="login-erro" id="loginErro"></div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <header class="top">
+    <div class="top-title">Comanda</div>
+    <div class="top-right">
+      <span class="pill pill-off" id="pillImp"><span class="dot dot-off"></span><span id="pillImpTxt">Impressora?</span></span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="marmitas" onclick="trocarTab('marmitas')">Marmitas</button>
+    <button class="tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo</button>
+    <button class="tab" data-tab="historico" onclick="trocarTab('historico')">Histórico</button>
+  </div>
+
+  <!-- ========== TAB MARMITAS ========== -->
+  <div class="panel active" id="panel-marmitas">
+    <input type="text" id="nomeCliente" class="nome-input" placeholder="Nome do cliente (opcional)"
+      maxlength="40" autocapitalize="words" autocorrect="off" spellcheck="false">
+    <div class="seg" id="segTipo">
+      <button class="seg-btn sel" data-tipo="padrao-media"   onclick="selTipo('padrao-media')">Média<small>R$ 26,00</small></button>
+      <button class="seg-btn"     data-tipo="padrao-grande"  onclick="selTipo('padrao-grande')">Grande<small>R$ 28,00</small></button>
+    </div>
+    <div class="seg" id="segTipo2">
+      <button class="seg-btn" data-tipo="pers-media"  onclick="selTipo('pers-media')">Personalizada Média<small>monta abaixo</small></button>
+      <button class="seg-btn" data-tipo="pers-grande" onclick="selTipo('pers-grande')">Personalizada Grande<small>monta abaixo</small></button>
+    </div>
+
+    <!-- Bloco personalizada (só aparece nos tipos pers-*) -->
+    <div id="blocoPers" style="display:none;">
+      <div class="bloco">
+        <div class="bloco-tit">Acompanhamentos <span class="hint">(máx. 5 — acima +R$4 cada)</span></div>
+        <div class="contador" id="ctAcomp">Selecionados: 0 / 5</div>
+        <div class="chips" id="gridAcomp"></div>
+      </div>
+      <div class="bloco">
+        <div class="bloco-tit">Carnes <span class="hint">(3 pedaços — acima +R$4 cada)</span></div>
+        <div class="contador" id="ctCarne">Selecionados: 0 pedaços</div>
+        <div class="carne-grid" id="gridCarne"></div>
+      </div>
+      <div class="bloco">
+        <div class="bloco-tit">Saladas <span class="hint">(máx. 3 — +R$2 cada)</span></div>
+        <div class="contador" id="ctSalada">Selecionadas: 0 / 3</div>
+        <div class="chips" id="gridSalada"></div>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <div class="bloco-tit">Quantidade</div>
+      <div class="qty-row">
+        <button onclick="mudarQty(-1)">−</button>
+        <span class="val" id="qtyVal">1</span>
+        <button onclick="mudarQty(1)">+</button>
+      </div>
+      <textarea class="obs-input" id="obsInput" placeholder="Observações (opcional)..." maxlength="200"></textarea>
+      <div class="preco-linha">
+        <span>Total desta marmita:</span>
+        <span class="preco-val" id="precoVal">R$ 26,00</span>
+      </div>
+      <button class="btn-full btn-add" onclick="adicionar()">+ Adicionar à comanda</button>
+    </div>
+
+    <div class="bloco">
+      <div class="bloco-tit">Comanda atual</div>
+      <div class="comanda-lista" id="comandaLista">
+        <div class="vazio">Nenhuma marmita adicionada ainda.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TAB RESUMO ========== -->
+  <div class="panel" id="panel-resumo">
+    <div id="resumoConteudo">
+      <div class="carregando"><div class="spin"></div>Carregando resumo…</div>
+    </div>
+  </div>
+
+  <!-- ========== TAB HISTÓRICO ========== -->
+  <div class="panel" id="panel-historico">
+    <div id="historicoConteudo">
+      <div class="carregando"><div class="spin"></div>Carregando histórico…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BARRA FIXA (só na tab marmitas) ===== -->
+<div class="barra" id="barra" style="display:none;">
+  <div class="barra-inner">
+    <div class="barra-top">
+      <span class="barra-total" id="barraTotal">R$ 0,00</span>
+      <span class="barra-count" id="barraCount">0 marmitas</span>
+    </div>
+    <div class="barra-btns">
+      <button class="b-armazenar" id="btnArmazenar" onclick="finalizar(false)" disabled>
+        Só armazenar<small>não imprime</small>
+      </button>
+      <button class="b-imprimir" id="btnImprimir" onclick="finalizar(true)" disabled>
+        Armazenar e imprimir<small>sai na hora</small>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ================= CONFIG =================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
+const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv';
+// A comanda é servida pela própria ponte (o imprimir-pedidos.js entrega
+// esta página). Então a ponte é sempre a MESMA origem de onde a página
+// foi aberta: no celular vira http://IP-DO-PC:9100 automaticamente, sem
+// configurar nada. Se por acaso a página for aberta como arquivo solto
+// (file://), caímos de volta em localhost:9100.
+const PONTE_URL = (location.protocol === 'http:' || location.protocol === 'https:')
+  ? location.origin
+  : 'http://localhost:9100';
+
+let sessionToken = null;
+let CARDAPIO = { acompanhamentos:[], carnes:[], saladas:[] };
+let comanda = [];               // marmitas montadas ainda não finalizadas
+let tipoAtual = 'padrao-media';
+let selAcomp = [], selCarne = {}, selSalada = [];
+let qtyAtual = 1;
+let ponteOnline = false;
+
+// ================= TOAST =================
+function toast(msg, tipo='info', ms=2600){
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast t-${tipo}`; t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); t.addEventListener('transitionend',()=>t.remove(),{once:true}); }, ms);
+}
+
+// ================= LOGIN =================
+async function login(){
+  const usuario = document.getElementById('inUser').value.trim().toLowerCase();
+  const senha = document.getElementById('inPass').value.trim();
+  const erro = document.getElementById('loginErro');
+  const btn = document.querySelector('.login-btn');
+  if(!usuario||!senha){ erro.textContent='Preencha usuário e senha.'; return; }
+  erro.textContent=''; btn.disabled=true; btn.textContent='Entrando...';
+  try{
+    const res = await fetch(APPS_SCRIPT_URL,{ method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'login', usuario, senha }) });
+    const data = await res.json();
+    if(data.status==='ok' && data.token){
+      sessionToken = data.token;
+      sessionStorage.setItem('rdm_balcao_token', sessionToken);
+      abrirApp();
+    } else {
+      erro.textContent = data.mensagem || 'Usuário ou senha incorretos.';
+      document.getElementById('inPass').value='';
+    }
+  }catch(e){ erro.textContent='Erro ao conectar. Tente novamente.'; }
+  finally{ btn.disabled=false; btn.textContent='Entrar'; }
+}
+
+function sair(){
+  sessionToken=null; sessionStorage.removeItem('rdm_balcao_token');
+  document.getElementById('app').style.display='none';
+  document.getElementById('barra').style.display='none';
+  document.getElementById('telaLogin').style.display='flex';
+  comanda=[]; renderComanda();
+}
+
+function abrirApp(){
+  document.getElementById('telaLogin').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('barra').style.display='block';
+  carregarCardapio();
+  checarPonte();
+  setInterval(checarPonte, 15000);
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  const tk = sessionStorage.getItem('rdm_balcao_token');
+  if(tk){ sessionToken=tk; abrirApp(); }
+});
+
+// ================= PONTE (status impressora) =================
+async function checarPonte(){
+  try{
+    const ctrl = new AbortController();
+    const to = setTimeout(()=>ctrl.abort(), 2500);
+    const r = await fetch(PONTE_URL+'/status', { signal: ctrl.signal });
+    clearTimeout(to);
+    ponteOnline = r.ok;
+  }catch(e){ ponteOnline=false; }
+  const pill = document.getElementById('pillImp');
+  const txt = document.getElementById('pillImpTxt');
+  const dot = pill.querySelector('.dot');
+  if(ponteOnline){ pill.className='pill pill-on'; dot.className='dot'; txt.textContent='Impressora online'; }
+  else { pill.className='pill pill-off'; dot.className='dot dot-off'; txt.textContent='Impressora offline'; }
+}
+
+// ================= CARDÁPIO (mesmo TSV do site) =================
+async function carregarCardapio(){
+  try{
+    const res = await fetch(SHEETS_URL);
+    const tsv = await res.text();
+    CARDAPIO = { acompanhamentos:[], carnes:[], saladas:[] };
+    tsv.split('\n').slice(1).forEach(l=>{
+      if(!l.trim()) return;
+      const p = l.split('\t');
+      const cat = (p[0]||'').trim().replace(/"/g,'').toLowerCase();
+      const item = (p[1]||'').trim().replace(/"/g,'');
+      if(!item) return;
+      if(cat==='acompanhamentos'||cat==='acompanhamento') CARDAPIO.acompanhamentos.push(item);
+      else if(cat==='carnes'||cat==='carne') CARDAPIO.carnes.push(item);
+      else if(cat==='saladas'||cat==='salada') CARDAPIO.saladas.push(item);
+    });
+  }catch(e){
+    CARDAPIO = { acompanhamentos:['Arroz branco','Feijão','Macarrão','Aipim com bacon'], carnes:['Carne do dia'], saladas:['Salada da casa'] };
+    toast('Cardápio padrão carregado (sem conexão).','aviso',4000);
+  }
+  buildGrids();
+  atualizarPreco();
+}
+
+function buildGrids(){
+  // Acompanhamentos
+  const ga = document.getElementById('gridAcomp'); ga.innerHTML='';
+  CARDAPIO.acompanhamentos.forEach(it=>{
+    const c=document.createElement('button'); c.className='chip'; c.textContent=it;
+    c.onclick=()=>toggleAcomp(c,it); ga.appendChild(c);
+  });
+  // Carnes
+  const gc = document.getElementById('gridCarne'); gc.innerHTML='';
+  CARDAPIO.carnes.forEach(it=>{
+    const card=document.createElement('div'); card.className='carne-card';
+    const nome=document.createElement('span'); nome.className='carne-nome'; nome.textContent=it;
+    const ct=document.createElement('div'); ct.className='carne-ct';
+    const menos=document.createElement('button'); menos.textContent='−';
+    menos.onclick=(e)=>{e.stopPropagation();mudarCarne(card,it,-1);};
+    const q=document.createElement('span'); q.className='carne-qt'; q.textContent='0';
+    const mais=document.createElement('button'); mais.textContent='+';
+    mais.onclick=(e)=>{e.stopPropagation();mudarCarne(card,it,1);};
+    ct.append(menos,q,mais); card.append(nome,ct);
+    card.onclick=()=>mudarCarne(card,it,1);
+    gc.appendChild(card);
+  });
+  // Saladas
+  const gs = document.getElementById('gridSalada'); gs.innerHTML='';
+  CARDAPIO.saladas.forEach(it=>{
+    const c=document.createElement('button'); c.className='chip'; c.textContent=it;
+    c.onclick=()=>toggleSalada(c,it); gs.appendChild(c);
+  });
+}
+
+// ================= SELEÇÃO DE TIPO =================
+function selTipo(t){
+  tipoAtual = t;
+  document.querySelectorAll('#segTipo .seg-btn, #segTipo2 .seg-btn').forEach(b=>{
+    b.classList.toggle('sel', b.dataset.tipo===t);
+  });
+  const pers = t.startsWith('pers');
+  document.getElementById('blocoPers').style.display = pers ? 'block' : 'none';
+  if(!pers){ selAcomp=[]; selCarne={}; selSalada=[]; buildGrids(); resetContadores(); }
+  atualizarPreco();
+}
+
+function resetContadores(){
+  document.getElementById('ctAcomp').textContent='Selecionados: 0 / 5';
+  document.getElementById('ctCarne').textContent='Selecionados: 0 pedaços';
+  document.getElementById('ctSalada').textContent='Selecionadas: 0 / 3';
+  document.getElementById('ctAcomp').classList.remove('warn');
+  document.getElementById('ctCarne').classList.remove('warn');
+}
+
+// ================= SELEÇÕES PERSONALIZADA =================
+function toggleAcomp(chip,item){
+  if(selAcomp.includes(item)){ selAcomp=selAcomp.filter(i=>i!==item); chip.classList.remove('sel'); }
+  else { if(selAcomp.length>=6){ toast('Máximo de 6 acompanhamentos!','aviso'); return; } selAcomp.push(item); chip.classList.add('sel'); }
+  const ex=Math.max(0,selAcomp.length-5);
+  document.getElementById('ctAcomp').textContent=`Selecionados: ${selAcomp.length} / 5${ex>0?` (+${ex} = +R$${ex*4})`:''}`;
+  document.getElementById('ctAcomp').classList.toggle('warn',selAcomp.length>5);
+  atualizarPreco();
+}
+function mudarCarne(card,item,d){
+  const at=selCarne[item]||0; const nv=Math.max(0,at+d);
+  if(nv===0){ delete selCarne[item]; card.classList.remove('sel'); }
+  else { selCarne[item]=nv; card.classList.add('sel'); }
+  card.querySelector('.carne-qt').textContent=nv;
+  const tot=Object.values(selCarne).reduce((a,b)=>a+b,0);
+  const ex=Math.max(0,tot-3);
+  document.getElementById('ctCarne').textContent=`Selecionados: ${tot} pedaço${tot!==1?'s':''}${ex>0?` (+${ex} = +R$${ex*4})`:''}`;
+  document.getElementById('ctCarne').classList.toggle('warn',ex>0);
+  atualizarPreco();
+}
+function toggleSalada(chip,item){
+  if(selSalada.includes(item)){ selSalada=selSalada.filter(i=>i!==item); chip.classList.remove('sel-salada'); }
+  else { if(selSalada.length>=3){ toast('Máximo de 3 saladas!','aviso'); return; } selSalada.push(item); chip.classList.add('sel-salada'); }
+  document.getElementById('ctSalada').textContent=`Selecionadas: ${selSalada.length} / 3${selSalada.length>0?` (+R$${selSalada.length*2})`:''}`;
+  atualizarPreco();
+}
+
+// ================= PREÇO (espelha o site) =================
+function tamanhoDe(t){ return t.endsWith('grande')?'grande':'media'; }
+function ehPersonalizada(t){ return t.startsWith('pers'); }
+
+function isModoPesar(){
+  const tot=Object.values(selCarne).reduce((a,b)=>a+b,0);
+  if(selAcomp.length===4 && tot===3) return false;
+  return true;
+}
+function calcBase(totalAcomp,totalPedacos,tam){
+  const off = tam==='grande'?2:0;
+  return (26+off) + (totalAcomp-4)*2 + (totalPedacos-3)*4;
+}
+function precoAtual(){
+  if(!ehPersonalizada(tipoAtual)){
+    return { pesar:false, valor: tamanhoDe(tipoAtual)==='grande'?28:26 };
+  }
+  const tot=Object.values(selCarne).reduce((a,b)=>a+b,0);
+  const nada = selAcomp.length===0 && tot===0 && selSalada.length===0;
+  if(nada) return { pesar:false, valor:0, vazio:true };
+  if(isModoPesar()) return { pesar:true, valor:0 };
+  const base = calcBase(selAcomp.length, tot, tamanhoDe(tipoAtual));
+  return { pesar:false, valor: base + selSalada.length*2 };
+}
+function atualizarPreco(){
+  const p = precoAtual();
+  const el = document.getElementById('precoVal');
+  if(p.vazio){ el.textContent='R$ 0,00'; el.classList.remove('pesar'); return; }
+  if(p.pesar){ el.textContent='A pesar'; el.classList.add('pesar'); }
+  else { el.textContent=`R$ ${(p.valor*qtyAtual).toFixed(2).replace('.',',')}`; el.classList.remove('pesar'); }
+}
+
+function mudarQty(d){ qtyAtual=Math.max(1,qtyAtual+d); document.getElementById('qtyVal').textContent=qtyAtual; atualizarPreco(); }
+
+// ================= DESCRIÇÃO (mesmo formato da planilha) =================
+function ordenarPelaPlanilha(itens){
+  return [...itens].sort((a,b)=>{
+    const ia=CARDAPIO.acompanhamentos.indexOf(a), ib=CARDAPIO.acompanhamentos.indexOf(b);
+    return (ia===-1?9999:ia)-(ib===-1?9999:ib);
+  });
+}
+function montarDesc({padrao, tam, obs}){
+  const partes=[];
+  if(padrao){
+    const hoje=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));
+    let fixos=['Arroz branco','Macarrão','Aipim com bacon','Feijão'];
+    if(hoje.getDay()===6) fixos=['Lasanha de Frango',...fixos];
+    partes.push(fixos.join(', '));
+    const carnesOp = CARDAPIO.carnes.length>0 ? CARDAPIO.carnes.slice(0,3) : ['Carne do dia'];
+    partes.push(`Carnes: ${carnesOp.map(c=>`1x ${c}`).join(', ')}`);
+  } else {
+    if(selAcomp.length>0) partes.push(ordenarPelaPlanilha(selAcomp).join(', '));
+    if(Object.keys(selCarne).length>0)
+      partes.push(`Carnes: ${Object.entries(selCarne).map(([c,q])=>`${q}x ${c}`).join(', ')}`);
+    if(selSalada.length>0) partes.push('Salada: '+selSalada.join(', '));
+  }
+  if(obs) partes.push(`⚠️ Obs: ${obs}`);
+  return partes.join(' | ');
+}
+
+// ================= ADICIONAR À COMANDA =================
+function adicionar(){
+  const obs = document.getElementById('obsInput').value.trim();
+  const tam = tamanhoDe(tipoAtual);
+  const label = tam==='grande'?'Grande':'Média';
+  const p = precoAtual();
+
+  if(ehPersonalizada(tipoAtual) && p.vazio){
+    toast('Selecione ao menos um item para a marmita personalizada.','aviso'); return;
+  }
+
+  const padrao = !ehPersonalizada(tipoAtual);
+  const desc = montarDesc({ padrao, tam, obs });
+  const totPedacos = Object.values(selCarne).reduce((a,b)=>a+b,0);
+
+  comanda.push({
+    tipo:`Marmita ${label}`,
+    desc,
+    qty: qtyAtual,
+    aPesar: p.pesar,
+    preco: p.pesar ? 0 : p.valor*qtyAtual,
+    composicao: padrao
+      ? { tipoPedido:'padrao', tamanho:tam, pesar:false }
+      : { tipoPedido:'personalizada', tamanho:tam, pesar:p.pesar,
+          qtyAcomp:selAcomp.length, qtyCarnePedacos:totPedacos, qtySalada:selSalada.length }
+  });
+
+  toast(`${qtyAtual>1?qtyAtual+'x ':''}Marmita ${label} adicionada`,'ok',1800);
+  // limpa para a próxima
+  selAcomp=[]; selCarne={}; selSalada=[]; qtyAtual=1;
+  document.getElementById('qtyVal').textContent='1';
+  document.getElementById('obsInput').value='';
+  if(ehPersonalizada(tipoAtual)){ buildGrids(); resetContadores(); }
+  atualizarPreco();
+  renderComanda();
+}
+
+function removerItem(i){ comanda.splice(i,1); renderComanda(); }
+
+function renderComanda(){
+  const cont = document.getElementById('comandaLista');
+  const totalMarmitas = comanda.reduce((s,i)=>s+(i.qty||1),0);
+  const total = comanda.reduce((s,i)=>s+(i.preco||0),0);
+  const temPesar = comanda.some(i=>i.aPesar);
+
+  if(comanda.length===0){
+    cont.innerHTML='<div class="vazio">Nenhuma marmita adicionada ainda.</div>';
+  } else {
+    cont.innerHTML='';
+    comanda.forEach((it,i)=>{
+      const div=document.createElement('div'); div.className='comanda-item';
+      const precoHtml = it.aPesar
+        ? `<div class="ci-preco pesar">A pesar</div>`
+        : `<div class="ci-preco">R$ ${it.preco.toFixed(2).replace('.',',')}</div>`;
+      div.innerHTML = `
+        <div class="ci-tipo">${it.qty>1?it.qty+'x ':''}${it.tipo}</div>
+        <div class="ci-desc">${it.desc.replace(/⚠️ Obs:/,'<b style="color:var(--azul)">Obs:</b>')}</div>
+        ${precoHtml}
+        <button class="ci-rem" onclick="removerItem(${i})" title="Remover">✕</button>`;
+      cont.appendChild(div);
+    });
+  }
+
+  document.getElementById('barraCount').textContent = `${totalMarmitas} marmita${totalMarmitas!==1?'s':''}`;
+  const totalEl = document.getElementById('barraTotal');
+  totalEl.textContent = `R$ ${total.toFixed(2).replace('.',',')}${temPesar?' + a pesar':''}`;
+
+  const vazio = comanda.length===0;
+  document.getElementById('btnArmazenar').disabled = vazio;
+  document.getElementById('btnImprimir').disabled = vazio;
+}
+
+// ================= FINALIZAR (armazenar / +imprimir) =================
+function gerarId(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,10)}`;
+}
+
+async function finalizar(imprimir){
+  if(comanda.length===0) return;
+
+  const btnA=document.getElementById('btnArmazenar'), btnI=document.getElementById('btnImprimir');
+  btnA.disabled=true; btnI.disabled=true;
+
+  const pedidoId = gerarId();
+  const nome = (document.getElementById('nomeCliente').value.trim()) || 'Balcão';
+  const totalMarmitas = comanda.reduce((s,i)=>s+(i.qty||1),0);
+
+  // 1) IMPRESSÃO INSTANTÂNEA primeiro (se pedido), para não ter delay.
+  if(imprimir){
+    if(!ponteOnline){
+      toast('Impressora offline — não foi possível imprimir. Nada foi armazenado.','erro',4000);
+      btnA.disabled=false; btnI.disabled=false; return;
+    }
+    try{
+      const marmitas = comanda.map(it=>({
+        tipo: it.tipo, itens: it.desc, qty: it.qty||1,
+        tipoPedido: it.composicao?.tipoPedido || 'personalizada'
+      }));
+      const r = await fetch(PONTE_URL+'/imprimir',{ method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ nome, id:pedidoId, marmitas }) });
+      const j = await r.json();
+      if(!j.ok){ throw new Error(j.erro||'falha'); }
+    }catch(e){
+      toast('Falha ao imprimir: '+e.message+'. Nada foi armazenado.','erro',4500);
+      btnA.disabled=false; btnI.disabled=false; return;
+    }
+  }
+
+  // 2) ARMAZENA na planilha + histórico (não bloqueia; roda em no-cors best-effort)
+  try{
+    await fetch(APPS_SCRIPT_URL,{ method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({
+        action:'comanda', chave:'rdm-impressora-2026-troque-esta-chave', token:sessionToken,
+        pedidoId, nomeCliente:nome,
+        itens: comanda.map(it=>({ tipo:it.tipo, desc:it.desc, preco:it.aPesar?'A pesar':it.preco, qty:it.qty||1, composicao:it.composicao })),
+        totalMarmitas, impresso: imprimir
+      }) });
+  }catch(e){ /* best-effort; a impressão já saiu */ }
+
+  toast(imprimir ? 'Impresso e armazenado!' : 'Armazenado!', 'ok', 2000);
+  comanda=[]; renderComanda();
+  document.getElementById('nomeCliente').value='';
+  btnA.disabled=false; btnI.disabled=false;
+}
+
+// ================= TABS =================
+function trocarTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t));
+  document.getElementById('barra').style.display = (t==='marmitas') ? 'block' : 'none';
+  if(t==='resumo') carregarResumo();
+  if(t==='historico') carregarHistorico();
+}
+
+// ================= RESUMO + HISTÓRICO =================
+let resumoCache = null;
+
+async function buscarResumo(){
+  const url = APPS_SCRIPT_URL + '?action=resumo&token=' + encodeURIComponent(sessionToken);
+  const res = await fetch(url, { method:'GET', redirect:'follow' });
+  const data = await res.json();
+  if(data && data.error==='unauthorized'){ sair(); toast('Sessão expirada, entre novamente.','aviso'); throw new Error('unauth'); }
+  resumoCache = data;
+  return data;
+}
+
+function fmtR(v){ return 'R$ '+(Number(v)||0).toFixed(2).replace('.',','); }
+function fmtDataBR(iso){ const [a,m,d]=iso.split('-'); return `${d}/${m}`; }
+
+async function carregarResumo(){
+  const cont=document.getElementById('resumoConteudo');
+  cont.innerHTML='<div class="carregando"><div class="spin"></div>Carregando resumo…</div>';
+  try{
+    const d = await buscarResumo();
+    const h = d.hoje;
+    const totMarm = h.total||0;
+    const pctM = totMarm>0 ? Math.round(h.media/totMarm*100) : 0;
+    const pctG = 100-pctM;
+    const pesarTxt = (h.pesar||0) > 0 ? ` · ${h.pesar} a pesar` : '';
+    cont.innerHTML = `
+      <div class="stat wide">
+        <div class="stat-lbl">Hoje — ${h.diaSemana}, ${fmtDataBR(h.data)} · balcão + site</div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px;">
+          <div><div class="stat-num verde">${totMarm}</div><div class="stat-sub">marmitas no total${pesarTxt}</div></div>
+          <div style="text-align:right;"><div class="stat-valor">${fmtR(h.valor)}</div><div class="stat-sub">em marmitas com preço fixo</div></div>
+        </div>
+        <div class="barra-mini">
+          <i class="fm" style="width:${pctM}%"></i><i class="fg" style="width:${pctG}%"></i>
+        </div>
+        <div class="legenda">
+          <span><i style="background:var(--media)"></i>Média: <b>&nbsp;${h.media}</b></span>
+          <span><i style="background:var(--grande)"></i>Grande: <b>&nbsp;${h.grande}</b></span>
+        </div>
+      </div>
+      <div class="resumo-grid">
+        <div class="stat"><div class="stat-lbl">Marmitas Média</div><div class="stat-num media">${h.media}</div></div>
+        <div class="stat"><div class="stat-lbl">Marmitas Grande</div><div class="stat-num grande">${h.grande}</div></div>
+      </div>
+      <div class="stat wide" style="opacity:.8;">
+        <div class="stat-lbl">Buffet (almoços)</div>
+        <div class="stat-sub" style="margin-top:6px;">Registro de almoços do buffet será adicionado numa próxima etapa.</div>
+      </div>
+      <div style="text-align:center;color:var(--cinza);font-size:.76rem;margin-top:14px;">Conta pedidos do balcão e do site · atualizado ${d.geradoEm}</div>
+    `;
+  }catch(e){
+    if(e.message!=='unauth')
+      cont.innerHTML='<div class="vazio">Não foi possível carregar o resumo. Verifique se as funções da comanda foram adicionadas ao Apps Script e reimplantadas.</div>';
+  }
+}
+
+async function carregarHistorico(){
+  const cont=document.getElementById('historicoConteudo');
+  cont.innerHTML='<div class="carregando"><div class="spin"></div>Carregando histórico…</div>';
+  try{
+    const d = resumoCache || await buscarResumo();
+    const p = d.previsao;
+    const ant = (d.anteriores||[]).slice().reverse();
+
+    let prevHtml = `
+      <div class="prev-card">
+        <div class="prev-eyebrow">Previsão · próximo dia</div>
+        <div class="prev-dia">${p.diaSemana}, ${fmtDataBR(p.data)}</div>`;
+    if(p.baseAmostras===0){
+      prevHtml += `<div style="font-size:.9rem;opacity:.9;">Ainda sem dados suficientes de ${p.diaSemana.toLowerCase()}s anteriores para prever. A previsão aparece depois de alguns dias de uso.</div>`;
+    } else {
+      prevHtml += `
+        <div class="prev-nums">
+          <div class="prev-n"><b>${p.totalPrevisto}</b><span>marmitas previstas</span></div>
+          <div class="prev-n"><b>${p.mediaPrevista}</b><span>médias</span></div>
+          <div class="prev-n"><b>${p.grandePrevista}</b><span>grandes</span></div>
+          <div class="prev-n"><b>${fmtR(p.valorPrevisto).replace('R$ ','R$')}</b><span>estimado</span></div>
+        </div>
+        <div class="prev-conf">Baseado em ${p.baseAmostras} ${p.diaSemana.toLowerCase()}${p.baseAmostras>1?'s':''} anterior${p.baseAmostras>1?'es':''} · confiança ${p.confianca}</div>`;
+    }
+    prevHtml += `</div>`;
+
+    let tabela;
+    if(ant.length===0){
+      tabela = '<div class="vazio">Nenhum dia anterior registrado ainda.</div>';
+    } else {
+      tabela = `<table class="hist"><thead><tr>
+        <th style="text-align:left;">Dia</th><th>Média</th><th>Grande</th><th>Total</th><th>Valor</th>
+      </tr></thead><tbody>` +
+      ant.map(h=>`<tr>
+        <td class="dia">${h.diaSemana.slice(0,3)} ${fmtDataBR(h.data)}</td>
+        <td>${h.media}</td><td>${h.grande}</td><td><b>${h.total}</b></td><td>${fmtR(h.valor).replace('R$ ','R$')}</td>
+      </tr>`).join('') + `</tbody></table>`;
+    }
+    cont.innerHTML = prevHtml + `<div class="bloco-tit" style="margin:4px 2px 10px;">Dias anteriores</div>` + tabela;
+  }catch(e){
+    if(e.message!=='unauth')
+      cont.innerHTML='<div class="vazio">Não foi possível carregar o histórico.</div>';
+  }
+}
+</script>
+</body>
+</html>

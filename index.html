@@ -175,10 +175,29 @@
   <section id="pedidos">
     <span class="scroll-anchor" id="anchor-pedidos"></span>
     <h2>Pedir Marmitas</h2>
-    <p class="subtitle">Escolha a opção ideal para você!</p>
+    <p class="subtitle">Monte seu pedido em poucos passos.</p>
+
+    <!-- ===== 1. VALORES ===== -->
+    <div class="precos-topo">
+      <div class="preco-card">
+        <span class="preco-card-nome">Marmita Média</span>
+        <span class="preco-card-valor">R$ 26,00</span>
+        <span class="preco-card-obs">aprox. 750g</span>
+      </div>
+      <div class="preco-card">
+        <span class="preco-card-nome">Marmita Grande</span>
+        <span class="preco-card-valor">R$ 28,00</span>
+        <span class="preco-card-obs">aprox. 900g</span>
+      </div>
+      <div class="preco-card preco-card-quilo">
+        <span class="preco-card-nome">Personalizada</span>
+        <span class="preco-card-valor">Por quilo</span>
+        <span class="preco-card-obs">pesada no balcão</span>
+      </div>
+    </div>
 
     <div class="kilo-banner">
-      <h3>Também temos Marmita a Quilo!</h3>
+      <h3>Valores da marmita por quilo</h3>
       <div class="kilo-options">
         <div class="kilo-tag">Acompanhamento + Carne + Salada <span>R$ 62,90/kg</span></div>
         <div class="kilo-tag">Somente Carne <span>R$ 79,90/kg</span></div>
@@ -186,116 +205,76 @@
       </div>
     </div>
 
-    <!-- Cardápio do Dia -->
-    <div class="cardapio-pedidos-box">
-      <div class="cardapio-pedidos-title">Cardápio das Marmitas</div>
-      <div class="cardapio-pedidos-grid">
-        <div class="cpg-col">
-          <div class="cpg-label cpg-acomp">Acompanhamentos</div>
-          <div class="cpg-list" id="cpgAcomp"></div>
-        </div>
-        <div class="cpg-col">
-          <div class="cpg-label cpg-carne">Carnes</div>
-          <div class="cpg-list" id="cpgCarne"></div>
-        </div>
-        <div class="cpg-col">
-          <div class="cpg-label cpg-salada">Saladas</div>
-          <div class="cpg-list" id="cpgSalada"></div>
-        </div>
-      </div>
-    </div>
+    <!-- ===== 2. MONTAGEM DO PEDIDO ===== -->
+    <div class="pedido-box">
 
-    <!-- Marmitas Padrão -->
-    <div class="marmita-cards">
-      <div class="marmita-card">
-        <h3>Marmita Média</h3>
-        <div class="gramagem">Aprox. 750g</div>
-        <div class="price-tag">R$ 26,00</div>
-        <ul>
-          <li>Arroz branco</li>
-          <li>Feijão</li>
-          <li>Macarrão</li>
-          <li>Aipim com bacon</li>
-          <li>3 pedaços — Carne do dia</li>
-        </ul>
-        <textarea class="obs-input" id="obsMedia" placeholder="Observações (opcional)..."
-          maxlength="200" aria-label="Observações para a marmita média"></textarea>
-        <div class="qty-selector">
-          <button class="qty-btn" onclick="changeQty('media', -1)" aria-label="Diminuir quantidade da marmita média">−</button>
-          <span class="qty-value" id="qtyMedia" aria-live="polite">1</span>
-          <button class="qty-btn" onclick="changeQty('media', 1)" aria-label="Aumentar quantidade da marmita média">+</button>
-        </div>
-        <button class="btn-add" onclick="addPadrao('media')">+ Adicionar ao carrinho</button>
-      </div>
-      <div class="marmita-card">
-        <h3>Marmita Grande</h3>
-        <div class="gramagem">Aprox. 900g</div>
-        <div class="price-tag">R$ 28,00</div>
-        <ul>
-          <li>Arroz branco</li>
-          <li>Feijão</li>
-          <li>Macarrão</li>
-          <li>Aipim com bacon</li>
-          <li>3 pedaços — Carne do dia</li>
-        </ul>
-        <textarea class="obs-input" id="obsGrande" placeholder="Observações (opcional)..."
-          maxlength="200" aria-label="Observações para a marmita grande"></textarea>
-        <div class="qty-selector">
-          <button class="qty-btn" onclick="changeQty('grande', -1)" aria-label="Diminuir quantidade da marmita grande">−</button>
-          <span class="qty-value" id="qtyGrande" aria-live="polite">1</span>
-          <button class="qty-btn" onclick="changeQty('grande', 1)" aria-label="Aumentar quantidade da marmita grande">+</button>
-        </div>
-        <button class="btn-add" onclick="addPadrao('grande')">+ Adicionar ao carrinho</button>
-      </div>
-    </div>
-
-    <!-- Marmita Personalizada -->
-    <div class="personalizada-box">
-      <h3>Monte Sua Marmita</h3>
-      <p class="subtitle" style="margin-bottom:0;">Escolha o tamanho, acompanhamentos, carnes e saladas.</p>
-
-      <div class="section-label">Tamanho</div>
-      <div class="size-selector">
-        <button class="size-btn selected" id="sizeMedia" onclick="selectSize('media')">
+      <!-- Escolha da marmita -->
+      <div class="section-label">Escolha a marmita</div>
+      <div class="tipo-selector">
+        <button class="tipo-btn selected" data-tipo="padrao-media" onclick="selTipo('padrao-media')">
           Média<small>R$ 26,00</small>
         </button>
-        <button class="size-btn" id="sizeGrande" onclick="selectSize('grande')">
+        <button class="tipo-btn" data-tipo="padrao-grande" onclick="selTipo('padrao-grande')">
           Grande<small>R$ 28,00</small>
         </button>
+        <button class="tipo-btn tipo-btn-pers" data-tipo="pers-media" onclick="selTipo('pers-media')">
+          Personalizada Média<small>por quilo</small>
+        </button>
+        <button class="tipo-btn tipo-btn-pers" data-tipo="pers-grande" onclick="selTipo('pers-grande')">
+          Personalizada Grande<small>por quilo</small>
+        </button>
       </div>
+      <p class="tipo-ajuda" id="tipoAjuda">Acompanha: Arroz, Feijão, Macarrão, Aipim com bacon e 3 pedaços de carne.</p>
+
+      <!-- Bloco personalizada (só aparece nas opções personalizadas) -->
+      <div id="blocoPers" hidden>
+        <div class="section-label">Acompanhamentos <span>(máx. 6)</span></div>
+        <div class="counter-info" id="acompCounter">Selecionados: 0 / 6</div>
+        <div class="itens-grid" id="acompGrid"></div>
+
+        <div class="section-label">Carnes</div>
+        <div class="counter-info" id="carneCounter">Selecionados: 0 pedaços</div>
+        <div class="itens-grid" id="carneGrid"></div>
+
+        <div class="section-label">Salada <span>(máx. 3)</span></div>
+        <div class="counter-info" id="saladaCounter">Selecionadas: 0 / 3</div>
+        <div class="itens-grid" id="saladaGrid"></div>
+      </div>
+
+      <!-- Quantidade -->
       <div class="section-label">Quantidade</div>
       <div class="qty-selector">
-        <button class="qty-btn" onclick="changeQtyPersonalizada(-1)" aria-label="Diminuir quantidade da marmita personalizada">−</button>
-        <span class="qty-value" id="qtyPersonalizada" aria-live="polite">1</span>
-        <button class="qty-btn" onclick="changeQtyPersonalizada(1)" aria-label="Aumentar quantidade da marmita personalizada">+</button>
+        <button class="qty-btn" onclick="mudarQtyPedido(-1)" aria-label="Diminuir quantidade">−</button>
+        <span class="qty-value" id="qtyPedido" aria-live="polite">1</span>
+        <button class="qty-btn" onclick="mudarQtyPedido(1)" aria-label="Aumentar quantidade">+</button>
       </div>
 
-      <div class="section-label">Acompanhamentos <span>(máx. 6)</span></div>
-      <div class="counter-info" id="acompCounter">Selecionados: 0 / 6</div>
-      <div class="itens-grid" id="acompGrid"></div>
+      <!-- Nome de quem vai comer -->
+      <div class="section-label">Para quem é <span>(opcional)</span></div>
+      <p class="nome-ajuda">Pedindo para mais gente? Escreva o nome da pessoa para identificar a marmita.</p>
+      <input type="text" id="nomeMarmita" class="nome-marmita-input" maxlength="30"
+        placeholder="Digite o nome" autocapitalize="words" autocorrect="off" spellcheck="false"
+        aria-label="Nome de quem vai receber esta marmita">
 
-      <div class="section-label">Carnes</div>
-      <div class="counter-info" id="carneCounter">Selecionados: 0 pedaços</div>
-      <div class="itens-grid" id="carneGrid"></div>
+      <!-- Observações -->
+      <div class="section-label">Observações <span>(opcional)</span></div>
+      <textarea class="obs-input" id="obsPedido" placeholder="Sua observação"
+        maxlength="200" aria-label="Observações para esta marmita"></textarea>
 
-      <div class="section-label">Salada <span>(máx. 3)</span></div>
-      <div class="counter-info" id="saladaCounter">Selecionadas: 0 / 3</div>
-      <div class="itens-grid" id="saladaGrid"></div>
-
+      <!-- Preço + adicionar -->
       <div class="preco-personalizada">
-        <span>Total estimado:</span>
-        <span id="precoPersonalizada">R$ 26,00</span>
+        <span>Total desta marmita:</span>
+        <span id="precoPedido">R$ 26,00</span>
       </div>
-      <div id="infoPesar" class="info-pesar" style="display:none;">
-        O preço será definido na balança — confira o valor do quilo na seção Pedir Marmitas.
+      <div id="infoPesar" class="info-pesar" hidden>
+        A marmita personalizada é <strong>pesada no balcão</strong> — o valor final sai na balança, conforme os preços por quilo acima.
       </div>
 
-      <textarea class="obs-input" id="obsPersonalizada" placeholder="Observações (opcional)..."
-        maxlength="200" aria-label="Observações para a marmita personalizada"></textarea>
-
-      <button class="btn-add" onclick="addPersonalizada()">+ Adicionar Marmita Personalizada ao carrinho</button>
+      <button class="btn-add" id="btnAdicionar" onclick="adicionarPedido()">+ Adicionar ao carrinho</button>
     </div>
+
   </section>
+
 
   <!-- ===================== LOCALIZAÇÃO ===================== -->
   <section id="localizacao">

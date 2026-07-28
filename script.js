@@ -20,9 +20,11 @@ const state = {
   cardapioAtualizado: '',
   diasFechados: [],
   personalizadaSel: { acomp: [], carne: {}, salada: [] },
-  qtyPadrao: { media: 1, grande: 1 },
-  qtyPersonalizada: 1,
-  selectedSize: 'media'
+  // Fluxo único de montagem (espelha o balcão)
+  pedido: {
+    tipo: 'padrao-media',   // padrao-media | padrao-grande | pers-media | pers-grande
+    qty: 1
+  }
 };
 
 // ============ DOM CACHE ============
@@ -146,8 +148,12 @@ const UI = {
         ? '<span class="cart-item-price-pesar">A pesar</span>'
         : `<div class="cart-item-price">${Utils.formatPrice(item.preco)}</div>`;
 
+      const nomeHTML = item.nome
+        ? `<span class="cart-item-nome">${Utils.sanitizeHTML(item.nome)}</span>`
+        : '';
+
       div.innerHTML = `
-        <div class="cart-item-title">${item.qty > 1 ? item.qty + 'x ' : ''}${item.tipo}</div>
+        <div class="cart-item-title">${item.qty > 1 ? item.qty + 'x ' : ''}${item.tipo}${nomeHTML}</div>
         <div class="cart-item-desc">${item.desc}</div>
         ${precoHTML}
         <button class="remove-item" onclick="CartManager.removerItem(${i})" title="Remover" aria-label="Remover item do carrinho">✕</button>
@@ -258,7 +264,7 @@ const CardapioManager = {
   },
 
   mostrarSkeleton(show) {
-    document.querySelectorAll('.cardapio-box-list, .cpg-list').forEach(el => {
+    document.querySelectorAll('.cardapio-box-list').forEach(el => {
       if (show) {
         el.innerHTML = '<span class="skeleton-item"></span><span class="skeleton-item"></span><span class="skeleton-item"></span>';
       } else {
@@ -291,23 +297,6 @@ const CardapioManager = {
         div.innerHTML = '<span style="color:#aaa;font-size:0.85rem;">Nenhum item hoje</span>';
         return;
       }
-      items.forEach(item => {
-        const tag = document.createElement('span');
-        tag.className = `cardapio-item-tag ${cls}`;
-        tag.textContent = item;
-        div.appendChild(tag);
-      });
-    });
-
-    const cpgGrupos = [
-      { id: 'cpgAcomp', items: state.cardapio.acompanhamentos, cls: 'tag-acomp' },
-      { id: 'cpgCarne', items: state.cardapio.carnes, cls: 'tag-carne' },
-      { id: 'cpgSalada', items: state.cardapio.saladas, cls: 'tag-salada' },
-    ];
-    cpgGrupos.forEach(({ id, items, cls }) => {
-      const div = document.getElementById(id);
-      if (!div) return;
-      div.innerHTML = '';
       items.forEach(item => {
         const tag = document.createElement('span');
         tag.className = `cardapio-item-tag ${cls}`;
@@ -382,7 +371,7 @@ const CardapioManager = {
   },
 
   atualizarPrecoPersonalizada() {
-    PersonalizadaManager.atualizarPreco();
+    Builder.atualizarPreco();
   },
 
   mostrarSelo() {
@@ -402,7 +391,7 @@ const CardapioManager = {
   }
 };
 
-// ============ PERSONALIZADA MANAGER ============
+// ============ SELEÇÕES DA PERSONALIZADA ============
 const PersonalizadaManager = {
   alterarCarne(item, delta) {
     const atual = state.personalizadaSel.carne[item] || 0;
@@ -414,14 +403,13 @@ const PersonalizadaManager = {
       state.personalizadaSel.carne[item] = novo;
     }
     this.atualizarUICarnes();
-    this.atualizarPreco();
+    Builder.atualizarPreco();
   },
 
   atualizarUICarnes() {
     const sel = state.personalizadaSel.carne;
     const totalPedacos = Object.values(sel).reduce((a, b) => a + b, 0);
 
-    // Atualiza cada card: quantidade, botão − (desabilitado em 0) e destaque
     document.querySelectorAll('#carneGrid .carne-card').forEach(card => {
       const item = card.dataset.item;
       const q = sel[item] || 0;
@@ -432,9 +420,8 @@ const PersonalizadaManager = {
       card.classList.toggle('carne-selecionada', q > 0);
     });
 
-    // Resumo em cima: só a contagem total de pedaços
     const counter = document.getElementById('carneCounter');
-    counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}`;
+    if (counter) counter.textContent = `Selecionados: ${totalPedacos} pedaço${totalPedacos !== 1 ? 's' : ''}`;
   },
 
   toggleItem(chip, type, item) {
@@ -453,168 +440,202 @@ const PersonalizadaManager = {
       chip.classList.add(type === 'acomp' ? 'selected' : 'selected-salada');
     }
     this.atualizarUIItems(type);
-    this.atualizarPreco();
+    Builder.atualizarPreco();
   },
 
   atualizarUIItems(type) {
     if (type === 'acomp') {
-      document.getElementById('acompCounter').textContent = `Selecionados: ${state.personalizadaSel.acomp.length} / ${CONFIG.limits.acompMax}`;
+      const el = document.getElementById('acompCounter');
+      if (el) el.textContent = `Selecionados: ${state.personalizadaSel.acomp.length} / ${CONFIG.limits.acompMax}`;
     } else if (type === 'salada') {
-      document.getElementById('saladaCounter').textContent = `Selecionadas: ${state.personalizadaSel.salada.length} / ${CONFIG.limits.saladaMax}`;
+      const el = document.getElementById('saladaCounter');
+      if (el) el.textContent = `Selecionadas: ${state.personalizadaSel.salada.length} / ${CONFIG.limits.saladaMax}`;
     }
   },
 
-  selecionarTamanho(size) {
-    state.selectedSize = size;
-    document.getElementById('sizeMedia').classList.toggle('selected', size === 'media');
-    document.getElementById('sizeGrande').classList.toggle('selected', size === 'grande');
+  temAlgumaSelecao() {
+    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
+    return state.personalizadaSel.acomp.length > 0 || totalPedacos > 0 || state.personalizadaSel.salada.length > 0;
+  },
+
+  limparSelecoes() {
+    state.personalizadaSel = { acomp: [], carne: {}, salada: [] };
+    CardapioManager.renderGridsPedidos();
+    const a = document.getElementById('acompCounter');
+    const c = document.getElementById('carneCounter');
+    const s = document.getElementById('saladaCounter');
+    if (a) a.textContent = `Selecionados: 0 / ${CONFIG.limits.acompMax}`;
+    if (c) c.textContent = 'Selecionados: 0 pedaços';
+    if (s) s.textContent = `Selecionadas: 0 / ${CONFIG.limits.saladaMax}`;
+  }
+};
+
+// ============ BUILDER (fluxo único de montagem) ============
+const Builder = {
+  PRECOS: { media: 26, grande: 28 },
+
+  AJUDA: {
+    padrao: 'Acompanha: Arroz, Feijão, Macarrão, Aipim com bacon e 3 pedaços de carne.',
+    pers: 'Escolha abaixo os acompanhamentos, carnes e saladas. A marmita personalizada é pesada.'
+  },
+
+  ehPers() { return state.pedido.tipo.startsWith('pers'); },
+  tamanho() { return state.pedido.tipo.endsWith('grande') ? 'grande' : 'media'; },
+  labelTamanho() { return this.tamanho() === 'grande' ? 'Grande' : 'Média'; },
+
+  selecionarTipo(tipo) {
+    state.pedido.tipo = tipo;
+    document.querySelectorAll('.tipo-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.tipo === tipo);
+    });
+
+    const pers = this.ehPers();
+    const bloco = document.getElementById('blocoPers');
+    if (bloco) bloco.hidden = !pers;
+
+    const ajuda = document.getElementById('tipoAjuda');
+    if (ajuda) ajuda.textContent = pers ? this.AJUDA.pers : this.AJUDA.padrao;
+
+    // Ao sair da personalizada, zera as escolhas para não vazar no próximo pedido
+    if (!pers) PersonalizadaManager.limparSelecoes();
+
     this.atualizarPreco();
   },
 
   mudarQty(delta) {
-    state.qtyPersonalizada = Math.max(1, state.qtyPersonalizada + delta);
-    document.getElementById('qtyPersonalizada').textContent = state.qtyPersonalizada;
+    state.pedido.qty = Math.max(1, state.pedido.qty + delta);
+    const el = document.getElementById('qtyPedido');
+    if (el) el.textContent = state.pedido.qty;
+    this.atualizarPreco();
   },
 
-  isModoPesar() {
-    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
-    return !(state.personalizadaSel.acomp.length === 4 && totalPedacos === 3);
-  },
-
-  calcularBase(totalAcomp, totalPedacos, tamanho) {
-    const offset = tamanho === 'grande' ? 2 : 0;
-    const base = 26 + offset;
-    const difAcomp = (totalAcomp - 4) * 2;
-    const difCarne = (totalPedacos - 3) * 4;
-    return base + difAcomp + difCarne;
+  // Personalizada é SEMPRE por quilo (pesada no balcão)
+  precoAtual() {
+    if (!this.ehPers()) {
+      return { pesar: false, vazio: false, valor: this.PRECOS[this.tamanho()] };
+    }
+    if (!PersonalizadaManager.temAlgumaSelecao()) {
+      return { pesar: false, vazio: true, valor: 0 };
+    }
+    return { pesar: true, vazio: false, valor: 0 };
   },
 
   atualizarPreco() {
-    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
-    const el = document.getElementById('precoPersonalizada');
+    const el = document.getElementById('precoPedido');
     const infoEl = document.getElementById('infoPesar');
+    if (!el) return;
 
-    const nadaSelecionado = !state.personalizadaSel.acomp.length && !totalPedacos && !state.personalizadaSel.salada.length;
+    const p = this.precoAtual();
 
-    if (nadaSelecionado) {
+    if (p.vazio) {
       el.textContent = 'R$ 0,00';
       el.classList.remove('preco-a-pesar');
-      if (infoEl) infoEl.style.display = 'none';
+      if (infoEl) infoEl.hidden = !this.ehPers();
       return;
     }
 
-    if (this.isModoPesar()) {
+    if (p.pesar) {
       el.textContent = 'A pesar';
       el.classList.add('preco-a-pesar');
-      if (infoEl) infoEl.style.display = 'block';
+      if (infoEl) infoEl.hidden = false;
     } else {
       el.classList.remove('preco-a-pesar');
-      if (infoEl) infoEl.style.display = 'none';
-      const base = this.calcularBase(state.personalizadaSel.acomp.length, totalPedacos, state.selectedSize);
-      const total = base + (state.personalizadaSel.salada.length * 2);
-      el.textContent = Utils.formatPrice(total);
+      el.textContent = Utils.formatPrice(p.valor * state.pedido.qty);
+      if (infoEl) infoEl.hidden = true;
     }
   },
 
-  limpar() {
-    state.personalizadaSel = { acomp: [], carne: {}, salada: [] };
-    state.qtyPersonalizada = 1;
-    document.getElementById('qtyPersonalizada').textContent = '1';
-    CardapioManager.renderGridsPedidos();
-    document.getElementById('acompCounter').textContent = 'Selecionados: 0 / 6';
-    document.getElementById('carneCounter').textContent = 'Selecionados: 0 pedaços';
-    document.getElementById('saladaCounter').textContent = 'Selecionadas: 0 / 3';
-    const obsP = document.getElementById('obsPersonalizada');
-    if (obsP) obsP.value = '';
+  nomePessoa() {
+    return (document.getElementById('nomeMarmita')?.value || '').trim();
+  },
+
+  observacao() {
+    return (document.getElementById('obsPedido')?.value || '').trim();
+  },
+
+  // Limpa o formulário depois de adicionar. O nome só é limpo se pedido.
+  limpar({ limparNome = true } = {}) {
+    PersonalizadaManager.limparSelecoes();
+    state.pedido.qty = 1;
+    const q = document.getElementById('qtyPedido');
+    if (q) q.textContent = '1';
+    const obs = document.getElementById('obsPedido');
+    if (obs) obs.value = '';
+    if (limparNome) {
+      const nome = document.getElementById('nomeMarmita');
+      if (nome) nome.value = '';
+    }
     this.atualizarPreco();
   }
 };
 
 // ============ CART MANAGER ============
 const CartManager = {
-  adicionarPadrao(size) {
+  // Fluxo único: padrão ou personalizada, com nome opcional da pessoa
+  adicionar() {
     if (!Schedule.isAberto()) {
       const msg = Schedule.getEstado() === 'fechado'
         ? 'Estamos fechados'
-        : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
+        : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 14h.';
       UI.showToast(msg, 'aviso', 5000);
       return;
     }
 
-    const precoUnit = size === 'media' ? 26 : 28;
-    const label = size === 'media' ? 'Média' : 'Grande';
-    const qty = state.qtyPadrao[size];
-    const obsId = size === 'media' ? 'obsMedia' : 'obsGrande';
-    const obs = (document.getElementById(obsId)?.value || '').trim();
+    const pers = Builder.ehPers();
+    const p = Builder.precoAtual();
+
+    if (pers && p.vazio) {
+      UI.showToast('Escolha ao menos um item para a marmita personalizada!', 'aviso');
+      return;
+    }
+
+    const tamanho = Builder.tamanho();
+    const label = Builder.labelTamanho();
+    const qty = state.pedido.qty;
+    const nome = Builder.nomePessoa();
+    const obs = Builder.observacao();
+    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
     const carnesOpcoes = state.cardapio.carnes.length > 0 ? state.cardapio.carnes.slice(0, 3) : ['Carne do dia'];
 
     const desc = this.montarDescricao({
-      carnes: {}, acompanhamentos: [], saladas: [], obs,
-      incluiFixos: true, carnesOpcoes, tamanho: label
+      carnes: pers ? state.personalizadaSel.carne : {},
+      acompanhamentos: pers ? state.personalizadaSel.acomp : [],
+      saladas: pers ? state.personalizadaSel.salada : [],
+      obs,
+      incluiFixos: !pers,
+      carnesOpcoes,
+      tamanho: label
     });
+
+    // O nome vai no início da descrição que é gravada na planilha e impressa
+    const descPlanilha = nome ? `Para: ${nome} | ${desc}` : desc;
 
     state.cart.push({
-      tipo: `Marmita ${label}`, desc, descPlanilha: desc,
-      preco: precoUnit * qty, qty,
-      composicao: { tipoPedido: 'padrao', tamanho: size, pesar: false }
-    });
-
-    this.salvarLocal();
-    state.qtyPadrao[size] = 1;
-    document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = '1';
-    document.getElementById(obsId).value = '';
-    UI.updateCartUI();
-    UI.showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
-  },
-
-  adicionarPersonalizada() {
-    if (!Schedule.isAberto()) {
-      const msg = Schedule.getEstado() === 'fechado'
-        ? 'Estamos fechados'
-        : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 11h.';
-      UI.showToast(msg, 'aviso', 5000);
-      return;
-    }
-
-    const totalPedacos = Object.values(state.personalizadaSel.carne).reduce((a, b) => a + b, 0);
-    if (!state.personalizadaSel.acomp.length && !totalPedacos && !state.personalizadaSel.salada.length) {
-      UI.showToast('Selecione ao menos um item!', 'aviso');
-      return;
-    }
-
-    const label = state.selectedSize === 'media' ? 'Média' : 'Grande';
-    const pesar = PersonalizadaManager.isModoPesar();
-    let preco = 0;
-
-    if (!pesar) {
-      const base = PersonalizadaManager.calcularBase(state.personalizadaSel.acomp.length, totalPedacos, state.selectedSize);
-      preco = base + (state.personalizadaSel.salada.length * 2);
-    }
-
-    const obs = (document.getElementById('obsPersonalizada')?.value || '').trim();
-    const descCompleta = this.montarDescricao({
-      carnes: state.personalizadaSel.carne,
-      acompanhamentos: state.personalizadaSel.acomp,
-      saladas: state.personalizadaSel.salada,
-      obs, incluiFixos: false
-    });
-
-    const qty = state.qtyPersonalizada;
-    state.cart.push({
-      tipo: `Marmita ${label}`, desc: descCompleta, descPlanilha: descCompleta,
-      preco: pesar ? 0 : preco * qty, qty, aPesar: pesar,
-      composicao: {
-        tipoPedido: 'personalizada', tamanho: state.selectedSize, pesar,
-        qtyAcomp: state.personalizadaSel.acomp.length,
-        qtyCarnePedacos: totalPedacos,
-        qtySalada: state.personalizadaSel.salada.length
-      }
+      // mantém o mesmo rótulo do balcão para não mudar agrupamento no admin/impressora
+      tipo: `Marmita ${label}`,
+      nome,
+      desc,
+      descPlanilha,
+      preco: p.pesar ? 0 : p.valor * qty,
+      qty,
+      aPesar: p.pesar,
+      composicao: pers
+        ? {
+            tipoPedido: 'personalizada', tamanho, pesar: true, nomePessoa: nome || null,
+            qtyAcomp: state.personalizadaSel.acomp.length,
+            qtyCarnePedacos: totalPedacos,
+            qtySalada: state.personalizadaSel.salada.length
+          }
+        : { tipoPedido: 'padrao', tamanho, pesar: false, nomePessoa: nome || null }
     });
 
     this.salvarLocal();
     UI.updateCartUI();
-    PersonalizadaManager.limpar();
-    UI.showToast(`✅ ${qty > 1 ? qty + 'x ' : ''}Marmita ${label} adicionada!`, 'sucesso');
+    Builder.limpar({ limparNome: true });
+
+    const prefixo = qty > 1 ? `${qty}x ` : '';
+    const sufixo = nome ? ` para ${nome}` : '';
+    UI.showToast(`✅ ${prefixo}Marmita ${label}${sufixo} adicionada!`, 'sucesso');
   },
 
   montarDescricao({ carnes, acompanhamentos, saladas, obs, incluiFixos, carnesOpcoes }) {
@@ -743,6 +764,7 @@ const PedidoManager = {
         pedidoId, nomeCliente,
         itens: state.cart.map(item => ({
           tipo: item.tipo, desc: item.descPlanilha,
+          nomePessoa: item.nome || '',
           preco: item.aPesar ? 'A pesar' : item.preco,
           qty: item.qty || 1,
           composicao: item.composicao || null
@@ -760,7 +782,8 @@ const PedidoManager = {
     state.cart.forEach((item, i) => {
       const prefixo = item.qty > 1 ? `${item.qty}x ` : '';
       const precoStr = item.aPesar ? 'A pesar' : Utils.formatPrice(item.preco);
-      msg += `*${i + 1}. ${prefixo}${item.tipo}*\n${item.desc}\n${precoStr}\n\n`;
+      const nomeStr = item.nome ? ` — 👤 ${item.nome}` : '';
+      msg += `*${i + 1}. ${prefixo}${item.tipo}${nomeStr}*\n${item.desc}\n${precoStr}\n\n`;
     });
     const totalStr = temAPesar
       ? `${Utils.formatPrice(total)} + itens a pesar`
@@ -840,14 +863,9 @@ function atualizarNavAtiva() {
 // ============ EXPOSIÇÃO GLOBAL (para onclick no HTML) ============
 window.toggleCart = () => UI.toggleCart();
 window.scrollToSection = scrollToSection;
-window.changeQty = (size, delta) => {
-  state.qtyPadrao[size] = Math.max(1, state.qtyPadrao[size] + delta);
-  document.getElementById(size === 'media' ? 'qtyMedia' : 'qtyGrande').textContent = state.qtyPadrao[size];
-};
-window.changeQtyPersonalizada = (delta) => PersonalizadaManager.mudarQty(delta);
-window.selectSize = (size) => PersonalizadaManager.selecionarTamanho(size);
-window.addPadrao = (size) => CartManager.adicionarPadrao(size);
-window.addPersonalizada = () => CartManager.adicionarPersonalizada();
+window.selTipo = (tipo) => Builder.selecionarTipo(tipo);
+window.mudarQtyPedido = (delta) => Builder.mudarQty(delta);
+window.adicionarPedido = () => CartManager.adicionar();
 window.abrirModalNome = () => PedidoManager.abrirModalNome();
 window.fecharModalNome = () => PedidoManager.fecharModalNome();
 window.confirmarPedido = () => PedidoManager.confirmarPedido();
