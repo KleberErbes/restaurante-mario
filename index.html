@@ -42,15 +42,39 @@
         </div>
       </div>
     </div>
-
-    <!-- NAV: botões de rolagem automática para cada seção -->
-    <nav aria-label="Seções do site">
-      <button onclick="scrollToSection('inicio')">Início</button>
-      <button onclick="scrollToSection('cardapio-dia-sec')">Cardápio</button>
-      <button onclick="scrollToSection('pedidos')">Marmitas</button>
-      <button onclick="scrollToSection('localizacao')">Localização</button>
-    </nav>
   </header>
+
+  <!-- NAV: ilha flutuante (liquid glass) — ícones, rótulo só no item ativo -->
+  <nav aria-label="Seções do site">
+    <button class="active" onclick="scrollToSection('inicio')" aria-label="Início" title="Início">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 9.6 12 3l9 6.6V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>
+        <path d="M9.3 21v-6.2h5.4V21"/>
+      </svg>
+      <span class="nav-label">Início</span>
+    </button>
+    <button onclick="scrollToSection('cardapio-dia-sec')" aria-label="Cardápio" title="Cardápio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="3" width="16" height="18" rx="2.6"/>
+        <path d="M8 8.2h8M8 12h8M8 15.8h5"/>
+      </svg>
+      <span class="nav-label">Cardápio</span>
+    </button>
+    <button onclick="scrollToSection('pedidos')" aria-label="Marmitas" title="Marmitas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 8h14l-1.15 12.1a1 1 0 0 1-1 .9H7.15a1 1 0 0 1-1-.9z"/>
+        <path d="M9 8.4V6.2a3 3 0 0 1 6 0v2.2"/>
+      </svg>
+      <span class="nav-label">Marmitas</span>
+    </button>
+    <button onclick="scrollToSection('localizacao')" aria-label="Localização" title="Localização">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 21.2c4.3-4 6.6-7.3 6.6-10.4a6.6 6.6 0 1 0-13.2 0c0 3.1 2.3 6.4 6.6 10.4z"/>
+        <circle cx="12" cy="10.6" r="2.5"/>
+      </svg>
+      <span class="nav-label">Localização</span>
+    </button>
+  </nav>
 
   <!-- ===================== HERO / INÍCIO ===================== -->
   <section id="inicio">
@@ -224,7 +248,7 @@
           Personalizada Grande<small>por quilo</small>
         </button>
       </div>
-      <p class="tipo-ajuda" id="tipoAjuda">Acompanha: Arroz, Feijão, Macarrão, Aipim com bacon e 3 pedaços de carne.</p>
+      <p class="tipo-ajuda" id="tipoAjuda">Marmita pronta do dia: arroz, feijão, macarrão, aipim com bacon e 3 pedaços de carne.</p>
 
       <!-- Bloco personalizada (só aparece nas opções personalizadas) -->
       <div id="blocoPers" hidden>
@@ -253,12 +277,12 @@
       <div class="section-label">Para quem é <span>(opcional)</span></div>
       <p class="nome-ajuda">Pedindo para mais gente? Escreva o nome da pessoa para identificar a marmita.</p>
       <input type="text" id="nomeMarmita" class="nome-marmita-input" maxlength="30"
-        placeholder="Digite o nome" autocapitalize="words" autocorrect="off" spellcheck="false"
+        placeholder="Ex.: João, Maria, Pai..." autocapitalize="words" autocorrect="off" spellcheck="false"
         aria-label="Nome de quem vai receber esta marmita">
 
       <!-- Observações -->
       <div class="section-label">Observações <span>(opcional)</span></div>
-      <textarea class="obs-input" id="obsPedido" placeholder="Sua observação"
+      <textarea class="obs-input" id="obsPedido" placeholder="Ex.: sem cebola, pouco sal..."
         maxlength="200" aria-label="Observações para esta marmita"></textarea>
 
       <!-- Preço + adicionar -->
