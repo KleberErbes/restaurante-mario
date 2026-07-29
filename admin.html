@@ -913,11 +913,12 @@ function extrairNomePessoa(itensStr) {
 }
 
 function formatarItensMarmita(m) {
-  const { nome, resto } = extrairNomePessoa(m.itens);
-  const cabecalho = nome ? [`Para: ${nome}`] : [];
+  // O nome NÃO entra aqui: vai no título da marmita (ver tituloMarmita),
+  // do mesmo jeito que aparece na lista de pedidos do painel.
+  const { resto } = extrairNomePessoa(m.itens);
 
   if (m.tipoPedido === 'padrao') {
-    const linhas = cabecalho.concat(['Padrão']);
+    const linhas = ['Padrão'];
     const idxObs = resto.indexOf('⚠️ Obs:');
     if (idxObs !== -1) {
       const obs = resto.slice(idxObs + '⚠️ Obs:'.length).trim();
@@ -925,7 +926,14 @@ function formatarItensMarmita(m) {
     }
     return linhas;
   }
-  return cabecalho.concat(formatarItensPersonalizada(resto));
+  return formatarItensPersonalizada(resto);
+}
+
+// Título da marmita no documento: "2x Marmita Grande - Roseli"
+function tituloMarmita(m) {
+  const { nome } = extrairNomePessoa(m.itens);
+  const base = m.qty > 1 ? `${m.qty}x ${m.tipo}` : m.tipo;
+  return nome ? `${base} - ${nome}` : base;
 }
 
 // ========== GERAR WORD ==========
@@ -959,9 +967,8 @@ async function gerarWord() {
 
     // Cada marmita
     marmitasAgrupadas.forEach(m => {
-      const tipoLabel = m.qty > 1 ? `${m.qty}x ${m.tipo}` : m.tipo;
       children.push(new Paragraph({
-        children: [new TextRun({ text: tipoLabel, font: 'Arial', size: 24, bold: true })]
+        children: [new TextRun({ text: tituloMarmita(m), font: 'Arial', size: 24, bold: true })]
       }));
       formatarItensMarmita(m).forEach(linha => {
         children.push(new Paragraph({
