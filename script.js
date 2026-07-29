@@ -479,8 +479,8 @@ const Builder = {
   PRECOS: { media: 26, grande: 28 },
 
   AJUDA: {
-    padrao: 'Marmita pronta: arroz, feijão, macarrão, aipim com bacon e 3 pedaços de carne.',
-    pers: 'Escolha abaixo os acompanhamentos, carnes e saladas. A marmita personalizada é pesada.'
+    padrao: 'Marmita pronta do dia: arroz, feijão, macarrão, aipim com bacon e 3 pedaços de carne.',
+    pers: 'Escolha abaixo os acompanhamentos, carnes e saladas. A marmita personalizada é pesada no balcão.'
   },
 
   ehPers() { return state.pedido.tipo.startsWith('pers'); },
@@ -550,7 +550,9 @@ const Builder = {
   },
 
   nomePessoa() {
-    return (document.getElementById('nomeMarmita')?.value || '').trim();
+    // O "|" é o separador da descrição gravada na planilha — se o cliente
+    // digitar um, a impressora e o admin leriam o nome errado.
+    return (document.getElementById('nomeMarmita')?.value || '').replace(/\|/g, ' ').trim();
   },
 
   observacao() {

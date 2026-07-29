@@ -877,17 +877,28 @@ function formatarItensPersonalizada(itensStr) {
   return linhas;
 }
 
+function extrairNomePessoa(itensStr) {
+  // O site pode prefixar a descrição com "Para: Fulano | ...".
+  const s = String(itensStr || '');
+  const m = s.match(/^\s*Para:\s*([^|]+?)\s*(?:\|\s*|$)/);
+  if (!m) return { nome: '', resto: s };
+  return { nome: m[1].trim(), resto: s.slice(m[0].length) };
+}
+
 function formatarItensMarmita(m) {
+  const { nome, resto } = extrairNomePessoa(m.itens);
+  const cabecalho = nome ? [`Para: ${nome}`] : [];
+
   if (m.tipoPedido === 'padrao') {
-    const linhas = ['Padrão'];
-    const idxObs = m.itens.indexOf('⚠️ Obs:');
+    const linhas = cabecalho.concat(['Padrão']);
+    const idxObs = resto.indexOf('⚠️ Obs:');
     if (idxObs !== -1) {
-      const obs = m.itens.slice(idxObs + '⚠️ Obs:'.length).trim();
+      const obs = resto.slice(idxObs + '⚠️ Obs:'.length).trim();
       if (obs) linhas.push(`Obs: ${obs}`);
     }
     return linhas;
   }
-  return formatarItensPersonalizada(m.itens);
+  return cabecalho.concat(formatarItensPersonalizada(resto));
 }
 
 // ========== GERAR WORD ==========
