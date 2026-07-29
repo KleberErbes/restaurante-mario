@@ -621,10 +621,10 @@ const Builder = {
     const q = document.getElementById('qtyPedido');
     if (q) q.textContent = '1';
     const obs = document.getElementById('obsPedido');
-    if (obs) obs.value = '';
+    if (obs) { obs.value = ''; obs._resetContador?.(); }
     if (limparNome) {
       const nome = document.getElementById('nomeMarmita');
-      if (nome) nome.value = '';
+      if (nome) { nome.value = ''; nome._resetContador?.(); }
     }
     this.atualizarPreco();
   }
@@ -944,6 +944,27 @@ window.confirmarRemocao = (i) => CartManager.confirmarRemocao(i);
 window.abrirAjuda = abrirAjuda;
 window.fecharAjuda = fecharAjuda;
 
+// ============ CONTADOR DE CARACTERES ============
+function ligarContador(idCampo, idContador) {
+  const campo = document.getElementById(idCampo);
+  const alvo = document.getElementById(idContador);
+  if (!campo || !alvo) return;
+
+  const limite = parseInt(campo.getAttribute('maxlength'), 10);
+  if (!limite) return;
+
+  const atualizar = () => {
+    const n = campo.value.length;
+    alvo.textContent = `${n} / ${limite}`;
+    alvo.classList.toggle('perto', n >= limite * 0.8 && n < limite);
+    alvo.classList.toggle('cheio', n >= limite);
+  };
+
+  campo.addEventListener('input', atualizar);
+  campo._resetContador = atualizar;   // Builder.limpar() chama ao esvaziar
+  atualizar();
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
   dom.init();
@@ -968,6 +989,11 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (dom.modalNome?.classList.contains('open')) PedidoManager.fecharModalNome();
     else if (dom.cartPanel?.classList.contains('open')) UI.toggleCart(false);
   });
+
+  // Contador de caracteres nos campos livres. O maxlength sozinho é mudo:
+  // o campo simplesmente para de aceitar letra e o cliente não entende.
+  ligarContador('obsPedido', 'contadorObs');
+  ligarContador('nomeMarmita', 'contadorNome');
 
   // Allow Enter key in name input
   dom.inputNome?.addEventListener('keydown', (e) => {

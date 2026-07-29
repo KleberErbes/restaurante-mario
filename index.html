@@ -282,14 +282,16 @@
       <!-- Observações -->
       <div class="section-label">Observações <span>(opcional)</span></div>
       <textarea class="obs-input" id="obsPedido" placeholder="Sua observação"
-        maxlength="200" aria-label="Observações para esta marmita"></textarea>
+        maxlength="100" aria-label="Observações para esta marmita"></textarea>
+      <span class="char-count" id="contadorObs" aria-live="polite">0 / 100</span>
 
       <!-- Nome de quem vai comer -->
       <div class="section-label">Para quem é <span>(opcional)</span></div>
       <p class="nome-ajuda">Pedindo para mais gente? Escreva o nome da pessoa para identificar a marmita.</p>
-      <input type="text" id="nomeMarmita" class="nome-marmita-input" maxlength="30"
+      <input type="text" id="nomeMarmita" class="nome-marmita-input" maxlength="20"
         placeholder="Digite o nome" autocapitalize="words" autocorrect="off" spellcheck="false"
         aria-label="Nome de quem vai receber esta marmita">
+      <span class="char-count" id="contadorNome" aria-live="polite">0 / 20</span>
 
       <!-- Preço + adicionar -->
       <div class="preco-personalizada">

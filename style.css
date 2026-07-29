@@ -968,6 +968,20 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 .btn-add:hover { background: var(--verde-700); transform: translateY(-2px); box-shadow: var(--sombra-2); }
 .btn-add:active { transform: translateY(0); }
 
+/* Contador de caracteres dos campos livres (observação e nome) */
+.char-count {
+  display: block;
+  text-align: right;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta-suave);
+  transition: color var(--transicao);
+}
+.char-count.perto { color: var(--dourado-texto); }
+.char-count.cheio { color: var(--erro); }
+
 /* Atalho para o carrinho — secundário, aparece só quando há itens */
 .btn-ir-carrinho {
   display: flex;
