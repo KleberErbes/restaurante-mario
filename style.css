@@ -1693,10 +1693,10 @@ footer {
     min-height: calc(100svh - 150px);
     display: flex;
     align-items: center;
-    padding: 24px 20px 68px;
+    padding: 24px 18px 68px;
   }
   .hero-kicker { font-size: 0.66rem; margin-bottom: 18px; padding-bottom: 12px; }
-  .hero-title { font-size: clamp(2rem, 9vw, 2.6rem); margin-bottom: 16px; }
+  .hero-title { font-size: clamp(2.15rem, 11vw, 3.1rem); line-height: 1.04; margin-bottom: 18px; }
   .hero-lead { font-size: 0.98rem; margin-bottom: 26px; }
   .hero-actions { gap: 18px; }
   .hero-btn-primary { min-height: 52px; padding: 14px 26px; font-size: 0.98rem; width: 100%; }
@@ -1746,18 +1746,13 @@ footer {
   .marmita-card ul li { font-size: 0.88rem; padding: 5px 0 5px 20px; }
   .marmita-card ul li::before { width: 7px; height: 7px; top: 12px; }
 
-  .obs-input { font-size: 0.88rem; padding: 10px 12px; min-height: 48px; margin-bottom: 11px; }
-
-  .qty-selector { gap: 14px; margin-bottom: 12px; }
-  .qty-btn { width: 44px; height: 44px; font-size: 1.3rem; border-radius: 12px; }
-  .qty-value { font-size: 1.25rem; }
-
-  .btn-add { min-height: 48px; font-size: 0.9rem; padding: 12px 14px; }
+  /* obs-input, qty-* e section-label ficam no bloco "PEDIR MARMITAS"
+     mais abaixo — eram declarados nos dois lugares e brigavam entre si. */
+  .btn-add { min-height: 52px; font-size: 0.98rem; padding: 13px 16px; }
 
   /* Personalizada */
   .personalizada-box { padding: 20px 15px 18px; }
   .personalizada-box h3 { font-size: 1.35rem; }
-  .section-label { font-size: 0.88rem; margin: 20px 0 8px; padding-top: 15px; }
   .btn-ajuda { width: 24px; height: 24px; }
   .btn-ajuda svg { width: 16px; height: 16px; }
   .size-btn { min-height: 54px; font-size: 0.92rem; }
@@ -1767,7 +1762,7 @@ footer {
   .carne-card { padding: 9px 12px; }
   .carne-nome { font-size: 0.88rem; }
   .carne-btn { width: 38px; height: 38px; font-size: 1.1rem; }
-  .preco-personalizada { font-size: 0.92rem; margin-top: 20px; padding-top: 14px; }
+  .preco-personalizada { font-size: 0.92rem; margin-top: var(--gap-campo); padding-top: var(--gap-campo); }
   .preco-personalizada span:last-child { font-size: 1.6rem; }
   .info-pesar { font-size: 0.83rem; padding: 10px 13px; }
 
@@ -2139,3 +2134,67 @@ footer {
   transition: var(--transicao);
 }
 .ajuda-ok:hover { background: var(--verde-700); transform: translateY(-1px); }
+/* ============================================================
+   RESPONSIVIDADE — faixas que faltavam
+   O site tinha só um corte em 720px: abaixo disso, celular;
+   acima, desktop cheio. Estas três faixas cobrem os extremos.
+   ============================================================ */
+
+/* ----- Tablet e notebook pequeno (721px – 1024px) -----
+   Antes caía direto no layout de desktop, com respiro de tela
+   grande num espaço que não tem. */
+@media (min-width: 721px) and (max-width: 1024px) {
+  section { padding: 54px 22px; }
+  .hero { min-height: calc(100svh - 132px); padding: clamp(40px, 5vw, 60px) 22px clamp(60px, 8vw, 92px); }
+  .cardapio-grid { gap: 16px; }
+  .buffet-home { padding: 52px 20px 56px; }
+  .precos-topo { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ----- Celular pequeno (≤ 380px) -----
+   iPhone SE, Galaxy antigo. Com 2 colunas e fonte de celular
+   normal, "Personalizada Grande" e os cards de preço apertavam. */
+@media (max-width: 380px) {
+  section { padding: 30px 12px; }
+  .pedido-box { padding: 16px 12px; }
+
+  .tipo-btn { font-size: 0.86rem; min-height: 68px; padding: 10px 6px; }
+  .tipo-btn small { font-size: 0.75rem; }
+
+  .preco-card-nome { font-size: 0.8rem; }
+  .preco-card-valor { font-size: 1.3rem; }
+  .preco-card-obs { font-size: 0.6rem; }
+
+  .section-label { font-size: 0.92rem; letter-spacing: 0.07em; }
+  .qty-btn { width: 48px; height: 48px; font-size: 1.45rem; }
+  .qty-value { font-size: 1.5rem; }
+  .item-chip { font-size: 0.82rem; padding: 8px 12px; }
+
+  .btn-add { font-size: 0.92rem; }
+  .btn-ir-carrinho { font-size: 0.88rem; min-height: 46px; }
+
+  /* o título do hero acompanha a tela em vez de estourar a linha */
+  .hero { padding: 20px 14px 58px; }
+  .hero-title { font-size: clamp(1.95rem, 10.5vw, 2.4rem); }
+  .hero-kicker { font-size: 0.62rem; letter-spacing: 0.11em; }
+
+  header h1 { font-size: 1.08rem; }
+  .logo-icon { width: 52px; height: 52px; }
+  .badge-horario { font-size: 0.72rem; padding: 6px 11px; }
+  .cart-btn { padding: 9px 14px; font-size: 0.84rem; }
+}
+
+/* ----- Tela baixa / celular deitado -----
+   O hero pede quase a altura toda da tela; deitado isso vira
+   uma faixa em que nada cabe. Aqui ele passa a crescer só o
+   necessário para o conteúdo. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .hero {
+    min-height: 0;
+    padding: 30px 24px 44px;
+  }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 2.4rem); margin-bottom: 12px; }
+  .hero-kicker { margin-bottom: 12px; padding-bottom: 8px; }
+  .hero-lead { margin-bottom: 18px; }
+  .horario-card { margin-top: -40px; }
+}
