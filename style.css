@@ -396,7 +396,7 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   pointer-events: none;
 }
 
-.hero-inner { position: relative; max-width: 680px; margin: 0 auto; }
+.hero-inner { position: relative; max-width: 680px; margin: 0 auto; text-align: center; }
 
 .hero-kicker {
   font-size: 0.78rem;
@@ -429,12 +429,13 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.78);
   max-width: 460px;
-  margin: 0 0 32px;
+  margin: 0 auto 32px;
 }
 
 .hero-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 26px;
   flex-wrap: wrap;
 }
