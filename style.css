@@ -378,11 +378,12 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
       rgba(13, 30, 9, 0.58) 100%),
     url('IMG_4031.png') center / cover no-repeat;
   color: #fff;
-  /* PC: altura ditada pelo conteúdo, sem sobra de viewport */
-  min-height: 0;
+  /* PC: ocupa a tela toda (descontando o cabeçalho fixo) */
+  min-height: calc(100vh - 122px);
+  min-height: calc(100svh - 122px);
   display: flex;
   align-items: center;
-  padding: clamp(44px, 5vw, 64px) 24px clamp(44px, 5vw, 64px);
+  padding: clamp(64px, 9vw, 104px) 24px clamp(40px, 6vw, 64px);
   position: relative;
   overflow: hidden;
 }
@@ -1602,10 +1603,11 @@ footer {
 
   /* Hero: ocupa a primeira tela inteira do celular */
   .hero {
-    min-height: 0;
+    min-height: calc(100vh - 150px);
+    min-height: calc(100svh - 150px);
     display: flex;
     align-items: center;
-    padding: 30px 18px 34px;
+    padding: 36px 20px 40px;
   }
   .hero-kicker { font-size: 0.66rem; margin-bottom: 18px; padding-bottom: 12px; }
   .hero-title { font-size: clamp(2rem, 9vw, 2.6rem); margin-bottom: 16px; }
