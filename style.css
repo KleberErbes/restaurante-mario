@@ -49,6 +49,12 @@
   /* Ilha flutuante do menu */
   --ilha-gap: 18px;   /* distância da borda de baixo */
   --ilha-btn: 50px;   /* altura dos botões (= altura útil da ilha) */
+
+  /* Espaçamento padronizado da seção de pedidos
+     --gap-bloco: entre os cards (valores → quilo → caixa de montagem)
+     --gap-campo: entre os blocos internos da caixa de montagem */
+  --gap-bloco: 22px;
+  --gap-campo: 26px;
 }
 
 /* ===== BASE ===== */
@@ -383,7 +389,9 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   min-height: calc(100svh - 122px);
   display: flex;
   align-items: center;
-  padding: clamp(64px, 9vw, 104px) 24px clamp(40px, 6vw, 64px);
+  /* padding inferior maior que o superior: o conteúdo assenta
+     acima do centro óptico da tela */
+  padding: clamp(44px, 6vw, 72px) 24px clamp(76px, 10vw, 124px);
   position: relative;
   overflow: hidden;
 }
@@ -746,7 +754,7 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   color: var(--tinta);
   border-radius: var(--raio-g);
   padding: 24px 26px 22px;
-  margin-bottom: 28px;
+  margin-bottom: var(--gap-bloco);
   box-shadow: var(--sombra-1);
 }
 .kilo-banner h3 {
@@ -898,16 +906,17 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 /* Campo de observações */
 .obs-input {
   width: 100%;
-  border: 1.5px solid var(--borda);
+  border: 2px solid var(--borda);
   border-radius: var(--raio);
-  padding: 12px 14px;
+  padding: 15px 16px;
   font-family: var(--fonte-corpo);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
   color: var(--tinta);
   background: var(--papel);
   resize: vertical;
-  min-height: 56px;
-  margin-bottom: 14px;
+  min-height: 82px;
+  margin-bottom: 0;
   transition: border-color var(--transicao), background var(--transicao);
 }
 .obs-input:focus { outline: none; border-color: var(--verde-600); background: #fff; }
@@ -918,17 +927,17 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  margin-bottom: 16px;
+  gap: 20px;
+  margin-bottom: 4px;
 }
 .qty-btn {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border: 2px solid var(--verde-700);
   background: #fff;
   color: var(--verde-700);
-  border-radius: 14px;
-  font-size: 1.5rem;
+  border-radius: 15px;
+  font-size: 1.75rem;
   font-weight: 800;
   line-height: 1;
   transition: background var(--transicao), color var(--transicao), transform var(--transicao);
@@ -936,9 +945,9 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 .qty-btn:hover { background: var(--verde-700); color: #fff; }
 .qty-btn:active { transform: scale(0.94); }
 .qty-value {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 800;
-  min-width: 40px;
+  min-width: 46px;
   text-align: center;
 }
 
@@ -959,6 +968,81 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 .btn-add:hover { background: var(--verde-700); transform: translateY(-2px); box-shadow: var(--sombra-2); }
 .btn-add:active { transform: translateY(0); }
 
+/* Atalho para o carrinho — secundário, aparece só quando há itens */
+.btn-ir-carrinho {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 10px;
+  padding: 13px 18px;
+  background: #fff;
+  color: var(--verde-800);
+  border: 2px solid var(--verde-800);
+  border-radius: 999px;
+  font-family: var(--fonte-corpo);
+  font-size: 1rem;
+  font-weight: 800;
+  transition: background var(--transicao), color var(--transicao), transform var(--transicao);
+}
+.btn-ir-carrinho svg { width: 19px; height: 19px; flex-shrink: 0; }
+.btn-ir-carrinho:hover { background: var(--verde-100); transform: translateY(-2px); }
+.btn-ir-carrinho:active { transform: translateY(0); }
+.btn-ir-carrinho[hidden] { display: none !important; }
+.btn-ir-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--dourado);
+  color: #221a04;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+/* ============================================================
+   ANIMAÇÃO "FOI PRO CARRINHO"
+   Um chip dourado sai do botão adicionar, voa até o carrinho
+   do cabeçalho e o carrinho responde com uma pulsada.
+   ============================================================ */
+.voo-carrinho {
+  position: fixed;
+  z-index: 500;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 999px;
+  background: var(--dourado);
+  box-shadow: 0 4px 14px rgba(24, 34, 18, 0.35);
+  pointer-events: none;
+  animation: voarAoCarrinho 620ms cubic-bezier(0.45, 0.05, 0.35, 1) forwards;
+}
+@keyframes voarAoCarrinho {
+  0%   { transform: translate(0, 0) scale(1);      opacity: 1; }
+  22%  { transform: translate(calc(var(--dx) * 0.18), calc(var(--dy) * 0.18 - 34px)) scale(1.25); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.32); opacity: 0.25; }
+}
+
+.cart-pulse { animation: pulsarCarrinho 560ms cubic-bezier(0.3, 1.4, 0.4, 1); }
+@keyframes pulsarCarrinho {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.13); box-shadow: 0 0 0 6px rgba(201, 160, 80, 0.28); }
+  60%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.cart-count-bump { animation: bumpContador 560ms cubic-bezier(0.3, 1.4, 0.4, 1); }
+@keyframes bumpContador {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
 /* ===== MARMITA PERSONALIZADA ===== */
 .personalizada-box {
   background: var(--papel-card);
@@ -977,16 +1061,17 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
 }
 
 .section-label {
-  font-size: 0.95rem;
+  font-size: 1.06rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--verde-800);
-  margin: 30px 0 10px;
-  padding-top: 22px;
+  margin: var(--gap-campo) 0 12px;
+  padding-top: var(--gap-campo);
   border-top: 1px dashed var(--borda);
 }
-.section-label:first-of-type { border-top: none; padding-top: 0; margin-top: 22px; }
+/* o primeiro rótulo da caixa não repete o respiro: quem dá o espaço é o padding dela */
+.pedido-box > .section-label:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
 .section-label span { text-transform: none; letter-spacing: 0; }
 
 .size-selector { display: flex; gap: 12px; }
@@ -1099,8 +1184,8 @@ body { padding-bottom: calc(var(--ilha-gap) + var(--ilha-btn) + 26px + env(safe-
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin: 28px 0 6px;
-  padding-top: 20px;
+  margin: var(--gap-campo) 0 8px;
+  padding-top: var(--gap-campo);
   border-top: 1px dashed var(--borda);
   font-size: 1.05rem;
 }
@@ -1608,7 +1693,7 @@ footer {
     min-height: calc(100svh - 150px);
     display: flex;
     align-items: center;
-    padding: 36px 20px 40px;
+    padding: 24px 20px 68px;
   }
   .hero-kicker { font-size: 0.66rem; margin-bottom: 18px; padding-bottom: 12px; }
   .hero-title { font-size: clamp(2rem, 9vw, 2.6rem); margin-bottom: 16px; }
@@ -1643,7 +1728,7 @@ footer {
   .cpg-list .cardapio-item-tag { font-size: 0.76rem; padding: 5px 10px; }
 
   /* Pedidos */
-  .kilo-banner { padding: 17px 15px; margin-bottom: 20px; }
+  .kilo-banner { padding: 17px 15px; margin-bottom: var(--gap-bloco); }
   .kilo-banner h3 { font-size: 1.1rem; margin-bottom: 12px; }
   .kilo-options { flex-direction: column; align-items: stretch; gap: 8px; }
   .kilo-tag { justify-content: space-between; font-size: 0.82rem; padding: 9px 14px; }
@@ -1733,8 +1818,10 @@ footer {
 }
 /* ============================================================
    PEDIR MARMITAS — fluxo único de montagem (2026)
-   Ordem: valores → escolha → quantidade → nome → personalizada
-          → observações → adicionar ao carrinho
+   Ordem: valores → escolha → personalizada → quantidade
+          → observações → nome → adicionar / ir ao carrinho
+   Espaçamento controlado por --gap-bloco (entre cards) e
+   --gap-campo (entre blocos internos da caixa).
    ============================================================ */
 
 /* ----- 1. Valores no topo ----- */
@@ -1742,7 +1829,7 @@ footer {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px;
-  margin-bottom: 22px;
+  margin-bottom: var(--gap-bloco);
 }
 .preco-card {
   background: var(--papel-card);
@@ -1786,9 +1873,9 @@ footer {
   background: var(--papel-card);
   border: 1px solid var(--borda);
   border-radius: var(--raio-g);
-  padding: 26px 26px 24px;
+  padding: 26px;
   box-shadow: var(--sombra-2);
-  margin-bottom: 34px;
+  margin-bottom: var(--gap-bloco);
 }
 
 /* Escolha do tipo de marmita */
@@ -1803,22 +1890,22 @@ footer {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  min-height: 68px;
-  padding: 12px 10px;
+  min-height: 80px;
+  padding: 14px 12px;
   border: 2px solid var(--borda);
   border-radius: var(--raio);
   background: var(--papel);
   color: var(--verde-900);
   font-family: var(--fonte-corpo);
   font-weight: 800;
-  font-size: 0.98rem;
+  font-size: 1.08rem;
   line-height: 1.2;
   text-align: center;
   transition: var(--transicao);
 }
 .tipo-btn small {
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   color: var(--tinta-suave);
 }
 .tipo-btn:hover { border-color: var(--verde-600); }
@@ -1837,27 +1924,28 @@ footer {
 .tipo-btn-pers.selected small { color: var(--dourado-texto); }
 
 .tipo-ajuda {
-  margin: 12px 0 0;
-  font-size: 0.88rem;
+  margin: 14px 0 0;
+  font-size: 0.95rem;
   color: var(--tinta-suave);
   line-height: 1.5;
 }
 
 /* Nome de quem vai comer */
 .nome-ajuda {
-  margin: 0 0 10px;
-  font-size: 0.86rem;
+  margin: 0 0 12px;
+  font-size: 0.95rem;
   color: var(--tinta-suave);
   line-height: 1.5;
 }
 .nome-marmita-input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 15px 16px;
+  min-height: 56px;
   border: 2px solid var(--borda);
   border-radius: var(--raio);
   background: var(--papel);
   font-family: var(--fonte-corpo);
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   color: var(--tinta);
   transition: var(--transicao);
 }
@@ -1886,7 +1974,7 @@ footer {
 
 /* ----- Ajustes de celular ----- */
 @media (max-width: 720px) {
-  .precos-topo { grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+  .precos-topo { grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: var(--gap-bloco); }
   .preco-card { padding: 14px 10px 12px; }
   .preco-card-nome { font-size: 0.86rem; }
   .preco-card-valor { font-size: 1.45rem; }
@@ -1894,13 +1982,21 @@ footer {
   .preco-card-quilo .preco-card-valor { font-size: 1.2rem; }
   .preco-card-obs { font-size: 0.64rem; letter-spacing: 0.06em; }
 
-  .pedido-box { padding: 18px 13px 16px; }
+  /* espaçamento interno um pouco mais curto, mantendo a proporção */
+  :root { --gap-bloco: 16px; --gap-campo: 20px; }
+
+  .pedido-box { padding: 18px 14px; }
   .tipo-selector { gap: 9px; }
-  .tipo-btn { min-height: 62px; font-size: 0.88rem; padding: 10px 8px; }
-  .tipo-btn small { font-size: 0.74rem; }
-  .tipo-ajuda { font-size: 0.82rem; }
-  .nome-ajuda { font-size: 0.8rem; }
-  .nome-marmita-input { font-size: 0.92rem; padding: 11px 12px; min-height: 46px; }
+  .tipo-btn { min-height: 72px; font-size: 0.98rem; padding: 12px 8px; }
+  .tipo-btn small { font-size: 0.82rem; }
+  .tipo-ajuda { font-size: 0.9rem; }
+  .nome-ajuda { font-size: 0.88rem; }
+  .nome-marmita-input { font-size: 1rem; padding: 13px 14px; min-height: 52px; }
+  .obs-input { font-size: 1rem; padding: 13px 14px; min-height: 76px; }
+  .section-label { font-size: 1rem; letter-spacing: 0.09em; }
+  .qty-btn { width: 52px; height: 52px; font-size: 1.6rem; }
+  .qty-value { font-size: 1.65rem; min-width: 42px; }
+  .btn-ir-carrinho { font-size: 0.95rem; min-height: 50px; }
   .cart-item-nome { font-size: 0.7rem; padding: 2px 8px; }
 }
 

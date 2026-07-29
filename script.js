@@ -33,6 +33,9 @@ const dom = {
   cartItems: null,
   cartCount: null,
   cartTotal: null,
+  cartBtn: null,
+  btnIrCarrinho: null,
+  btnIrCarrinhoCount: null,
   overlay: null,
   badgeHorario: null,
   avisoBalcao: null,
@@ -50,6 +53,9 @@ const dom = {
     this.cartPanel = document.getElementById('cartPanel');
     this.cartItems = document.getElementById('cartItems');
     this.cartCount = document.getElementById('cartCount');
+    this.cartBtn = document.querySelector('.cart-btn');
+    this.btnIrCarrinho = document.getElementById('btnIrCarrinho');
+    this.btnIrCarrinhoCount = document.getElementById('btnIrCarrinhoCount');
     this.cartTotal = document.getElementById('cartTotal');
     this.overlay = document.getElementById('overlay');
     this.badgeHorario = document.getElementById('badgeHorario');
@@ -112,6 +118,54 @@ const UI = {
     dom.overlay.classList.toggle('open', show);
   },
 
+  // Mostra o atalho "Ir ao carrinho" apenas quando há algo dentro
+  sincronizarBotaoIrCarrinho() {
+    if (!dom.btnIrCarrinho) return;
+    const n = state.cart.length;
+    dom.btnIrCarrinho.hidden = n === 0;
+    if (dom.btnIrCarrinhoCount) dom.btnIrCarrinhoCount.textContent = n;
+  },
+
+  /* Animação de "foi pro carrinho": um chip sai do botão adicionar,
+     voa até o carrinho do cabeçalho e o carrinho dá uma pulsada.
+     Respeita prefers-reduced-motion (nesse caso só pulsa o carrinho). */
+  animarParaCarrinho() {
+    const destino = dom.cartBtn;
+    if (!destino) return;
+
+    const pulsar = () => {
+      destino.classList.remove('cart-pulse');
+      void destino.offsetWidth;              // força reinício da animação
+      destino.classList.add('cart-pulse');
+      dom.cartCount?.classList.remove('cart-count-bump');
+      void dom.cartCount?.offsetWidth;
+      dom.cartCount?.classList.add('cart-count-bump');
+      setTimeout(() => {
+        destino.classList.remove('cart-pulse');
+        dom.cartCount?.classList.remove('cart-count-bump');
+      }, 650);
+    };
+
+    const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const origemEl = document.getElementById('btnAdicionar');
+    if (semMovimento || !origemEl) { pulsar(); return; }
+
+    const origem = origemEl.getBoundingClientRect();
+    const alvo = destino.getBoundingClientRect();
+
+    const chip = document.createElement('span');
+    chip.className = 'voo-carrinho';
+    chip.setAttribute('aria-hidden', 'true');
+    chip.style.left = (origem.left + origem.width / 2) + 'px';
+    chip.style.top = (origem.top + origem.height / 2) + 'px';
+    chip.style.setProperty('--dx', (alvo.left + alvo.width / 2 - origem.left - origem.width / 2) + 'px');
+    chip.style.setProperty('--dy', (alvo.top + alvo.height / 2 - origem.top - origem.height / 2) + 'px');
+    document.body.appendChild(chip);
+
+    chip.addEventListener('animationend', () => { chip.remove(); pulsar(); }, { once: true });
+    setTimeout(() => { if (chip.isConnected) { chip.remove(); pulsar(); } }, 900);
+  },
+
   toggleCart(show) {
     const shouldOpen = show !== undefined ? show : !dom.cartPanel.classList.contains('open');
     dom.cartPanel.classList.toggle('open', shouldOpen);
@@ -130,6 +184,7 @@ const UI = {
 
   updateCartUI() {
     dom.cartCount.textContent = state.cart.length;
+    this.sincronizarBotaoIrCarrinho();
     const container = dom.cartItems;
 
     if (state.cart.length === 0) {
@@ -637,6 +692,7 @@ const CartManager = {
 
     this.salvarLocal();
     UI.updateCartUI();
+    UI.animarParaCarrinho();
     Builder.limpar({ limparNome: true });
 
     const prefixo = qty > 1 ? `${qty}x ` : '';
@@ -876,7 +932,7 @@ function atualizarNavAtiva() {
 }
 
 // ============ EXPOSIÇÃO GLOBAL (para onclick no HTML) ============
-window.toggleCart = () => UI.toggleCart();
+window.toggleCart = (show) => UI.toggleCart(show);
 window.scrollToSection = scrollToSection;
 window.selTipo = (tipo) => Builder.selecionarTipo(tipo);
 window.mudarQtyPedido = (delta) => Builder.mudarQty(delta);

@@ -279,17 +279,17 @@
         <button class="qty-btn" onclick="mudarQtyPedido(1)" aria-label="Aumentar quantidade">+</button>
       </div>
 
+      <!-- Observações -->
+      <div class="section-label">Observações <span>(opcional)</span></div>
+      <textarea class="obs-input" id="obsPedido" placeholder="Sua observação"
+        maxlength="200" aria-label="Observações para esta marmita"></textarea>
+
       <!-- Nome de quem vai comer -->
       <div class="section-label">Para quem é <span>(opcional)</span></div>
       <p class="nome-ajuda">Pedindo para mais gente? Escreva o nome da pessoa para identificar a marmita.</p>
       <input type="text" id="nomeMarmita" class="nome-marmita-input" maxlength="30"
         placeholder="Digite o nome" autocapitalize="words" autocorrect="off" spellcheck="false"
         aria-label="Nome de quem vai receber esta marmita">
-
-      <!-- Observações -->
-      <div class="section-label">Observações <span>(opcional)</span></div>
-      <textarea class="obs-input" id="obsPedido" placeholder="Sua observação"
-        maxlength="200" aria-label="Observações para esta marmita"></textarea>
 
       <!-- Preço + adicionar -->
       <div class="preco-personalizada">
@@ -301,6 +301,15 @@
       </div>
 
       <button class="btn-add" id="btnAdicionar" onclick="adicionarPedido()">+ Adicionar ao carrinho</button>
+
+      <button class="btn-ir-carrinho" id="btnIrCarrinho" onclick="toggleCart(true)" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 8h14l-1.15 12.1a1 1 0 0 1-1 .9H7.15a1 1 0 0 1-1-.9z"/>
+          <path d="M9 8.4V6.2a3 3 0 0 1 6 0v2.2"/>
+        </svg>
+        Ir ao carrinho
+        <span class="btn-ir-count" id="btnIrCarrinhoCount">0</span>
+      </button>
     </div>
 
   </section>
