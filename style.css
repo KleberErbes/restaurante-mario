@@ -1984,29 +1984,42 @@ footer {
 /* ----- Ajustes de celular ----- */
 @media (max-width: 720px) {
   .precos-topo { grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: var(--gap-bloco); }
-  .preco-card { padding: 14px 10px 12px; }
-  .preco-card-nome { font-size: 0.86rem; }
-  .preco-card-valor { font-size: 1.45rem; }
+  .preco-card { padding: 13px 10px 11px; }
+  .preco-card-nome { font-size: 0.8rem; }
+  .preco-card-valor { font-size: 1.28rem; }
   .preco-card-quilo { grid-column: 1 / -1; }
-  .preco-card-quilo .preco-card-valor { font-size: 1.2rem; }
-  .preco-card-obs { font-size: 0.64rem; letter-spacing: 0.06em; }
+  .preco-card-quilo .preco-card-valor { font-size: 1.08rem; }
+  .preco-card-obs { font-size: 0.6rem; letter-spacing: 0.06em; }
 
   /* espaçamento interno um pouco mais curto, mantendo a proporção */
   :root { --gap-bloco: 16px; --gap-campo: 20px; }
 
   .pedido-box { padding: 18px 14px; }
   .tipo-selector { gap: 9px; }
-  .tipo-btn { min-height: 72px; font-size: 0.98rem; padding: 12px 8px; }
-  .tipo-btn small { font-size: 0.82rem; }
-  .tipo-ajuda { font-size: 0.9rem; }
-  .nome-ajuda { font-size: 0.88rem; }
-  .nome-marmita-input { font-size: 1rem; padding: 13px 14px; min-height: 52px; }
-  .obs-input { font-size: 1rem; padding: 13px 14px; min-height: 76px; }
-  .section-label { font-size: 1rem; letter-spacing: 0.09em; }
-  .qty-btn { width: 52px; height: 52px; font-size: 1.6rem; }
-  .qty-value { font-size: 1.65rem; min-width: 42px; }
-  .btn-ir-carrinho { font-size: 0.95rem; min-height: 50px; }
+  .tipo-btn { min-height: 68px; font-size: 0.88rem; padding: 11px 8px; }
+  .tipo-btn small { font-size: 0.75rem; }
+  .tipo-ajuda { font-size: 0.82rem; }
+  .nome-ajuda { font-size: 0.82rem; }
+  /* inputs ficam em 1rem (16px): abaixo disso o iOS dá zoom ao focar */
+  .nome-marmita-input { font-size: 1rem; padding: 12px 14px; min-height: 50px; }
+  .obs-input { font-size: 1rem; padding: 12px 14px; min-height: 72px; }
+  .section-label { font-size: 0.86rem; letter-spacing: 0.08em; }
+  .counter-info { font-size: 0.78rem; }
+  .item-chip { font-size: 0.82rem; min-height: 40px; padding: 8px 13px; }
+  .qty-btn { width: 46px; height: 46px; font-size: 1.35rem; }
+  .qty-value { font-size: 1.35rem; min-width: 38px; }
+  .preco-personalizada { font-size: 0.85rem; }
+  .preco-personalizada span:last-child { font-size: 1.35rem; }
+  .info-pesar { font-size: 0.78rem; }
+  .char-count { font-size: 0.72rem; }
+  .btn-add { font-size: 0.92rem; min-height: 50px; }
+  .btn-ir-carrinho { font-size: 0.88rem; min-height: 48px; }
   .cart-item-nome { font-size: 0.7rem; padding: 2px 8px; }
+
+  /* cabeçalho e cards de valores da seção */
+  .kilo-banner h3 { font-size: 1rem; }
+  .kilo-tag { font-size: 0.78rem; padding: 8px 13px; }
+  .cardapio-pedidos-title { font-size: 1rem; }
 }
 
 /* ============================================================
@@ -2172,20 +2185,22 @@ footer {
   section { padding: 30px 12px; }
   .pedido-box { padding: 16px 12px; }
 
-  .tipo-btn { font-size: 0.86rem; min-height: 68px; padding: 10px 6px; }
-  .tipo-btn small { font-size: 0.75rem; }
+  .tipo-btn { font-size: 0.8rem; min-height: 64px; padding: 10px 6px; }
+  .tipo-btn small { font-size: 0.7rem; }
 
-  .preco-card-nome { font-size: 0.8rem; }
-  .preco-card-valor { font-size: 1.3rem; }
-  .preco-card-obs { font-size: 0.6rem; }
+  .preco-card-nome { font-size: 0.74rem; }
+  .preco-card-valor { font-size: 1.15rem; }
+  .preco-card-obs { font-size: 0.57rem; }
 
-  .section-label { font-size: 0.92rem; letter-spacing: 0.07em; }
-  .qty-btn { width: 48px; height: 48px; font-size: 1.45rem; }
-  .qty-value { font-size: 1.5rem; }
-  .item-chip { font-size: 0.82rem; padding: 8px 12px; }
+  .section-label { font-size: 0.8rem; letter-spacing: 0.06em; }
+  .qty-btn { width: 44px; height: 44px; font-size: 1.25rem; }
+  .qty-value { font-size: 1.25rem; }
+  .item-chip { font-size: 0.78rem; padding: 7px 11px; min-height: 38px; }
+  .counter-info { font-size: 0.74rem; }
+  .preco-personalizada span:last-child { font-size: 1.2rem; }
 
-  .btn-add { font-size: 0.92rem; }
-  .btn-ir-carrinho { font-size: 0.88rem; min-height: 46px; }
+  .btn-add { font-size: 0.88rem; }
+  .btn-ir-carrinho { font-size: 0.84rem; min-height: 46px; }
 
   /* o título do hero acompanha a tela em vez de estourar a linha */
   .hero { padding: 20px 14px 58px; }
