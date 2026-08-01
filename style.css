@@ -2227,3 +2227,89 @@ footer {
   .hero-lead { margin-bottom: 18px; }
   .horario-card { margin-top: -40px; }
 }
+/* ============================================================
+   DESKTOP LARGO (≥ 1025px) — o site ocupa a tela inteira
+   Antes o conteúdo ficava preso numa coluna de 960px, o que
+   deixava margens enormes em qualquer monitor. Aqui as seções
+   passam a usar a largura toda e só o respiro lateral segura
+   o conteúdo longe da borda.
+   Nada abaixo de 1024px é afetado: celular e tablet seguem iguais.
+   ============================================================ */
+@media (min-width: 1025px) {
+
+  /* respiro lateral único para tudo, cresce junto com a tela */
+  :root { --margem-pc: clamp(28px, 4vw, 64px); }
+
+  /* ----- seções e cabeçalho de ponta a ponta ----- */
+  section {
+    max-width: none;
+    padding: 76px var(--margem-pc);
+  }
+  .header-top {
+    max-width: none;
+    padding: 12px var(--margem-pc) 10px;
+  }
+  footer { padding: 48px var(--margem-pc) 32px; }
+
+  /* ----- HERO -----
+     texto continua centralizado e legível; só o fundo é que
+     agora encosta nas bordas de verdade */
+  .hero { padding: clamp(44px, 6vw, 72px) var(--margem-pc) clamp(76px, 10vw, 124px); }
+  .hero-inner { max-width: 820px; }
+  .hero-lead { max-width: 540px; }
+
+  /* ----- BUFFET / HORÁRIO ----- */
+  .buffet-home { padding: 60px var(--margem-pc) 68px; }
+  .buffet-home-inner { max-width: 1080px; }
+  .buffet-grid { grid-template-columns: repeat(2, 1fr); gap: 26px; }
+
+  /* ----- CARDÁPIO DO DIA -----
+     solta a grade dos 760px; em tela cheia as 4 categorias
+     ficam lado a lado em vez de 2 em cima e 2 embaixo */
+  .cardapio-grid {
+    max-width: none;
+    margin: 0;
+    gap: 24px;
+  }
+
+  /* ----- PEDIDOS ----- */
+  .precos-topo { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .tipo-selector { grid-template-columns: repeat(4, 1fr); }
+
+  /* a caixa acompanha a largura, mas campo de texto e botão
+     não esticam sem controle — largura demais só atrapalha */
+  .obs-input,
+  .nome-marmita-input { max-width: 640px; }
+  .pedido-box .char-count { text-align: left; max-width: 640px; }
+
+  .btn-add,
+  .btn-ir-carrinho {
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ----- LOCALIZAÇÃO -----
+     em tela cheia as informações ficam à esquerda e o cartão
+     do mapa à direita, em vez de um embaixo do outro */
+  #localizacao > div {
+    max-width: 1180px !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 56px;
+    align-items: start;
+  }
+  #localizacao .loc-eyebrow-wrap,
+  #localizacao .loc-title,
+  #localizacao .loc-sub { grid-column: 1 / -1; }
+  #localizacao .loc-mapa { margin-top: 0; }
+  #localizacao .loc-mapa-foto { height: 260px; }
+}
+
+/* ----- Monitor grande (≥ 1400px) -----
+   Espaço de sobra: as quatro caixas do cardápio entram
+   numa linha só. */
+@media (min-width: 1400px) {
+  .cardapio-grid { grid-template-columns: repeat(4, 1fr); }
+  .cardapio-box-list { grid-template-columns: 1fr 1fr; }
+}
