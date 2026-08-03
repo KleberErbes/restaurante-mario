@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crediário — Restaurante do Mário</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="crediario-api.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -54,6 +56,8 @@ header{
 }
 header h1{font-size:18px;font-weight:800;letter-spacing:-.02em}
 header .tag{font-size:11px;background:var(--destaque);padding:3px 8px;border-radius:4px;font-weight:700}
+header .logo{height:34px;width:34px;object-fit:cover;border-radius:7px;display:block;flex:none}
+#login .logo{height:64px;width:64px;object-fit:cover;border-radius:12px;margin:0 auto 14px;display:block}
 nav{display:flex;gap:4px;margin-left:auto}
 nav button{background:transparent;color:#a49a8c;padding:7px 14px}
 nav button:hover{color:#fff}
@@ -118,12 +122,18 @@ h4.sub{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--
 
 <div id="login">
   <div class="box">
+    <img src="logo.jpeg" alt="Restaurante do Mário" class="logo">
     <h1>Crediário</h1>
     <p>Restaurante do Mário</p>
     <form autocomplete="off" onsubmit="return false">
       <div class="campo">
+        <label>Email</label>
+        <input type="email" id="email" autocomplete="username" name="crediario-email"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();$('senha').focus()}">
+      </div>
+      <div class="campo">
         <label>Senha</label>
-        <input type="password" id="senha" autocomplete="new-password" name="crediario-acesso"
+        <input type="password" id="senha" autocomplete="current-password" name="crediario-acesso"
                onkeydown="if(event.key==='Enter'){event.preventDefault();entrar()}">
       </div>
       <div id="loginErro"></div>
@@ -133,12 +143,13 @@ h4.sub{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--
 </div>
 
 <header>
+  <img src="logo.jpeg" alt="Restaurante do Mário" class="logo">
   <h1>Crediário</h1>
-  <span class="tag">RDM</span>
   <nav>
     <button id="nav-painel"  class="on" onclick="ir('painel')">Painel</button>
     <button id="nav-clientes"        onclick="ir('clientes')">Clientes</button>
     <button id="nav-fechamentos"     onclick="ir('fechamentos')">Fechamentos</button>
+    <button id="nav-sair" class="btn-2" onclick="sairDoSistema()">Sair</button>
   </nav>
 </header>
 
@@ -147,9 +158,9 @@ h4.sub{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--
 <div id="overlay"><div class="cx"><div class="roda"></div><span id="overlayMsg">Salvando…</span></div></div>
 <script>
 /* ================= ESTADO ================= */
-const URL_API = 'https://script.google.com/macros/s/AKfycbydXEs_sOT8NQxwiz7yJASs5f8Bk6GZjc3asUzwVaUxj9mCF3AJZgfolm0Y6uYy22Xu1Q/exec';
+/* A comunicação com o backend vive em crediario-api.js (Supabase).
+   window.api(acao, dados) tem a mesma assinatura da versão Apps Script. */
 
-let SENHA = '';
 let DB = { clientes:[], lancamentos:[], pagamentos:[], fechamentos:[], config:{} };
 let TELA = 'painel';
 let CLIENTE_ABERTO = null;
@@ -266,15 +277,7 @@ function destravar(){
   document.querySelectorAll('.modal button').forEach(b => b.disabled = false);
 }
 
-async function api(acao, dados){
-  const r = await fetch(URL_API, {
-    method:'POST',
-    body: JSON.stringify({ acao, senha:SENHA, dados: dados||{} })
-  });
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.erro);
-  return j.dados;
-}
+/* api(acao, dados) vem de crediario-api.js */
 
 async function recarregar(){
   DB = await api('carregar');
@@ -283,24 +286,30 @@ async function recarregar(){
 
 /* ================= LOGIN ================= */
 async function entrar(){
-  const s = $('senha').value;
-  if(!s) return;
-  SENHA = s;
+  const email = $('email').value.trim();
+  const senha = $('senha').value;
+  if(!email || !senha) return;
   $('loginErro').innerHTML = '<div class="aviso info">Conectando…</div>';
   document.querySelector('#login button').disabled = true;
   try{
+    await loginCred(email, senha);
     DB = await api('carregar');
     document.querySelector('#login button').disabled = false;
     $('login').style.display = 'none';
-    // Remove o campo de senha do DOM para o navegador parar de oferecer "salvar/atualizar senha"
+    // Remove os campos do DOM para o navegador parar de oferecer "salvar/atualizar senha"
     const campoSenha = $('senha');
     if(campoSenha) campoSenha.remove();
     render();
   }catch(e){
     document.querySelector('#login button').disabled = false;
-    SENHA = '';
     $('loginErro').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
   }
+}
+
+async function sairDoSistema(){
+  if(!confirm('Sair do crediário?')) return;
+  await logoutCred();
+  location.reload();
 }
 
 /* ================= NAVEGAÇÃO ================= */
@@ -351,7 +360,28 @@ function descLanc(l){
   if(Number(l.qtd_refeicao))      p.push(`${l.qtd_refeicao}× Refeição`);
   if(Number(l.qtd_personalizada)) p.push(`${l.qtd_personalizada}× Personalizada`);
   if(l.descricao)                 p.push(l.descricao);
+  // Se o total foi ajustado à mão, o desconto aparece — não some no valor final
+  const calc = Number(l.valor_calculado);
+  if(calc && Math.abs(calc - Number(l.valor)) > 0.005){
+    const d = calc - Number(l.valor);
+    p.push(d > 0 ? `desconto ${brl(d)}` : `acréscimo ${brl(-d)}`);
+  }
   return p.join(' · ') || '—';
+}
+
+/* Situação do lançamento.
+   O que importa pro dono é se o dinheiro entrou — por isso a quitação
+   vem primeiro. "Faturado" é informação secundária, e só faz sentido
+   para o cliente mensalista. */
+function seloLanc(l){
+  const falta = Number(l.valor) - Number(l.valor_quitado || 0);
+  if(falta <= 0.005)
+    return '<span class="selo pago">Pago</span>';
+  if(Number(l.valor_quitado) > 0.005)
+    return `<span class="selo venc">Parcial</span> <small>falta ${brl(falta)}</small>`;
+  return l.fechamento_id
+    ? '<span class="selo aberto">Faturado</span>'
+    : '<span class="selo off">Em aberto</span>';
 }
 
 /* ================= RENDER ================= */
@@ -540,7 +570,9 @@ function telaCliente(){
           return `<tr>
             <td>${dbr(f.periodo_inicio)} — ${dbr(f.periodo_fim)}</td>
             <td>${dbr(f.vencimento)}</td>
-            <td class="num"><strong>${brl(f.total)}</strong></td>
+            <td class="num">${brl(f.total)}</td>
+            <td class="num" style="color:var(--verde)">${brl(f.valor_pago||0)}</td>
+            <td class="num"><strong>${brl(Math.max(0, Number(f.total) - Number(f.valor_pago||0)))}</strong></td>
             <td><span class="selo ${f.status==='PAGO'?'pago':(venc?'venc':'aberto')}">${f.status==='PAGO'?'Pago':(venc?'Vencido':'Aberto')}</span></td>
             <td class="num acoes" style="justify-content:flex-end">
               <button class="btn-2 btn-mini" onclick="gerarPDF('${f.id}')">PDF</button>
@@ -573,7 +605,7 @@ function telaCliente(){
               ${c.tipo==='PJ' ? `<td>${esc(l.funcionario)||'—'}</td>` : ''}
               <td class="num">${brl(l.valor)}</td>
               <td class="num">—</td>
-              <td>${l.fechamento_id ? '<span class="selo aberto">Faturado</span>' : '<span class="selo off">Em aberto</span>'}</td>
+              <td>${seloLanc(l)}</td>
               <td class="num acoes" style="justify-content:flex-end">
                 ${!l.fechamento_id ? `
                   <button class="btn-2 btn-mini" onclick="modalLancamento('${l.id}')">Editar</button>
@@ -621,7 +653,7 @@ function telaFechamentos(){
     <table>
       <thead><tr>
         <th>Cliente</th><th>Período</th><th>Vencimento</th>
-        <th class="num">Total</th><th>Status</th><th></th>
+        <th class="num">Total</th><th class="num">Pago</th><th class="num">Falta</th><th>Status</th><th></th>
       </tr></thead>
       <tbody>
         ${fechs.map(f => {
@@ -631,7 +663,9 @@ function telaFechamentos(){
             <td class="clicavel" onclick="abrirCliente('${f.cliente_id}')"><strong>${esc(c?c.nome:'?')}</strong></td>
             <td>${dbr(f.periodo_inicio)} — ${dbr(f.periodo_fim)}</td>
             <td>${dbr(f.vencimento)}</td>
-            <td class="num"><strong>${brl(f.total)}</strong></td>
+            <td class="num">${brl(f.total)}</td>
+            <td class="num" style="color:var(--verde)">${brl(f.valor_pago||0)}</td>
+            <td class="num"><strong>${brl(Math.max(0, Number(f.total) - Number(f.valor_pago||0)))}</strong></td>
             <td><span class="selo ${f.status==='PAGO'?'pago':(venc?'venc':'aberto')}">${f.status==='PAGO'?'Pago':(venc?'Vencido':'Aberto')}</span></td>
             <td class="num acoes" style="justify-content:flex-end">
               <button class="btn-2 btn-mini" onclick="gerarPDF('${f.id}')">PDF</button>
@@ -789,15 +823,50 @@ async function reativar(id){
 }
 
 /* ---------- Lançamento ---------- */
+/* Dois modos: por item (calcula pelos preços do cliente) e manual
+   (o dono escreve o que foi e digita o valor). Em ambos o total final
+   é editável — desconto negociado no balcão é registrado, não escondido. */
+let MODO_LANC = 'itemizado';
+let TOTAL_MEXIDO = false;   // trava o auto-preenchimento depois de editar à mão
+
+function trocarModo(m){
+  MODO_LANC = m;
+  TOTAL_MEXIDO = (m === 'livre');   // no modo manual o total é sempre digitado
+  $('tabItem').className  = m==='itemizado' ? 'btn' : 'btn-2';
+  $('tabLivre').className = m==='livre'     ? 'btn' : 'btn-2';
+  $('blocoItens').style.display = m==='itemizado' ? '' : 'none';
+  $('rotDesc').textContent = m==='livre' ? 'O que foi *' : 'Descrição (opcional)';
+  $('lDesc').placeholder = m==='livre'
+    ? 'Ex: 2 almoços + 1 marmita + 1 refri'
+    : 'Ex: refrigerante, sobremesa…';
+  if(m==='livre') $('lTotal').value = '';
+  atualizaPreco();
+  if(m==='livre') setTimeout(()=>$('lDesc').focus(), 50);
+}
+
+function totalMexido(){
+  TOTAL_MEXIDO = true;
+  atualizaPreco();
+}
+
+function recalcular(){
+  TOTAL_MEXIDO = false;
+  atualizaPreco();
+}
+
 function modalLancamento(lancId, clienteId){
   const l = lancId ? DB.lancamentos.find(x => String(x.id)===String(lancId)) : null;
   const cid = l ? l.cliente_id : (clienteId || '');
   const ativos = DB.clientes.filter(c => c.ativo!==false)
     .sort((a,b) => String(a.nome).localeCompare(String(b.nome),'pt-BR'));
 
+  MODO_LANC    = l ? (l.modo || 'itemizado') : 'itemizado';
+  TOTAL_MEXIDO = !!l;   // ao editar, respeita o valor já gravado
+
   abrirModal(`
     <h3>${lancId?'Editar lançamento':'Novo lançamento'}</h3>
     <div id="erroL"></div>
+
     <div class="grade g2">
       <div class="campo">
         <label>Cliente *</label>
@@ -812,18 +881,25 @@ function modalLancamento(lancId, clienteId){
       </div>
     </div>
 
-    <h4 class="sub">Itens</h4>
-    <div class="grade g4">
-      <div class="campo"><label>Média</label><input type="number" min="0" id="qMedia" value="${l?(l.qtd_media||0):0}" oninput="atualizaPreco()"></div>
-      <div class="campo"><label>Grande</label><input type="number" min="0" id="qGrande" value="${l?(l.qtd_grande||0):0}" oninput="atualizaPreco()"></div>
-      <div class="campo"><label>Refeição</label><input type="number" min="0" id="qRef" value="${l?(l.qtd_refeicao||0):0}" oninput="atualizaPreco()"></div>
-      <div class="campo"><label>Personalizada</label><input type="number" min="0" id="qPers" value="${l?(l.qtd_personalizada||0):0}" oninput="atualizaPreco()"></div>
+    <div style="display:flex;gap:8px;margin:14px 0 4px">
+      <button type="button" id="tabItem"  class="btn"   style="flex:1" onclick="trocarModo('itemizado')">Por item</button>
+      <button type="button" id="tabLivre" class="btn-2" style="flex:1" onclick="trocarModo('livre')">Manual</button>
     </div>
-    <div class="campo"><label>Valor extra (R$) — bebida, sobremesa, etc.</label><input type="number" step="0.01" min="0" id="lExtra" value="0" oninput="atualizaPreco()"></div>
+
+    <div id="blocoItens">
+      <h4 class="sub">Itens</h4>
+      <div class="grade g4">
+        <div class="campo"><label>Média</label><input type="number" min="0" inputmode="numeric" id="qMedia" value="${l && Number(l.qtd_media) ? l.qtd_media : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label>Grande</label><input type="number" min="0" inputmode="numeric" id="qGrande" value="${l && Number(l.qtd_grande) ? l.qtd_grande : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label>Refeição</label><input type="number" min="0" inputmode="numeric" id="qRef" value="${l && Number(l.qtd_refeicao) ? l.qtd_refeicao : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label>Personalizada</label><input type="number" min="0" inputmode="numeric" id="qPers" value="${l && Number(l.qtd_personalizada) ? l.qtd_personalizada : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+      </div>
+      <div class="campo"><label>Valor extra (R$) — bebida, sobremesa, etc.</label><input type="number" step="0.01" min="0" inputmode="decimal" id="lExtra" value="${l && Number(l.valor_extra) ? l.valor_extra : ''}" placeholder="0,00" oninput="atualizaPreco()"></div>
+    </div>
 
     <div class="grade g2">
       <div class="campo">
-        <label>Descrição (opcional)</label>
+        <label id="rotDesc">Descrição (opcional)</label>
         <input id="lDesc" value="${esc(l?l.descricao:'')}" placeholder="Ex: refrigerante, sobremesa…">
       </div>
       <div class="campo" id="boxFunc">
@@ -832,14 +908,38 @@ function modalLancamento(lancId, clienteId){
       </div>
     </div>
 
-    <div class="aviso info" id="previaL" style="font-size:16px;font-weight:700">Total: R$ 0,00</div>
+    <div class="campo">
+      <label>Total a cobrar (R$) *</label>
+      <input type="number" step="0.01" min="0" id="lTotal"
+             value="${l?Number(l.valor).toFixed(2):''}"
+             oninput="totalMexido()"
+             style="font-size:18px;font-weight:700">
+      <div id="linhaCalc" style="font-size:13px;margin-top:5px;color:var(--tinta)"></div>
+    </div>
+
+    <div class="aviso info" id="previaL" style="font-size:15px"></div>
 
     <div class="rodape">
       <button class="btn-2" onclick="fecharModal()">Cancelar</button>
       <button class="btn" onclick="salvarLancamento(${lancId?`'${lancId}'`:'null'})">Salvar</button>
     </div>
   `);
+
+  // aplica o estado visual do modo sem zerar o que veio do lançamento
+  const guarda = TOTAL_MEXIDO, valGuardado = $('lTotal').value;
+  trocarModo(MODO_LANC);
+  TOTAL_MEXIDO = guarda;
+  if(l) $('lTotal').value = valGuardado;
   atualizaPreco();
+}
+
+function calculado(c){
+  if(!c) return 0;
+  return (+$('qMedia').value||0) * (+c.preco_media||0)
+       + (+$('qGrande').value||0) * (+c.preco_grande||0)
+       + (+$('qRef').value||0)    * (+c.preco_refeicao||0)
+       + (+$('qPers').value||0)   * (+c.preco_personalizada||0)
+       + (+$('lExtra').value||0);
 }
 
 function atualizaPreco(){
@@ -847,20 +947,35 @@ function atualizaPreco(){
   const box = $('boxFunc');
   if(box) box.style.display = (c && c.tipo==='PJ') ? '' : 'none';
 
-  if(!c){ $('previaL').textContent = 'Selecione um cliente para calcular.'; return; }
+  const calc = MODO_LANC==='itemizado' ? calculado(c) : 0;
 
-  const v = (+$('qMedia').value||0) * (+c.preco_media||0)
-          + (+$('qGrande').value||0) * (+c.preco_grande||0)
-          + (+$('qRef').value||0)    * (+c.preco_refeicao||0)
-          + (+$('qPers').value||0)   * (+c.preco_personalizada||0)
-          + (+$('lExtra').value||0);
+  // Enquanto o dono não editar o total, ele acompanha o cálculo
+  if(MODO_LANC==='itemizado' && !TOTAL_MEXIDO && c){
+    $('lTotal').value = calc > 0 ? calc.toFixed(2) : '';
+  }
 
-  const novoSaldo = Number(c.saldo||0) + v;
+  const total = +$('lTotal').value || 0;
+
+  // Linha do cálculo e do desconto
+  if(MODO_LANC==='livre' || !c || calc <= 0){
+    $('linhaCalc').innerHTML = '';
+  } else {
+    const dif = calc - total;
+    $('linhaCalc').innerHTML = `Calculado pelos itens: <strong>${brl(calc)}</strong>` +
+      (Math.abs(dif) > 0.005
+        ? ` · <span style="color:${dif>0?'var(--verde)':'var(--vermelho)'}">${dif>0?'Desconto':'Acréscimo'} de ${brl(Math.abs(dif))}</span>
+            <button type="button" class="btn-2 btn-mini" style="margin-left:6px" onclick="recalcular()">Recalcular</button>`
+        : '');
+  }
+
+  // Prévia do saldo
+  if(!c){ $('previaL').textContent = 'Selecione um cliente.'; return; }
+  const novoSaldo = Number(c.saldo||0) + total;
   const estourou = Number(c.limite) > 0 && novoSaldo > Number(c.limite);
-
-  $('previaL').innerHTML = `Total: ${brl(v)}` +
-    (estourou ? `<div style="font-size:13px;font-weight:400;margin-top:5px;color:var(--vermelho)">
-       ⚠ Estoura o limite de ${brl(c.limite)} (saldo ficaria em ${brl(novoSaldo)}).</div>` : '');
+  $('previaL').innerHTML =
+    `Saldo atual: <strong>${brl(c.saldo)}</strong> → após o lançamento: <strong>${brl(novoSaldo)}</strong>` +
+    (estourou ? `<div style="font-size:13px;margin-top:5px;color:var(--vermelho)">
+       ⚠ Estoura o limite de ${brl(c.limite)}.</div>` : '');
 }
 
 async function salvarLancamento(id){
@@ -869,29 +984,36 @@ async function salvarLancamento(id){
   if(!cid){ $('erroL').innerHTML = '<div class="aviso erro">Selecione o cliente.</div>'; return; }
   const c = cliente(cid);
 
-  // Calcula o valor no navegador (mesma conta da prévia)
-  const valorLocal = (+$('qMedia').value||0) * (+c.preco_media||0)
-    + (+$('qGrande').value||0) * (+c.preco_grande||0)
-    + (+$('qRef').value||0)    * (+c.preco_refeicao||0)
-    + (+$('qPers').value||0)   * (+c.preco_personalizada||0)
-    + (+$('lExtra').value||0);
+  const desc  = $('lDesc').value.trim();
+  const total = +$('lTotal').value || 0;
+  const livre = MODO_LANC === 'livre';
 
-  if(!(valorLocal > 0)){
-    $('erroL').innerHTML = '<div class="aviso erro">O valor precisa ser maior que zero.</div>';
+  if(livre && !desc){
+    $('erroL').innerHTML = '<div class="aviso erro">No modo manual, descreva o que foi consumido.</div>';
+    return;
+  }
+  if(!(total > 0)){
+    $('erroL').innerHTML = '<div class="aviso erro">O total precisa ser maior que zero.</div>';
     return;
   }
 
   const d = {
     id: id||undefined,
     cliente_id: cid,
+    modo: MODO_LANC,
     data: $('lData').value,
-    descricao: $('lDesc').value.trim(),
+    descricao: desc,
     funcionario: $('lFunc').value.trim(),
-    qtd_media: $('qMedia').value,
-    qtd_grande: $('qGrande').value,
-    qtd_refeicao: $('qRef').value,
-    qtd_personalizada: $('qPers').value,
-    valor_extra: $('lExtra').value
+    qtd_media:         livre ? 0 : $('qMedia').value,
+    qtd_grande:        livre ? 0 : $('qGrande').value,
+    qtd_refeicao:      livre ? 0 : $('qRef').value,
+    qtd_personalizada: livre ? 0 : $('qPers').value,
+    valor_extra:       livre ? 0 : $('lExtra').value,
+    valor_final:       total,
+    // Nasce aqui, junto com o lançamento. Se o envio falhar e o dono
+    // clicar em "Reenviar", vai a MESMA chave — então um envio que
+    // chegou mas cuja resposta se perdeu não vira lançamento dobrado.
+    idempotency_key:   id ? undefined : novaChave()
   };
 
   // Edição de lançamento existente continua síncrona (é raro)
@@ -912,7 +1034,7 @@ async function salvarLancamento(id){
 
   // NOVO lançamento: otimista — fecha na hora, envia por trás
   fecharModal();
-  enviarLancamento(d, valorLocal, c.nome);
+  enviarLancamento(d, total, c.nome);
 }
 
 /* Envia em segundo plano. Em caso de falha, entra na fila de pendentes. */
@@ -1200,7 +1322,13 @@ async function executarLote(){
 async function marcarPago(id){
   if(ENVIANDO) return;
   const f = DB.fechamentos.find(x => String(x.id)===String(id));
-  const forma = prompt(`Quitar fechamento de ${brl(f.total)}.\n\nForma de pagamento:`, 'Dinheiro');
+  // Registra SÓ o que falta. Se o cliente já pagou parte, cobrar o
+  // valor cheio de novo criaria crédito falso na conta dele.
+  const falta = Math.max(0, Number(f.total) - Number(f.valor_pago||0));
+  const jaPago = Number(f.valor_pago||0) > 0.005
+    ? `\nJá recebido: ${brl(f.valor_pago)} de ${brl(f.total)}.`
+    : '';
+  const forma = prompt(`Registrar o recebimento de ${brl(falta)}.${jaPago}\n\nForma de pagamento:`, 'Dinheiro');
   if(forma === null) return;
   try{
     travar('Quitando…');
@@ -1279,14 +1407,80 @@ function gerarPDF(fechId){
 
   y = doc.lastAutoTable.finalY + 8;
 
+  /* ----- Pagamentos e total real -----
+     f.total é só a soma dos lançamentos do período: ele NÃO desconta
+     pagamento nenhum. Cobrar por ele significa cobrar de novo o que o
+     cliente já pagou. O valor a cobrar é o saldo devedor. */
+  const pagsPeriodo = DB.pagamentos
+    .filter(p => String(p.cliente_id)===String(f.cliente_id)
+              && String(p.data) >= String(f.periodo_inicio))
+    .sort((a,b) => String(a.data).localeCompare(String(b.data)));
+
+  // O quanto foi pago DESTA fatura vem do próprio fechamento — o banco
+  // já aloca os pagamentos do mais antigo pro mais novo.
+  const totalPago  = Number(f.valor_pago) || 0;
+  const saldoAtual = Number(c.saldo) || 0;
+  const aCobrar    = Math.max(Number(f.total) - totalPago, 0);
+
+  if(pagsPeriodo.length){
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text('Pagamentos recebidos no período', M, y);
+    y += 3;
+    doc.autoTable({
+      startY: y,
+      head: [['Data','Forma','Observação','Valor']],
+      body: pagsPeriodo.map(p => [dbr(p.data), p.forma||'—', p.obs||'—', brl(p.valor)]),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 2.4 },
+      headStyles: { fillColor: [31,122,76], textColor: 255, fontSize: 8.5 },
+      columnStyles: { 0:{cellWidth:24}, 1:{cellWidth:28}, 3:{halign:'right', cellWidth:30} },
+      margin: { left:M, right:M }
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Demonstrativo da conta
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text('Lançamentos do período', M+4, y);
+  doc.text(brl(f.total), 191, y, { align:'right' });
+  y += 6;
+  doc.setTextColor(31,122,76);
+  doc.text('(-) Ja recebido', M+4, y);
+  doc.text('- ' + brl(totalPago), 191, y, { align:'right' });
+  doc.setTextColor(0);
+  y += 4;
+  doc.setDrawColor(180);
+  doc.line(M+4, y, 191, y);
+  y += 5;
+
   doc.setFillColor(20,18,16);
   doc.rect(M, y, 180, 12, 'F');
   doc.setTextColor(255);
   doc.setFont('helvetica','bold'); doc.setFontSize(11);
   doc.text('TOTAL A PAGAR', M+4, y+8);
-  doc.text(brl(f.total), 191, y+8, { align:'right' });
+  doc.text(brl(aCobrar), 191, y+8, { align:'right' });
   doc.setTextColor(0);
-  y += 18;
+  y += 16;
+
+  /* O saldo é da conta inteira, não só deste período. Se houver
+     movimento fora das datas do fechamento, a conta acima não fecha
+     sozinha — e o cliente merece saber disso antes de contestar. */
+  if(saldoAtual - aCobrar > 0.005){
+    doc.setFontSize(8.5); doc.setTextColor(120);
+    doc.text('Alem desta fatura, ha ' + brl(saldoAtual - aCobrar) + ' em aberto na conta (outros periodos).', M, y+3);
+    doc.setTextColor(0);
+    y += 7;
+  }
+
+  if(saldoAtual < -0.005){
+    doc.setFontSize(9.5); doc.setTextColor(31,122,76);
+    doc.setFont('helvetica','bold');
+    doc.text('Cliente com credito de ' + brl(Math.abs(saldoAtual)) + '.', M, y+3);
+    doc.setTextColor(0); doc.setFont('helvetica','normal');
+    y += 7;
+  }
+
+  y += 2;
 
   // ----- Bloco PIX -----
   const pix = (DB.config && DB.config.chave_pix) ? DB.config.chave_pix : '72.214.901/0001-97';
@@ -1342,7 +1536,19 @@ function gerarPDF(fechId){
 }
 
 /* ================= INÍCIO ================= */
-setTimeout(()=>$('senha').focus(), 100);
+/* Se já existe sessão salva no navegador, entra direto. */
+(async () => {
+  if (await sessaoAtiva()) {
+    try {
+      DB = await api('carregar');
+      $('login').style.display = 'none';
+      const cs = $('senha'); if(cs) cs.remove();
+      render();
+      return;
+    } catch(e) { /* sessão inválida — cai na tela de login */ }
+  }
+  setTimeout(()=>$('email').focus(), 100);
+})();
 </script>
 </body>
 </html>
