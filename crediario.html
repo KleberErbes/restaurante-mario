@@ -92,6 +92,8 @@ tbody tr:hover{background:#f5f0e4}
 
 .modal{position:fixed;inset:0;background:rgba(20,18,16,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:120;overflow-y:auto}
 .modal .janela{background:var(--carta);border-radius:12px;width:100%;max-width:640px;padding:26px}
+.modal .janela.chacoalha{animation:chacoalha .3s}
+@keyframes chacoalha{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .modal .janela.larga{max-width:900px}
 .modal h3{font-size:18px;margin-bottom:18px}
 .rodape{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1.5px solid var(--linha)}
@@ -687,7 +689,18 @@ function abrirModal(html, larga){
   fecharModal();
   const d = document.createElement('div');
   d.className = 'modal';
-  d.onclick = e => { if(e.target===d) fecharModal(); };
+  /* Clique fora NÃO fecha: perder um formulário meio preenchido por um
+     toque errado no balcão custa mais do que o atalho economiza.
+     Em vez de ignorar em silêncio, a janela balança para mostrar que
+     o clique foi registrado e que a saída é pelo botão Cancelar. */
+  d.onclick = e => {
+    if(e.target !== d) return;
+    const j = d.querySelector('.janela');
+    if(!j || j.classList.contains('chacoalha')) return;
+    j.classList.add('chacoalha');
+    setTimeout(()=>j.classList.remove('chacoalha'), 320);
+    toast('Use "Cancelar" para fechar.');
+  };
   d.innerHTML = `<div class="janela ${larga?'larga':''}">${html}</div>`;
   document.body.appendChild(d);
 }

@@ -168,3 +168,67 @@
   window.sessaoAtiva = sessaoAtiva;
   window.sbCred      = sb;
 })();
+
+
+//  =====================================================================
+//    AS 3 MUDANÇAS NO crediario.html
+//
+//    -------------------------------------------------------------------
+//    1) APAGAR (linha ~151 e linhas ~270-278)
+//
+//         const URL_API = 'https://script.google.com/macros/s/...';
+//
+//         async function api(acao, dados){
+//           const r = await fetch(URL_API, { ... });
+//           const j = await r.json();
+//           if(!j.ok) throw new Error(j.erro);
+//           return j.dados;
+//         }
+//
+//       O adaptador já registrou window.api com a mesma assinatura.
+//       Pode apagar também a variável SENHA.
+//
+//    -------------------------------------------------------------------
+//    2) LOGIN vira email + senha
+//
+//       No bloco #login, adicione o campo de email antes do de senha:
+//
+//         <input id="email" type="email" placeholder="Email" autocomplete="username">
+//
+//       E troque a função entrar() por:
+//
+//         async function entrar(){
+//           const email = $('email').value.trim();
+//           const senha = $('senha').value;
+//           if(!email || !senha) return;
+//           $('loginErro').innerHTML = '<div class="aviso info">Conectando…</div>';
+//           document.querySelector('#login button').disabled = true;
+//           try{
+//             await loginCred(email, senha);
+//             DB = await api('carregar');
+//             document.querySelector('#login button').disabled = false;
+//             $('login').style.display = 'none';
+//             const cs = $('senha'); if(cs) cs.remove();
+//             render();
+//           }catch(e){
+//             document.querySelector('#login button').disabled = false;
+//             $('loginErro').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`;
+//           }
+//         }
+//
+//    -------------------------------------------------------------------
+//    3) SESSÃO PERSISTENTE (opcional, mas o dono vai gostar)
+//
+//       No fim do <script>, para não pedir login toda vez:
+//
+//         (async () => {
+//           if (await sessaoAtiva()) {
+//             try {
+//               DB = await api('carregar');
+//               $('login').style.display = 'none';
+//               render();
+//             } catch(e) {  mantém a tela de login  }
+//           }
+//         })();
+//
+//    =====================================================================
