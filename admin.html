@@ -600,7 +600,18 @@
       .chip-data { font-size: 0.78rem; padding: 6px 6px 6px 13px; }
       .chip-data button { width: 25px; height: 25px; font-size: 0.8rem; }
     }
-  </style>
+  
+/* Aviso de funcionalidade que mudou de lugar */
+.mudou-box{max-width:560px;margin:10px auto;padding:26px;border-radius:12px;
+  background:#fffdf8;border:1.5px solid #e0d8c8;text-align:center}
+.mudou-box h3{font-size:17px;margin-bottom:10px;color:#141210}
+.mudou-box p{font-size:14.5px;color:#4a4237;line-height:1.6;margin-bottom:12px}
+.mudou-alerta{background:#fdf2dd;color:#8a6400;border-radius:7px;
+  padding:10px 13px;font-size:13.5px !important}
+.mudou-btn{display:inline-block;margin-top:6px;background:#141210;color:#fff;
+  text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:15px}
+.mudou-btn:hover{background:#2c2823}
+</style>
 </head>
 <body>
 
@@ -634,7 +645,7 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
     <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
-    <button class="admin-tab" data-tab="fechados" onclick="trocarTab('fechados')">Dias Fechados</button>
+    <button class="admin-tab" data-tab="fechados" onclick="trocarTab('fechados')">Cardápio &amp; Dias Fechados</button>
   </nav>
 
   <div class="admin-body">
@@ -666,9 +677,20 @@
 
     <!-- ===== ABA: DIAS FECHADOS ===== -->
     <div class="tab-panel" id="tab-fechados">
-      <div class="admin-info-bar"><h2>Dias Fechados</h2></div>
+      <div class="admin-info-bar"><h2>Cardápio &amp; Dias Fechados</h2></div>
       <div id="fechadosConteudo">
-        <div class="carregando-box"><div class="spinner"></div>Carregando calendário…</div>
+        <div class="mudou-box">
+          <h3>Isso agora fica no painel do cardápio</h3>
+          <p>
+            O cardápio e os dias fechados passaram para o painel novo. É lá que
+            você liga e desliga os itens do dia e marca os feriados.
+          </p>
+          <p class="mudou-alerta">
+            Marcar um dia fechado por aqui não teria mais efeito no site —
+            por isso o calendário saiu desta tela.
+          </p>
+          <a class="mudou-btn" href="cardapio.html">Abrir painel do cardápio</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1014,14 +1036,13 @@ async function gerarWord() {
 // ABAS DE NAVEGAÇÃO
 // ============================================================
 let resumoJaCarregado = false;
-let fechadosJaCarregado = false;
 
 function trocarTab(tab) {
   document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
 
   if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
-  if (tab === 'fechados' && !fechadosJaCarregado) carregarFechados();
+  // A aba 'fechados' agora é só o encaminhamento para o painel do cardápio.
 }
 
 // ============================================================
@@ -1105,138 +1126,14 @@ async function carregarResumo() {
 }
 
 // ============================================================
-// DIAS FECHADOS — CALENDÁRIO
+// DIAS FECHADOS — migrado
+// O calendário vivia aqui e gravava na planilha do cardápio. Como o
+// site passou a ler os dias fechados do Supabase, marcar por aqui
+// não teria efeito nenhum — e daria confirmação de sucesso para uma
+// ação que falhou. Por isso saiu inteiro, em vez de ficar desligado.
+// A marcação agora é no cardapio.html.
 // ============================================================
-let diasFechados = [];
-let calMesAtual = null;
 
-function hojeSP() {
-  const p = new Intl.DateTimeFormat('en-CA', { timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
-  const g = t => p.find(x => x.type===t)?.value ?? '';
-  return `${g('year')}-${g('month')}-${g('day')}`;
-}
-
-async function carregarFechados() {
-  const cont = document.getElementById('fechadosConteudo');
-  cont.innerHTML = '<div class="carregando-box"><div class="spinner"></div>Carregando calendário…</div>';
-  try {
-    const url = APPS_SCRIPT_URL + '?action=diasFechados&token=' + encodeURIComponent(sessionToken);
-    const res = await fetch(url, { method:'GET', redirect:'follow' });
-    const d = await res.json();
-    if (d && d.error === 'unauthorized') { sair(); return; }
-    diasFechados = Array.isArray(d.dias) ? d.dias : [];
-    fechadosJaCarregado = true;
-
-    if (!calMesAtual) {
-      const [a, m] = hojeSP().split('-');
-      calMesAtual = new Date(parseInt(a), parseInt(m) - 1, 1);
-    }
-    renderCalendario();
-  } catch (e) {
-    cont.innerHTML = '<div class="pedido-vazio">Não foi possível carregar os dias fechados.</div>';
-  }
-}
-
-function mudarMes(delta) {
-  calMesAtual = new Date(calMesAtual.getFullYear(), calMesAtual.getMonth() + delta, 1);
-  renderCalendario();
-}
-
-function renderCalendario() {
-  const cont = document.getElementById('fechadosConteudo');
-  const ano = calMesAtual.getFullYear();
-  const mes = calMesAtual.getMonth();
-  const nomesMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const dow = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const hoje = hojeSP();
-
-  const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
-  const diasNoMes = new Date(ano, mes + 1, 0).getDate();
-
-  let celulas = '';
-  dow.forEach(d => { celulas += `<div class="cal-dow">${d}</div>`; });
-  for (let i = 0; i < primeiroDiaSemana; i++) celulas += `<div class="cal-dia vazio"></div>`;
-
-  for (let dia = 1; dia <= diasNoMes; dia++) {
-    const iso = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-    const dataObj = new Date(ano, mes, dia);
-    const ehDomingo = dataObj.getDay() === 0;
-    const ehFechado = diasFechados.includes(iso);
-    const ehHoje = iso === hoje;
-    const ehPassado = iso < hoje;
-
-    let cls = 'cal-dia';
-    if (ehDomingo) cls += ' domingo';
-    if (ehFechado) cls += ' fechado';
-    if (ehHoje) cls += ' hoje';
-    if (ehPassado && !ehFechado) cls += ' passado';
-
-    const onclick = ehDomingo ? '' : ` onclick="toggleDia('${iso}')"`;
-    const titulo = ehDomingo ? 'title="Domingo já é fechado"' : '';
-    celulas += `<div class="${cls}" ${titulo}${onclick}>${dia}</div>`;
-  }
-
-  const futuras = diasFechados.filter(x => x >= hoje).sort();
-  let chips = '';
-  if (futuras.length > 0) {
-    chips = futuras.map(iso => {
-      const [a,m,dd] = iso.split('-');
-      return `<span class="chip-data">${dd}/${m}/${a}<button onclick="toggleDia('${iso}')" title="Reabrir">✕</button></span>`;
-    }).join('');
-  } else {
-    chips = '<div style="color:var(--cinza);font-size:0.88rem;">Nenhum dia fechado à frente.</div>';
-  }
-
-  cont.innerHTML = `
-    <div class="cal-wrap">
-      <div class="cal-head">
-        <button class="cal-nav" onclick="mudarMes(-1)">‹</button>
-        <div class="cal-mes">${nomesMes[mes]} ${ano}</div>
-        <button class="cal-nav" onclick="mudarMes(1)">›</button>
-      </div>
-      <div class="cal-grid">${celulas}</div>
-      <div class="cal-legenda">
-        <span><i style="background:#c0392b"></i>Fechado</span>
-        <span><i style="background:#f0e6e6"></i>Domingo</span>
-        <span><i style="background:#fff;border:1px solid var(--borda)"></i>Aberto</span>
-      </div>
-      <div class="cal-hint">Toque num dia para fechar ou reabrir.</div>
-    </div>
-    <div class="lista-fechados">
-      <h3>Próximos dias fechados</h3>
-      ${chips}
-    </div>
-  `;
-}
-
-async function toggleDia(iso) {
-  const estaFechado = diasFechados.includes(iso);
-  const acao = estaFechado ? 'abrirDia' : 'fecharDia';
-
-  if (estaFechado) diasFechados = diasFechados.filter(x => x !== iso);
-  else diasFechados = [...diasFechados, iso].sort();
-  renderCalendario();
-
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: acao, token: sessionToken, data: iso })
-    });
-    const d = await res.json();
-    if (d && d.error === 'unauthorized') { sair(); return; }
-    if (d && Array.isArray(d.dias)) {
-      // Só aceita a lista do servidor se ela refletir a ação que acabamos
-      // de fazer; senão mantém o estado local (evita a data "sumir").
-      const refletiu = estaFechado ? !d.dias.includes(iso) : d.dias.includes(iso);
-      if (refletiu) { diasFechados = d.dias; renderCalendario(); }
-    }
-  } catch (e) {
-    if (estaFechado) diasFechados = [...diasFechados, iso].sort();
-    else diasFechados = diasFechados.filter(x => x !== iso);
-    renderCalendario();
-    alert('Não foi possível salvar. Verifique a conexão e tente de novo.');
-  }
-}
 </script>
 </body>
 </html>
