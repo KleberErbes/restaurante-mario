@@ -5,13 +5,19 @@
 
 // ============ CONFIG ============
 const CONFIG = {
-  sheetsUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU8-45F4IYTWaim8pMyNru3071eB87U0-oZy98g8796_m9BKLMJ8vetpfeZ9AOXYZ569vOkvzcfzBS/pub?output=tsv',
+  // Cardápio: vem do Supabase. A anon key é pública por design — ela só
+  // permite ler o cardápio e criar pedido, nada mais.
+  supabaseUrl: 'https://kjbwnesvygisuwvoveli.supabase.co',
+  supabaseKey: 'sb_publishable_XmVYyFWVyaG3zilJg6Otpg_YNYTWAGG',
   appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec',
   whatsappNumber: '554733752227',
-  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 14, m: 0 }, fechamento: { h: 14, m: 0 } },
+  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 24, m: 0 }, fechamento: { h: 24, m: 0 } },
   cartExpireHours: 4,
   limits: { acompMax: 6, carneMax: 3, saladaMax: 3 }
 };
+
+// window.supabase é a BIBLIOTECA; sbCardapio é o CLIENTE.
+const sbCardapio = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
 
 // ============ STATE (centralizado) ============
 const state = {
@@ -282,34 +288,27 @@ const CardapioManager = {
   async carrega() {
     this.mostrarSkeleton(true);
     try {
-      const res = await fetch(CONFIG.sheetsUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      // fn_cardapio() devolve exatamente o formato que o state espera:
+      // quatro listas de strings, dias fechados em ISO e a data de
+      // atualização. Nada abaixo daqui precisou mudar.
+      const { data, error } = await sbCardapio.rpc('fn_cardapio');
+      if (error) throw error;
+      if (!data) throw new Error('Cardápio vazio');
 
-      const tsv = await res.text();
-      state.cardapio = { acompanhamentos: [], carnes: [], saladas: [], sobremesas: [] };
-      state.diasFechados = [];
-
-      tsv.split('\n').slice(1).forEach(linha => {
-        if (!linha.trim()) return;
-        const [categoria, item] = linha.split('\t').map(s => (s || '').trim().replace(/"/g, ''));
-        if (!item) return;
-
-        const cat = categoria.toLowerCase();
-        if (cat.includes('acomp')) state.cardapio.acompanhamentos.push(item);
-        else if (cat.includes('carne')) state.cardapio.carnes.push(item);
-        else if (cat.includes('salada')) state.cardapio.saladas.push(item);
-        else if (cat.includes('sobremesa')) state.cardapio.sobremesas.push(item);
-        else if (cat === 'fechado') {
-          const iso = item.includes('/') ? Utils.parseDateBR(item) : item;
-          if (iso) state.diasFechados.push(iso);
-        }
-        else if (cat === 'atualizado') state.cardapioAtualizado = item;
-      });
+      state.cardapio = {
+        acompanhamentos: data.acompanhamentos || [],
+        carnes:          data.carnes          || [],
+        saladas:         data.saladas         || [],
+        sobremesas:      data.sobremesas      || []
+      };
+      state.diasFechados = data.fechado || [];
+      state.cardapioAtualizado = data.atualizado || '';
 
       this.renderizar();
       this.mostrarSkeleton(false);
     } catch (e) {
       console.error('Erro ao carregar cardápio:', e);
+      // Rede de proteção: o site nunca fica sem cardápio na tela.
       state.cardapio = {
         acompanhamentos: ["Arroz branco", "Feijão", "Macarrão espaguete", "Aipim com bacon"],
         carnes: ["Carne do dia"],

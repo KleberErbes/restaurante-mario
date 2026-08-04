@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cardápio — Restaurante do Mário</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --preto:#141210; --papel:#faf6ee; --carta:#fffdf8;
+  --linha:#e0d8c8; --tinta:#4a4237;
+  --verde:#1f7a4c; --amarelo:#c98a00; --vermelho:#b3261e;
+  --azul:#1a5490; --destaque:#d94f04;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--papel);color:var(--preto);font-size:15px;line-height:1.5}
+button{font-family:inherit;font-size:14px;cursor:pointer;border:none;border-radius:6px;padding:9px 16px}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.btn{background:var(--preto);color:#fff}
+.btn:hover{background:#2c2823}
+.btn-2{background:#fff;color:var(--preto);border:1.5px solid var(--linha)}
+.btn-2:hover{border-color:var(--preto)}
+.btn-mini{font-size:12px;padding:4px 9px}
+input,select{font-family:inherit;font-size:15px;width:100%;padding:9px 11px;
+  border:1.5px solid var(--linha);border-radius:6px;background:#fff;color:var(--preto)}
+input:focus,select:focus{outline:none;border-color:var(--preto)}
+.campo{margin-bottom:13px}
+.campo label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--tinta);font-weight:700;margin-bottom:5px}
+
+header{background:var(--preto);color:#fff;padding:14px 22px;display:flex;
+  align-items:center;gap:16px;position:sticky;top:0;z-index:50}
+header h1{font-size:18px;font-weight:800;letter-spacing:-.02em}
+header .logo{height:34px;width:34px;object-fit:cover;border-radius:7px;flex:none}
+header .dir{margin-left:auto;display:flex;gap:8px}
+
+main{max-width:1240px;margin:0 auto;padding:24px 22px 80px}
+.cartao{background:var(--carta);border:1.5px solid var(--linha);border-radius:10px;
+  padding:20px;margin-bottom:18px}
+.cartao h2{font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.cartao .ajuda{font-size:13px;color:var(--tinta);margin-bottom:16px}
+
+.colunas{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.colunas > *{min-width:0}
+@media(max-width:1080px){.colunas{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.colunas{grid-template-columns:1fr}}
+
+.cat h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--tinta);font-weight:700;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cat h3 .conta{background:var(--linha);color:var(--tinta);
+  border-radius:20px;padding:1px 8px;font-size:11px;flex:none}
+
+.lista{min-height:8px}
+
+.item{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:7px;
+  border:1.5px solid var(--linha);background:#fff;margin-bottom:6px;
+  cursor:grab;user-select:none}
+.item.off{opacity:.5;background:#f4f0e6}
+.item .nome{flex:1;min-width:0;font-size:14px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;cursor:text;padding:2px 3px;border-radius:4px}
+.item .nome:hover{background:#f2ecdd}
+.item input.edita{flex:1;min-width:0;font-size:14px;padding:3px 6px}
+.item .x{background:transparent;color:#b9b0a0;padding:2px 5px;font-size:17px;line-height:1;flex:none}
+.item .x:hover{color:var(--vermelho)}
+
+/* Pega para arrastar. touch-action:none impede a página de rolar
+   quando o dedo puxa o item no celular. */
+.pega{flex:none;width:16px;color:#c3baa9;font-size:14px;line-height:1;
+  text-align:center;cursor:grab;touch-action:none}
+.pega:hover{color:var(--tinta)}
+.item.fantasma{opacity:.28;border-style:dashed}
+.item.voando{position:fixed;z-index:500;pointer-events:none;cursor:grabbing;
+  box-shadow:0 10px 26px rgba(20,18,16,.24);margin:0;background:#fff;opacity:1}
+body.arrastando,body.arrastando *{cursor:grabbing !important}
+
+/* Interruptor de disponibilidade — a ação do dia a dia */
+.chave{position:relative;width:40px;height:23px;flex:none;border-radius:20px;
+  background:#cfc6b4;transition:.15s;padding:0}
+.chave::after{content:'';position:absolute;top:3px;left:3px;width:17px;height:17px;
+  border-radius:50%;background:#fff;transition:.15s}
+.chave.on{background:var(--verde)}
+.chave.on::after{transform:translateX(17px)}
+
+.novo{display:flex;gap:6px;margin-top:10px}
+.novo input{font-size:14px;padding:8px 10px}
+
+/* As três primeiras carnes viram a descrição da marmita padrão */
+.marca3{border-left:3px solid var(--destaque)}
+.aviso3{font-size:11.5px;color:var(--destaque);margin-top:8px;line-height:1.4}
+
+/* Preview: espelha o que o site renderiza */
+.preview{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:1000px){.preview{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.preview{grid-template-columns:1fr}}
+.pbox{background:#fff;border:1.5px solid var(--linha);border-radius:9px;padding:13px}
+.pbox h4{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--tinta);margin-bottom:9px}
+.tag{display:inline-block;font-size:12.5px;padding:3px 9px;border-radius:20px;
+  margin:0 4px 5px 0;border:1.5px solid}
+.tag.a{background:#f0f6f2;border-color:#bfdccb;color:var(--verde)}
+.tag.c{background:#fbeeea;border-color:#f0cbbd;color:var(--destaque)}
+.tag.s{background:#f2f6fa;border-color:#c6d8e8;color:var(--azul)}
+.tag.d{background:#fdf6e5;border-color:#ecd9a8;color:var(--amarelo)}
+.pvazio{color:#aaa;font-size:13px}
+
+.aviso{padding:11px 14px;border-radius:6px;font-size:13.5px;margin-bottom:14px}
+.aviso.erro{background:#fbe6e5;color:var(--vermelho)}
+.aviso.ok{background:#e3f2e9;color:var(--verde)}
+.aviso.info{background:#e8eef5;color:var(--azul)}
+
+.fechados{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.dia{display:flex;align-items:center;gap:7px;background:#fbe6e5;color:var(--vermelho);
+  border-radius:6px;padding:5px 10px;font-size:13.5px;font-weight:600}
+.dia button{background:transparent;color:var(--vermelho);padding:0 3px;font-size:15px;line-height:1}
+
+#login{position:fixed;inset:0;background:var(--papel);display:flex;
+  align-items:center;justify-content:center;z-index:200;padding:20px}
+#login .box{background:var(--carta);border:1.5px solid var(--linha);border-radius:12px;
+  padding:32px;width:100%;max-width:380px}
+#login h1{font-size:24px;margin-bottom:4px}
+#login p{color:var(--tinta);font-size:14px;margin-bottom:22px}
+#login .logo{height:64px;width:64px;object-fit:cover;border-radius:12px;
+  margin:0 auto 14px;display:block}
+
+/* ============ CELULAR ============
+   O dono usa isso em pé no balcão: alvo de toque maior, menos moldura,
+   e a pega do arrasto mais larga para o dedo pegar de primeira. */
+@media(max-width:600px){
+  body{font-size:16px}
+  header{padding:11px 14px;gap:11px}
+  header h1{font-size:16px}
+  header .logo{height:30px;width:30px}
+  header .dir{gap:6px}
+  header .dir button{padding:8px 11px;font-size:13px}
+
+  main{padding:16px 13px 70px}
+  .cartao{padding:15px 13px;border-radius:9px;margin-bottom:14px}
+  .cartao h2{font-size:15px}
+  .cartao .ajuda{font-size:13px;margin-bottom:14px}
+
+  .colunas{gap:22px}
+  .cat h3{font-size:12.5px;margin-bottom:8px}
+
+  .item{padding:10px 9px;gap:9px;margin-bottom:7px}
+  .item .nome{font-size:15px;padding:3px}
+  .item .x{font-size:22px;padding:3px 8px}
+  .pega{width:24px;font-size:17px}
+
+  /* Interruptor maior: é a ação mais usada e a mais fácil de errar */
+  .chave{width:50px;height:29px}
+  .chave::after{width:23px;height:23px}
+  .chave.on::after{transform:translateX(21px)}
+
+  .novo input{font-size:16px;padding:11px 12px}
+  .novo button{padding:11px 18px}
+
+  .preview{gap:11px}
+  .pbox{padding:12px}
+  .tag{font-size:13px;padding:4px 10px}
+
+  .fechados{gap:8px}
+  .dia{padding:8px 12px;font-size:14px}
+  .dia button{font-size:19px;padding:0 4px}
+
+  #login .box{padding:24px 20px}
+  #toast{left:13px;right:13px;transform:none;text-align:center;bottom:16px}
+}
+
+/* Telas estreitas de verdade: a data e o botão param de brigar */
+@media(max-width:380px){
+  header h1{font-size:15px}
+  header .dir button{padding:7px 9px;font-size:12px}
+}
+
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:var(--preto);color:#fff;padding:12px 22px;border-radius:8px;
+  font-size:14px;z-index:300;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1}
+.carregando{text-align:center;padding:50px;color:var(--tinta)}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="box">
+    <img src="logo.jpeg" alt="Restaurante do Mário" class="logo">
+    <h1>Cardápio</h1>
+    <p>Restaurante do Mário</p>
+    <div class="campo">
+      <label>Email</label>
+      <input type="email" id="email" autocomplete="username"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();$('senha').focus()}">
+    </div>
+    <div class="campo">
+      <label>Senha</label>
+      <input type="password" id="senha" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();entrar()}">
+    </div>
+    <div id="loginErro"></div>
+    <button class="btn" style="width:100%" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<header>
+  <img src="logo.jpeg" alt="" class="logo">
+  <h1>Cardápio</h1>
+  <div class="dir">
+    <button class="btn-2" onclick="carregar()">Recarregar</button>
+    <button class="btn-2" onclick="sair()">Sair</button>
+  </div>
+</header>
+
+<main id="app"><div class="carregando">Carregando…</div></main>
+<div id="toast"></div>
+
+<script>
+/* ===================================================================
+   CONFIGURAÇÃO — cole a mesma anon key do crediário
+   =================================================================== */
+const SUPABASE_URL      = 'https://kjbwnesvygisuwvoveli.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_XmVYyFWVyaG3zilJg6Otpg_YNYTWAGG';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g, m =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const hoje = () => new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});
+const dbr = d => { const p=String(d).split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d; };
+
+const CATS = [
+  { key:'acompanhamentos', rot:'Acompanhamentos', tag:'a' },
+  { key:'carnes',          rot:'Carnes',          tag:'c' },
+  { key:'saladas',         rot:'Saladas',         tag:'s' },
+  { key:'sobremesas',      rot:'Sobremesas',      tag:'d' },
+];
+
+let ITENS = [];
+let FECHADOS = [];
+let OCUPADO = false;
+
+function toast(msg, erro){
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.background = erro ? 'var(--vermelho)' : 'var(--preto)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function erroDe(e){
+  const m = String(e?.message || e || '');
+  if(m.includes('uq_cardapio_item')) return 'Esse item já existe nessa categoria.';
+  if(m.includes('JWT') || m.includes('PGRST301')) return 'Sessão expirada. Entre novamente.';
+  if(m.includes('Failed to fetch')) return 'Sem conexão com o servidor.';
+  return m || 'Erro inesperado.';
+}
+
+/* ================= LOGIN ================= */
+async function entrar(){
+  const email = $('email').value.trim(), senha = $('senha').value;
+  if(!email || !senha) return;
+  $('loginErro').innerHTML = '<div class="aviso info">Conectando…</div>';
+  const r = await sb.auth.signInWithPassword({ email, password: senha });
+  if(r.error){
+    const m = r.error.message || '';
+    let txt = 'Email ou senha incorretos.';
+    if(m.includes('Email not confirmed')) txt = 'Usuário não confirmado no Supabase.';
+    else if(m.includes('API key')) txt = 'Anon key não preenchida neste arquivo.';
+    else if(!m.includes('Invalid login')) txt = 'Falha no login: ' + m;
+    $('loginErro').innerHTML = `<div class="aviso erro">${esc(txt)}</div>`;
+    return;
+  }
+  $('login').style.display = 'none';
+  carregar();
+}
+
+async function sair(){ await sb.auth.signOut(); location.reload(); }
+
+/* ================= DADOS ================= */
+async function carregar(){
+  try{
+    const [a, b] = await Promise.all([
+      sb.from('cardapio_itens').select('*').order('categoria').order('ordem').order('nome'),
+      sb.from('dias_fechados').select('*').gte('data', hoje()).order('data')
+    ]);
+    if(a.error) throw a.error;
+    if(b.error) throw b.error;
+    ITENS = a.data; FECHADOS = b.data;
+    render();
+  }catch(e){
+    $('app').innerHTML = `<div class="aviso erro">${esc(erroDe(e))}</div>`;
+  }
+}
+
+const daCat = k => ITENS.filter(i => i.categoria === k);
+const ativos = k => daCat(k).filter(i => i.ativo);
+
+/* ================= RENDER ================= */
+function render(){
+  $('app').innerHTML = `
+    <div class="cartao">
+      <h2>Itens do cardápio</h2>
+      <div class="ajuda">O interruptor define o que aparece no site hoje. Desligar não apaga o item — ele fica guardado para os próximos dias.</div>
+      <div class="colunas">
+        ${CATS.map(c => colunaHTML(c)).join('')}
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>O que o site vai mostrar</h2>
+      <div class="ajuda">Exatamente o que o cliente vê na página e nas opções da marmita personalizada.</div>
+      <div class="preview">
+        ${CATS.map(c => {
+          const its = ativos(c.key);
+          return `<div class="pbox">
+            <h4>${c.rot}</h4>
+            ${its.length
+              ? its.map(i => `<span class="tag ${c.tag}">${esc(i.nome)}</span>`).join('')
+              : '<span class="pvazio">Nenhum item hoje</span>'}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>Dias fechados</h2>
+      <div class="ajuda">Nessas datas o site recusa pedidos e mostra "Fechado agora".</div>
+      <div style="display:flex;gap:8px;max-width:380px;flex-wrap:wrap">
+        <input type="date" id="novoDia" min="${hoje()}" style="flex:1;min-width:150px">
+        <button class="btn" onclick="addDia()" style="flex:none">Marcar</button>
+      </div>
+      <div class="fechados">
+        ${FECHADOS.length
+          ? FECHADOS.map(d => `<span class="dia">${dbr(d.data)}
+              <button onclick="delDia('${d.data}')" title="Remover">×</button></span>`).join('')
+          : '<span class="pvazio" style="font-size:13.5px">Nenhum dia marcado.</span>'}
+      </div>
+    </div>
+  `;
+}
+
+function colunaHTML(c){
+  const its = daCat(c.key);
+  const ligados = its.filter(i => i.ativo).length;
+  const ehCarne = c.key === 'carnes';
+  const tresPrimeiras = ativos('carnes').slice(0,3).map(i => i.id);
+
+  return `<div class="cat">
+    <h3>${c.rot} <span class="conta">${ligados}/${its.length}</span></h3>
+    <div class="lista" data-cat="${c.key}">
+      ${its.map(i => {
+        const destaque = ehCarne && tresPrimeiras.includes(i.id);
+        return `<div class="item ${i.ativo?'':'off'} ${destaque?'marca3':''}" data-id="${i.id}">
+          <span class="pega" title="Arraste para reordenar">⠿</span>
+          <button class="chave ${i.ativo?'on':''}" onclick="alternar('${i.id}')"
+                  title="${i.ativo?'No cardápio de hoje':'Fora do cardápio'}"></button>
+          <span class="nome" title="Clique para renomear">${esc(i.nome)}</span>
+          <button class="x" onclick="remover('${i.id}')" title="Excluir">×</button>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="novo">
+      <input id="novo_${c.key}" placeholder="Adicionar item"
+             onkeydown="if(event.key==='Enter')adicionar('${c.key}')">
+      <button class="btn" onclick="adicionar('${c.key}')">+</button>
+    </div>
+    ${ehCarne ? `<div class="aviso3">As <strong>3 primeiras carnes ligadas</strong> (barra laranja) entram na descrição da marmita padrão. A ordem muda o que vai na comanda.</div>` : ''}
+  </div>`;
+}
+
+/* ===================================================================
+   ARRASTAR PARA REORDENAR
+   Pointer events cobrem mouse e toque com o mesmo código. No mouse dá
+   para pegar a linha inteira; no toque só pela pega, senão o dedo não
+   consegue mais rolar a página.
+   =================================================================== */
+let ARR = null;
+
+document.addEventListener('pointerdown', e => {
+  if(e.button !== undefined && e.button !== 0) return;
+  const item = e.target.closest('.item');
+  if(!item) return;
+  if(e.target.closest('button, input')) return;              // toggle, ×, edição
+  const naPega = !!e.target.closest('.pega');
+  if(e.pointerType !== 'mouse' && !naPega) return;           // toque: só pela pega
+
+  const lista = item.closest('.lista');
+  if(!lista) return;
+
+  const r = item.getBoundingClientRect();
+  ARR = {
+    item, lista,
+    dx: e.clientX - r.left,
+    dy: e.clientY - r.top,
+    larg: r.width,
+    x0: e.clientX, y0: e.clientY,
+    ativo: false,
+    ptr: e.pointerId
+  };
+});
+
+document.addEventListener('pointermove', e => {
+  if(!ARR || e.pointerId !== ARR.ptr) return;
+
+  // Só vira arrasto depois de 5px: um clique trêmulo não conta
+  if(!ARR.ativo){
+    if(Math.hypot(e.clientX - ARR.x0, e.clientY - ARR.y0) < 5) return;
+    ARR.ativo = true;
+    document.body.classList.add('arrastando');
+
+    ARR.clone = ARR.item.cloneNode(true);
+    ARR.clone.classList.add('voando');
+    ARR.clone.classList.remove('fantasma');
+    ARR.clone.style.width = ARR.larg + 'px';
+    document.body.appendChild(ARR.clone);
+    ARR.item.classList.add('fantasma');
+  }
+
+  e.preventDefault();
+  ARR.clone.style.left = (e.clientX - ARR.dx) + 'px';
+  ARR.clone.style.top  = (e.clientY - ARR.dy) + 'px';
+
+  // Reordena ao vivo: o espaço abre antes de soltar
+  const alvo = [...ARR.lista.querySelectorAll('.item:not(.fantasma)')]
+    .find(el => {
+      const r = el.getBoundingClientRect();
+      return e.clientY < r.top + r.height / 2;
+    });
+  if(alvo) ARR.lista.insertBefore(ARR.item, alvo);
+  else     ARR.lista.appendChild(ARR.item);
+}, { passive:false });
+
+document.addEventListener('pointerup', async e => {
+  if(!ARR || e.pointerId !== ARR.ptr) return;
+  const a = ARR; ARR = null;
+  if(!a.ativo) return;
+
+  a.clone.remove();
+  a.item.classList.remove('fantasma');
+  document.body.classList.remove('arrastando');
+
+  const ids = [...a.lista.querySelectorAll('.item')].map(el => el.dataset.id);
+  const cat = a.lista.dataset.cat;
+
+  // Estado local primeiro, para a marca laranja das carnes acompanhar na hora
+  ids.forEach((id, i) => {
+    const it = ITENS.find(x => x.id === id);
+    if(it) it.ordem = i + 1;
+  });
+  ITENS.sort((x,y) => x.categoria.localeCompare(y.categoria)
+                   || (x.ordem||0) - (y.ordem||0));
+  render();
+
+  const { error } = await sb.rpc('fn_reordenar_cardapio', { p_ids: ids });
+  if(error){ toast(erroDe(error), true); carregar(); return; }
+  if(cat === 'carnes') toast('Ordem salva. Confira as 3 primeiras carnes.');
+});
+
+document.addEventListener('pointercancel', () => {
+  if(ARR?.ativo){
+    ARR.clone?.remove();
+    ARR.item.classList.remove('fantasma');
+    document.body.classList.remove('arrastando');
+    carregar();
+  }
+  ARR = null;
+});
+
+/* Renomear clicando no nome */
+document.addEventListener('click', e => {
+  const nome = e.target.closest('.nome');
+  if(!nome) return;
+  const item = nome.closest('.item');
+  const id = item.dataset.id;
+  const it = ITENS.find(x => x.id === id);
+  if(!it) return;
+
+  const inp = document.createElement('input');
+  inp.className = 'edita';
+  inp.value = it.nome;
+  nome.replaceWith(inp);
+  inp.focus(); inp.select();
+
+  let fechado = false;
+  const encerrar = async salvar => {
+    if(fechado) return; fechado = true;
+    const novo = inp.value.trim();
+    if(!salvar || !novo || novo === it.nome){ render(); return; }
+    const { error } = await sb.from('cardapio_itens')
+      .update({ nome: novo }).eq('id', id);
+    if(error){ toast(erroDe(error), true); render(); return; }
+    it.nome = novo; render();
+    toast('Item renomeado.');
+  };
+
+  inp.onblur = () => encerrar(true);
+  inp.onkeydown = ev => {
+    if(ev.key === 'Enter'){ ev.preventDefault(); encerrar(true); }
+    if(ev.key === 'Escape'){ ev.preventDefault(); encerrar(false); }
+  };
+});
+
+/* ================= AÇÕES ================= */
+async function alternar(id){
+  if(OCUPADO) return; OCUPADO = true;
+  const it = ITENS.find(i => i.id === id);
+  const novo = !it.ativo;
+  it.ativo = novo; render();                     // resposta imediata
+  const { error } = await sb.from('cardapio_itens').update({ ativo: novo }).eq('id', id);
+  OCUPADO = false;
+  if(error){ it.ativo = !novo; render(); toast(erroDe(error), true); }
+}
+
+async function adicionar(cat){
+  const inp = $('novo_' + cat);
+  const nome = inp.value.trim();
+  if(!nome) return;
+  const maxOrdem = Math.max(0, ...daCat(cat).map(i => i.ordem || 0));
+  const { error } = await sb.from('cardapio_itens')
+    .insert({ categoria: cat, nome, ordem: maxOrdem + 1, ativo: true });
+  if(error){ toast(erroDe(error), true); return; }
+  inp.value = '';
+  await carregar();
+  $('novo_' + cat).focus();
+  toast('Item adicionado.');
+}
+
+async function remover(id){
+  const it = ITENS.find(i => i.id === id);
+  if(!confirm(`Excluir "${it.nome}" de vez?\n\nSe for só para tirar do cardápio de hoje, use o interruptor — assim ele continua guardado.`)) return;
+  const { error } = await sb.from('cardapio_itens').delete().eq('id', id);
+  if(error){ toast(erroDe(error), true); return; }
+  await carregar();
+  toast('Item excluído.');
+}
+
+async function addDia(){
+  const d = $('novoDia').value;
+  if(!d) return;
+  const { error } = await sb.from('dias_fechados').insert({ data: d });
+  if(error && error.code !== '23505'){ toast(erroDe(error), true); return; }
+  await carregar();
+  toast('Dia marcado como fechado.');
+}
+
+async function delDia(d){
+  const { error } = await sb.from('dias_fechados').delete().eq('data', d);
+  if(error){ toast(erroDe(error), true); return; }
+  await carregar();
+  toast('Dia reaberto.');
+}
+
+/* ================= INÍCIO ================= */
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if(data?.session){
+    $('login').style.display = 'none';
+    carregar();
+  } else {
+    setTimeout(()=>$('email').focus(), 100);
+  }
+})();
+</script>
+</body>
+</html>
