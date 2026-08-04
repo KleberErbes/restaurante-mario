@@ -106,6 +106,17 @@ body.arrastando,body.arrastando *{cursor:grabbing !important}
 .tag.d{background:#fdf6e5;border-color:#ecd9a8;color:var(--amarelo)}
 .pvazio{color:#aaa;font-size:13px}
 
+/* Bloco do texto para o WhatsApp */
+#txtWhats{width:100%;min-height:430px;font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:13.5px;line-height:1.55;padding:14px;border:1.5px solid var(--linha);
+  border-radius:8px;background:#fff;color:var(--preto);resize:vertical;white-space:pre}
+#txtWhats:focus{outline:none;border-color:var(--preto)}
+.zapbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.zapbar .esq{margin-right:auto;font-size:12.5px;color:var(--tinta)}
+.btn-zap{background:#1f7a4c;color:#fff;text-decoration:none;display:inline-flex;
+  align-items:center;padding:9px 16px;border-radius:6px;font-size:14px;font-weight:600}
+.btn-zap:hover{background:#19643e}
+
 .aviso{padding:11px 14px;border-radius:6px;font-size:13.5px;margin-bottom:14px}
 .aviso.erro{background:#fbe6e5;color:var(--vermelho)}
 .aviso.ok{background:#e3f2e9;color:var(--verde)}
@@ -326,6 +337,18 @@ function render(){
     </div>
 
     <div class="cartao">
+      <h2>Mensagem para o grupo</h2>
+      <div class="ajuda">Montada a partir dos itens ligados acima. Dá para editar antes de copiar — a saudação do fim muda sozinha conforme o dia da semana.</div>
+      <textarea id="txtWhats" spellcheck="false" oninput="ZAP_MEXIDO=true"></textarea>
+      <div class="zapbar">
+        <span class="esq" id="zapInfo"></span>
+        <button class="btn-2" onclick="regerarZap()">Refazer texto</button>
+        <button class="btn" onclick="copiarZap()">Copiar</button>
+        <a class="btn-zap" id="linkZap" target="_blank" rel="noopener">Abrir no WhatsApp</a>
+      </div>
+    </div>
+
+    <div class="cartao">
       <h2>Dias fechados</h2>
       <div class="ajuda">Nessas datas o site recusa pedidos e mostra "Fechado agora".</div>
       <div style="display:flex;gap:8px;max-width:380px;flex-wrap:wrap">
@@ -340,6 +363,78 @@ function render(){
       </div>
     </div>
   `;
+
+  pintarZap();
+}
+
+/* ===================================================================
+   MENSAGEM DO WHATSAPP
+   Mesmo formato que o grupo já recebe: sem títulos de categoria, uma
+   linha em branco separando os blocos, e a saudação do dia no fim.
+   =================================================================== */
+const DIAS_SEM = ['DOMINGO','SEGUNDA-FEIRA','TERÇA-FEIRA','QUARTA-FEIRA',
+                  'QUINTA-FEIRA','SEXTA-FEIRA','SÁBADO'];
+let ZAP_MEXIDO = false;   // se o dono editou à mão, não sobrescreve
+
+function diaSemanaSP(){
+  // Meio-dia evita o dia virar por causa de fuso
+  return new Date(hoje() + 'T12:00:00').getDay();
+}
+
+function textoZap(){
+  const d = diaSemanaSP();
+  // Sábado e domingo são masculinos: "BOM", não "BOA"
+  const artigo = (d === 0 || d === 6) ? 'BOM' : 'BOA';
+
+  // Categoria vazia não vira linha em branco sobrando
+  const blocos = CATS
+    .map(c => ativos(c.key).map(i => i.nome).join('\n'))
+    .filter(b => b.length);
+
+  return [
+    'Bom dia!!!',
+    '',
+    'Segue o cardápio de hoje👇🏼',
+    '',
+    blocos.join('\n\n'),
+    '',
+    'Pedido de marmitas acesse: https://www.restaurantedomario.com.br/',
+    '',
+    `*${artigo} ${DIAS_SEM[d]} A TODOS!!!*`
+  ].join('\n');
+}
+
+function pintarZap(){
+  const ta = $('txtWhats');
+  if(!ta) return;
+  if(!ZAP_MEXIDO) ta.value = textoZap();
+  const total = CATS.reduce((n,c) => n + ativos(c.key).length, 0);
+  $('zapInfo').textContent = `${total} ${total === 1 ? 'item' : 'itens'} no cardápio de hoje`
+    + (ZAP_MEXIDO ? ' · texto editado à mão' : '');
+  $('linkZap').href = 'https://wa.me/?text=' + encodeURIComponent(ta.value);
+}
+
+function regerarZap(){
+  ZAP_MEXIDO = false;
+  pintarZap();
+  toast('Texto refeito a partir do cardápio.');
+}
+
+async function copiarZap(){
+  const ta = $('txtWhats');
+  try{
+    await navigator.clipboard.writeText(ta.value);
+    toast('Cardápio copiado. É só colar no grupo.');
+  }catch(e){
+    // clipboard exige contexto seguro; se falhar, seleciona para copiar na mão
+    ta.focus(); ta.select(); ta.setSelectionRange(0, 999999);
+    try{
+      document.execCommand('copy');
+      toast('Cardápio copiado. É só colar no grupo.');
+    }catch(_){
+      toast('Não consegui copiar. O texto está selecionado — use Ctrl+C.', true);
+    }
+  }
 }
 
 function colunaHTML(c){
