@@ -8,7 +8,7 @@ const CONFIG = {
   // Cardápio: vem do Supabase. A anon key é pública por design — ela só
   // permite ler o cardápio e criar pedido, nada mais.
   supabaseUrl: 'https://kjbwnesvygisuwvoveli.supabase.co',
-  supabaseKey: 'COLE_A_ANON_KEY_AQUI',
+  supabaseKey: 'sb_publishable_XmVYyFWVyaG3zilJg6Otpg_YNYTWAGG',
   appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec',
   whatsappNumber: '554733752227',
   horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 14, m: 0 }, fechamento: { h: 14, m: 0 } },
