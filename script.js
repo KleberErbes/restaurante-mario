@@ -9,9 +9,8 @@ const CONFIG = {
   // permite ler o cardápio e criar pedido, nada mais.
   supabaseUrl: 'https://kjbwnesvygisuwvoveli.supabase.co',
   supabaseKey: 'sb_publishable_XmVYyFWVyaG3zilJg6Otpg_YNYTWAGG',
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec',
   whatsappNumber: '554733752227',
-  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 24, m: 0 }, fechamento: { h: 24, m: 0 } },
+  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 18, m: 0 }, fechamento: { h: 18, m: 0 } },
   cartExpireHours: 4,
   limits: { acompMax: 6, carneMax: 3, saladaMax: 3 }
 };
@@ -816,24 +815,23 @@ const PedidoManager = {
     const temAPesar = state.cart.some(item => item.aPesar);
     const pedidoId = Utils.gerarIdPedido();
 
-    // Salvar no Drive (não-blocking)
-    fetch(CONFIG.appsScriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        pedidoId, nomeCliente,
-        itens: state.cart.map(item => ({
-          tipo: item.tipo, desc: item.descPlanilha,
-          nomePessoa: item.nome || '',
-          preco: item.aPesar ? 'A pesar' : item.preco,
-          qty: item.qty || 1,
-          composicao: item.composicao || null
-        })),
-        total: temAPesar ? `${total.toFixed(2)} + itens a pesar` : total.toFixed(2),
-        totalMarmitas: state.cart.reduce((sum, item) => sum + (item.qty || 1), 0)
-      })
-    }).catch(err => console.warn('Erro ao salvar:', err));
+    // Grava o pedido no banco. NÃO usa await de propósito: o window.open
+    // do WhatsApp lá embaixo precisa continuar dentro do gesto do clique,
+    // senão o bloqueador de pop-up do navegador barra a janela.
+    //
+    // Antes isso ia em 'no-cors', então o site nunca sabia se tinha dado
+    // certo. Agora dá para saber — e tentar de novo.
+    Pedidos.enviar({
+      pedidoId, nomeCliente,
+      itens: state.cart.map(item => ({
+        tipo: item.tipo, desc: item.descPlanilha,
+        nomePessoa: item.nome || '',
+        preco: item.aPesar ? null : item.preco,
+        qty: item.qty || 1,
+        composicao: item.composicao || null
+      })),
+      totalMarmitas: state.cart.reduce((sum, item) => sum + (item.qty || 1), 0)
+    });
 
     // Montar mensagem WhatsApp
     const totalMarmitas = state.cart.reduce((sum, item) => sum + (item.qty || 1), 0);
@@ -861,6 +859,35 @@ const PedidoManager = {
 
   salvarLocal() {
     CartManager.salvarLocal();
+  }
+};
+
+// ============ ENVIO DO PEDIDO ============
+// A cozinha só imprime o que chegou no banco. Se a gravação falhar e
+// ninguém perceber, o cliente manda o WhatsApp achando que pediu e a
+// comanda nunca sai. Por isso: três tentativas com espera crescente,
+// e aviso na tela se todas falharem.
+const Pedidos = {
+  async enviar(payload, tentativa = 1) {
+    try {
+      const { data, error } = await sbCardapio.rpc('fn_criar_pedido', { p: payload });
+      if (error) throw error;
+      if (data && data.duplicado) console.info('Pedido já registrado (reenvio).');
+      return true;
+    } catch (e) {
+      console.warn(`Falha ao gravar pedido (tentativa ${tentativa}):`, e.message || e);
+
+      if (tentativa < 3) {
+        await new Promise(r => setTimeout(r, tentativa * 1500));
+        return this.enviar(payload, tentativa + 1);
+      }
+
+      UI.showToast(
+        'Não conseguimos registrar seu pedido no sistema. Confirme pelo WhatsApp antes de vir buscar.',
+        'aviso', 9000
+      );
+      return false;
+    }
   }
 };
 

@@ -55,9 +55,28 @@ main{max-width:1240px;margin:0 auto;padding:24px 22px 80px}
 
 .lista{min-height:8px}
 
+/* Barra de filtros: com muitos itens, achar um vira o gargalo */
+.filtros{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:16px;
+  padding-bottom:15px;border-bottom:1.5px solid var(--linha)}
+.caixabusca{position:relative;flex:1;min-width:170px;max-width:320px;display:flex}
+.caixabusca input{flex:1;padding-right:34px}
+.caixabusca .limpar{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  background:transparent;color:#a89e8c;font-size:19px;line-height:1;padding:3px 7px}
+.caixabusca .limpar:hover{color:var(--preto)}
+.chkbox{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:14px;
+  user-select:none;padding:8px 12px;border-radius:7px;border:1.5px solid var(--linha);
+  background:#fff}
+.chkbox:hover{border-color:var(--preto)}
+.chkbox.on{background:#eef5f0;border-color:var(--verde);color:var(--verde);font-weight:600}
+.chkbox input{width:auto;flex:none;margin:0;accent-color:var(--verde)}
+.filtros .resumo{font-size:12.5px;color:var(--tinta);margin-left:auto}
+.semresultado{font-size:13px;color:#a89e8c;padding:10px 4px;font-style:italic}
+
 .item{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:7px;
   border:1.5px solid var(--linha);background:#fff;margin-bottom:6px;
   cursor:grab;user-select:none}
+body.filtrado .item,body.filtrado .pega{cursor:default}
+body.filtrado .pega{opacity:.3}
 .item.off{opacity:.5;background:#f4f0e6}
 .item .nome{flex:1;min-width:0;font-size:14px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;cursor:text;padding:2px 3px;border-radius:4px}
@@ -252,6 +271,45 @@ const CATS = [
 let ITENS = [];
 let FECHADOS = [];
 let OCUPADO = false;
+let BUSCA = '';
+let SO_ATIVOS = false;
+
+/* Tira acento e caixa para a busca achar "polenta" digitando "polenta"
+   ou "Polênta" — no balcão ninguém acentua direito com pressa. */
+const chave = t => String(t||'').toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+function filtrada(k){
+  let l = daCat(k);
+  if(SO_ATIVOS) l = l.filter(i => i.ativo);
+  if(BUSCA.trim()){
+    const b = chave(BUSCA.trim());
+    l = l.filter(i => chave(i.nome).includes(b));
+  }
+  return l;
+}
+
+const filtroLigado = () => SO_ATIVOS || BUSCA.trim().length > 0;
+
+function alternarSoAtivos(v){ SO_ATIVOS = v; render(); }
+
+function limparBusca(){
+  BUSCA = '';
+  clearTimeout(tempoBusca);
+  render();
+  $('busca')?.focus();
+}
+
+let tempoBusca = null;
+function filtrarBusca(v){
+  BUSCA = v;
+  clearTimeout(tempoBusca);
+  tempoBusca = setTimeout(() => {
+    const pos = document.activeElement === $('busca') ? $('busca').selectionStart : null;
+    render();
+    if(pos !== null){ const b = $('busca'); b.focus(); b.setSelectionRange(pos, pos); }
+  }, 140);
+}
 
 function toast(msg, erro){
   const t = $('toast');
@@ -315,6 +373,21 @@ function render(){
     <div class="cartao">
       <h2>Itens do cardápio</h2>
       <div class="ajuda">O interruptor define o que aparece no site hoje. Desligar não apaga o item — ele fica guardado para os próximos dias.</div>
+
+      <div class="filtros">
+        <span class="caixabusca">
+          <input id="busca" placeholder="Buscar comida pelo nome…" value="${esc(BUSCA)}"
+                 oninput="filtrarBusca(this.value)" autocomplete="off"
+                 onkeydown="if(event.key==='Escape'){event.preventDefault();limparBusca()}">
+          ${BUSCA ? `<button class="limpar" onclick="limparBusca()" title="Limpar (Esc)">×</button>` : ''}
+        </span>
+        <label class="chkbox ${SO_ATIVOS?'on':''}">
+          <input type="checkbox" ${SO_ATIVOS?'checked':''} onchange="alternarSoAtivos(this.checked)">
+          Só os do cardápio de hoje
+        </label>
+        <span class="resumo" id="resumoFiltro"></span>
+      </div>
+
       <div class="colunas">
         ${CATS.map(c => colunaHTML(c)).join('')}
       </div>
@@ -363,6 +436,14 @@ function render(){
       </div>
     </div>
   `;
+
+  const total = CATS.reduce((n,c) => n + daCat(c.key).length, 0);
+  const vis   = CATS.reduce((n,c) => n + filtrada(c.key).length, 0);
+  document.body.classList.toggle('filtrado', filtroLigado());
+  const el = $('resumoFiltro');
+  if(el) el.textContent = filtroLigado()
+    ? `mostrando ${vis} de ${total} · arrastar desativado`
+    : `${total} ${total===1?'item':'itens'} no total`;
 
   pintarZap();
 }
@@ -438,14 +519,18 @@ async function copiarZap(){
 }
 
 function colunaHTML(c){
-  const its = daCat(c.key);
-  const ligados = its.filter(i => i.ativo).length;
+  const todos = daCat(c.key);
+  const its = filtrada(c.key);
+  const ligados = todos.filter(i => i.ativo).length;
   const ehCarne = c.key === 'carnes';
   const tresPrimeiras = ativos('carnes').slice(0,3).map(i => i.id);
 
   return `<div class="cat">
-    <h3>${c.rot} <span class="conta">${ligados}/${its.length}</span></h3>
+    <h3>${c.rot} <span class="conta">${ligados}/${todos.length}</span></h3>
     <div class="lista" data-cat="${c.key}">
+      ${its.length === 0
+        ? `<div class="semresultado">${todos.length ? 'Nenhum item com esse filtro.' : 'Nenhum item ainda.'}</div>`
+        : ''}
       ${its.map(i => {
         const destaque = ehCarne && tresPrimeiras.includes(i.id);
         return `<div class="item ${i.ativo?'':'off'} ${destaque?'marca3':''}" data-id="${i.id}">
@@ -484,6 +569,15 @@ document.addEventListener('pointerdown', e => {
 
   const lista = item.closest('.lista');
   if(!lista) return;
+
+  /* Com filtro ligado a lista na tela é um recorte. Reordenar um
+     recorte e gravar só os ids visíveis apagaria a posição de tudo que
+     está escondido. Em vez de arriscar, o arrasto fica desativado e a
+     tela diz o porquê. */
+  if(filtroLigado()){
+    toast('Limpe o filtro para reordenar.', true);
+    return;
+  }
 
   const r = item.getBoundingClientRect();
   ARR = {

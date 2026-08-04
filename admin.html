@@ -501,7 +501,7 @@
   <div class="login-box">
     <div class="login-logo">Restaurante do Mário</div>
     <div class="login-sub">PAINEL ADMINISTRATIVO</div>
-    <input type="text" id="inputUsuario" placeholder="Usuário" autocomplete="username"
+    <input type="email" id="inputUsuario" placeholder="Email" autocomplete="username"
       autocapitalize="off" autocorrect="off" spellcheck="false"
       onkeydown="if(event.key==='Enter') document.getElementById('inputSenha').focus()">
     <input type="password" id="inputSenha" placeholder="Senha" autocomplete="current-password"
@@ -558,9 +558,13 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ========== CONFIGURAÇÕES ==========
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk9p47SYi4t9HEotN6FmelyTwf3nuioTsDDbR2TdqvTX7NDldxmev7VxTgQpLS5A1E/exec';
+// Mesmo projeto do crediário e do cardápio: um login para tudo.
+const SUPABASE_URL = 'https://kjbwnesvygisuwvoveli.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_XmVYyFWVyaG3zilJg6Otpg_YNYTWAGG';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let pedidos = [];
 let intervalo = null;
@@ -584,20 +588,19 @@ async function fazerLogin() {
   btn.textContent = 'Entrando...';
 
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' }, // evita preflight CORS no Apps Script
-      body: JSON.stringify({ action: 'login', usuario, senha })
-    });
-    const data = await res.json();
+    const r = await sb.auth.signInWithPassword({ email: usuario, password: senha });
 
-    if (data.status === 'ok' && data.token) {
-      sessionToken = data.token;
-      sessionStorage.setItem('rdm_admin_token', sessionToken);
+    if (!r.error) {
       document.getElementById('telaLogin').style.display = 'none';
       document.getElementById('telaAdmin').style.display = 'block';
       iniciarAdmin();
     } else {
+      const m = r.error.message || '';
+      const data = { mensagem:
+        m.includes('Email not confirmed') ? 'Usuário não confirmado no Supabase.' :
+        m.includes('API key')             ? 'Anon key não preenchida neste arquivo.' :
+        m.includes('Invalid login')       ? 'Email ou senha incorretos.' :
+        'Falha no login: ' + m };
       erroEl.textContent = data.mensagem || 'Usuário ou senha incorretos.';
       document.getElementById('inputSenha').value = '';
       document.getElementById('inputSenha').focus();
@@ -614,6 +617,7 @@ function sair() {
   clearInterval(intervalo);
   sessionToken = null;
   sessionStorage.removeItem('rdm_admin_token');
+  sb.auth.signOut();
   document.getElementById('telaAdmin').style.display = 'none';
   document.getElementById('telaLogin').style.display = 'flex';
   document.getElementById('inputUsuario').value = '';
@@ -621,11 +625,11 @@ function sair() {
   pedidos = [];
 }
 
-// Retoma sessão se já havia um token válido nesta aba
-window.addEventListener('DOMContentLoaded', () => {
-  const tokenSalvo = sessionStorage.getItem('rdm_admin_token');
-  if (tokenSalvo) {
-    sessionToken = tokenSalvo;
+// Retoma a sessão do Supabase. Agora ela vive no navegador e vale
+// também para o crediário e o painel do cardápio: um login para tudo.
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data } = await sb.auth.getSession();
+  if (data?.session) {
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('telaAdmin').style.display = 'block';
     iniciarAdmin();
@@ -635,27 +639,26 @@ window.addEventListener('DOMContentLoaded', () => {
 // ========== BUSCAR PEDIDOS DO GOOGLE SHEETS ==========
 async function buscarPedidos() {
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=listar&token=' + encodeURIComponent(sessionToken), {
-      method: 'GET',
-      redirect: 'follow'
-    });
-    const data = await res.json();
+    const { data, error } = await sb.rpc('fn_pedidos_do_dia');
 
-    if (data && data.error === 'unauthorized') {
-      // Token expirado ou inválido — volta para a tela de login
-      sair();
-      document.getElementById('loginErro').textContent = 'Sessão expirada. Entre novamente.';
-      return;
+    if (error) {
+      const m = error.message || '';
+      if (m.includes('JWT') || error.code === 'PGRST301') {
+        sair();
+        document.getElementById('loginErro').textContent = 'Sessão expirada. Entre novamente.';
+        return;
+      }
+      throw error;
     }
 
-    if (data && Array.isArray(data.pedidos)) {
-      pedidos = data.pedidos;
+    if (Array.isArray(data)) {
+      pedidos = data;
       renderizarPedidos();
     }
   } catch (e) {
     console.warn('Erro ao buscar pedidos:', e);
     document.getElementById('listaPedidos').innerHTML =
-      `<div class="pedido-vazio">Erro ao conectar. Verifique a URL do Apps Script.</div>`;
+      `<div class="pedido-vazio">Erro ao conectar com o servidor.</div>`;
   }
 }
 
@@ -916,10 +919,12 @@ async function carregarResumo() {
   const cont = document.getElementById('resumoConteudo');
   cont.innerHTML = '<div class="carregando-box"><div class="spinner"></div>Carregando resumo…</div>';
   try {
-    const url = APPS_SCRIPT_URL + '?action=resumo&token=' + encodeURIComponent(sessionToken);
-    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
-    const d = await res.json();
-    if (d && d.error === 'unauthorized') { sair(); return; }
+    const { data: d, error } = await sb.rpc('fn_resumo');
+    if (error) {
+      const m = error.message || '';
+      if (m.includes('JWT') || error.code === 'PGRST301') { sair(); return; }
+      throw error;
+    }
 
     resumoJaCarregado = true;
     const h = d.hoje;
