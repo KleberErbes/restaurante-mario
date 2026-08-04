@@ -437,108 +437,14 @@
     table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde-800); white-space: nowrap; }
 
     /* ===== CALENDÁRIO DIAS FECHADOS ===== */
-    .cal-wrap {
-      background: var(--card-bg);
-      border: 1px solid var(--borda);
-      border-radius: var(--raio-g);
-      padding: 24px;
-      box-shadow: var(--sombra-1);
-      max-width: 440px;
-      margin: 0 auto 22px;
+    /* Atalho para o painel do cardápio, onde ficam os itens do dia e os
+       dias fechados. Sem ele o dono não teria como chegar lá pelo admin. */
+    .btn-cardapio {
+      display: inline-flex; align-items: center; text-decoration: none;
+      background: rgba(255,255,255,.14); color: #fff; padding: 8px 15px;
+      border-radius: 7px; font-size: 0.9rem; font-weight: 600; font-family: inherit;
     }
-    .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .cal-mes {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--verde-900);
-    }
-    .cal-nav {
-      background: var(--papel);
-      border: 1.5px solid var(--borda);
-      border-radius: 12px;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      font-size: 1.25rem;
-      color: var(--verde-800);
-      font-weight: 800;
-      transition: background var(--transicao), border-color var(--transicao);
-    }
-    .cal-nav:hover { background: var(--verde-100); border-color: var(--verde-600); }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-    .cal-dow {
-      text-align: center;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--cinza);
-      padding: 6px 0;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .cal-dia {
-      aspect-ratio: 1;
-      border: 1.5px solid var(--borda);
-      border-radius: 12px;
-      background: #fff;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.98rem;
-      font-weight: 700;
-      color: var(--tinta);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color var(--transicao), background var(--transicao), transform var(--transicao);
-    }
-    .cal-dia:hover:not(.vazio):not(.domingo) { border-color: var(--verde-600); transform: scale(1.04); }
-    .cal-dia.vazio { border: none; background: none; cursor: default; }
-    .cal-dia.fechado { background: var(--erro); color: #fff; border-color: var(--erro); }
-    .cal-dia.hoje { box-shadow: 0 0 0 2.5px var(--dourado); }
-    .cal-dia.domingo { background: #f4ecea; color: #c4a49e; cursor: default; }
-    .cal-dia.passado { opacity: 0.4; }
-    .cal-legenda { display: flex; gap: 18px; margin-top: 16px; font-size: 0.84rem; color: var(--cinza); justify-content: center; flex-wrap: wrap; }
-    .cal-legenda span { display: flex; align-items: center; gap: 6px; }
-    .cal-legenda i { width: 14px; height: 14px; border-radius: 5px; display: inline-block; }
-    .cal-hint { text-align: center; font-size: 0.86rem; color: var(--cinza); margin-top: 8px; }
-
-    .lista-fechados { max-width: 440px; margin: 0 auto; }
-    .lista-fechados h3 {
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--verde-800);
-      margin-bottom: 12px;
-      font-weight: 800;
-    }
-    .chip-data {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--card-bg);
-      border: 1px solid var(--borda);
-      border-radius: 999px;
-      padding: 8px 8px 8px 16px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--tinta);
-      margin: 0 8px 8px 0;
-      box-shadow: var(--sombra-1);
-    }
-    .chip-data button {
-      background: #f6ece9;
-      color: var(--erro);
-      border: none;
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 800;
-      line-height: 1;
-      transition: background var(--transicao);
-    }
-    .chip-data button:hover { background: #f0dcd7; }
+    .btn-cardapio:hover { background: rgba(255,255,255,.24); }
 
     /* ===== RESPONSIVO ===== */
     @media (max-width: 600px) {
@@ -585,33 +491,8 @@
       table.hist th { font-size: 0.56rem; padding: 7px 3px; letter-spacing: 0.01em; }
       table.hist td { font-size: 0.74rem; padding: 7px 3px; }
       table.hist td.dia { font-size: 0.72rem; }
-
-      /* Calendário */
-      .cal-wrap { padding: 13px 9px; }
-      .cal-grid { gap: 2px; }
-      .cal-dia { font-size: 0.8rem; border-radius: 8px; border-width: 1px; }
-      .cal-dow { font-size: 0.6rem; }
-      .cal-nav { width: 38px; height: 38px; font-size: 1.05rem; }
-      .cal-mes { font-size: 0.98rem; }
-      .cal-legenda { gap: 10px; font-size: 0.7rem; margin-top: 12px; }
-      .cal-legenda i { width: 11px; height: 11px; }
-      .cal-hint { font-size: 0.76rem; }
-      .lista-fechados h3 { font-size: 0.66rem; }
-      .chip-data { font-size: 0.78rem; padding: 6px 6px 6px 13px; }
-      .chip-data button { width: 25px; height: 25px; font-size: 0.8rem; }
     }
-  
-/* Aviso de funcionalidade que mudou de lugar */
-.mudou-box{max-width:560px;margin:10px auto;padding:26px;border-radius:12px;
-  background:#fffdf8;border:1.5px solid #e0d8c8;text-align:center}
-.mudou-box h3{font-size:17px;margin-bottom:10px;color:#141210}
-.mudou-box p{font-size:14.5px;color:#4a4237;line-height:1.6;margin-bottom:12px}
-.mudou-alerta{background:#fdf2dd;color:#8a6400;border-radius:7px;
-  padding:10px 13px;font-size:13.5px !important}
-.mudou-btn{display:inline-block;margin-top:6px;background:#141210;color:#fff;
-  text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:15px}
-.mudou-btn:hover{background:#2c2823}
-</style>
+  </style>
 </head>
 <body>
 
@@ -637,6 +518,7 @@
     <div class="admin-header-title">Restaurante do Mário — Admin</div>
     <div class="admin-header-right">
       <span class="badge-total" id="badgeTotal">0 pedidos</span>
+      <a class="btn-cardapio" href="cardapio.html">Cardápio</a>
       <button class="btn-imprimir" onclick="gerarWord()">Baixar</button>
       <button class="btn-sair" onclick="sair()">Sair</button>
     </div>
@@ -645,7 +527,6 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
     <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
-    <button class="admin-tab" data-tab="fechados" onclick="trocarTab('fechados')">Cardápio &amp; Dias Fechados</button>
   </nav>
 
   <div class="admin-body">
@@ -672,25 +553,6 @@
       <div class="admin-info-bar"><h2>Resumo &amp; Histórico</h2></div>
       <div id="resumoConteudo">
         <div class="carregando-box"><div class="spinner"></div>Carregando resumo…</div>
-      </div>
-    </div>
-
-    <!-- ===== ABA: DIAS FECHADOS ===== -->
-    <div class="tab-panel" id="tab-fechados">
-      <div class="admin-info-bar"><h2>Cardápio &amp; Dias Fechados</h2></div>
-      <div id="fechadosConteudo">
-        <div class="mudou-box">
-          <h3>Isso agora fica no painel do cardápio</h3>
-          <p>
-            O cardápio e os dias fechados passaram para o painel novo. É lá que
-            você liga e desliga os itens do dia e marca os feriados.
-          </p>
-          <p class="mudou-alerta">
-            Marcar um dia fechado por aqui não teria mais efeito no site —
-            por isso o calendário saiu desta tela.
-          </p>
-          <a class="mudou-btn" href="cardapio.html">Abrir painel do cardápio</a>
-        </div>
       </div>
     </div>
   </div>
@@ -1042,7 +904,6 @@ function trocarTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
 
   if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
-  // A aba 'fechados' agora é só o encaminhamento para o painel do cardápio.
 }
 
 // ============================================================
@@ -1124,15 +985,6 @@ async function carregarResumo() {
     cont.innerHTML = '<div class="pedido-vazio">Não foi possível carregar o resumo. Verifique se as funções foram adicionadas ao Apps Script.</div>';
   }
 }
-
-// ============================================================
-// DIAS FECHADOS — migrado
-// O calendário vivia aqui e gravava na planilha do cardápio. Como o
-// site passou a ler os dias fechados do Supabase, marcar por aqui
-// não teria efeito nenhum — e daria confirmação de sucesso para uma
-// ação que falhou. Por isso saiu inteiro, em vez de ficar desligado.
-// A marcação agora é no cardapio.html.
-// ============================================================
 
 </script>
 </body>
