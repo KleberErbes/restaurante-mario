@@ -928,8 +928,13 @@ const HorarioTexto = {
     if (a) a.textContent = f.replace(' às ', ' até as ');
     const b = document.getElementById('pxFaixaAjuda');
     if (b) b.textContent = f;
-    const c = document.getElementById('pxFaixaLoja');
-    if (c) c.textContent = this.faixaLoja();
+    // O horário de FUNCIONAMENTO aparece em dois cards, separado da
+    // janela de pedidos. Estava escrito à mão nos dois.
+    const loja = this.faixaLoja();
+    ['pxFaixaLoja', 'pxLojaCard', 'pxLojaLoc'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = loja;
+    });
   }
 };
 
