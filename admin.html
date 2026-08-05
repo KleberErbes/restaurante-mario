@@ -709,21 +709,28 @@ function renderConfig() {
 
   document.getElementById('configConteudo').innerHTML = `
     <div class="cfg-bloco">
-      <h3>Horários</h3>
+      <h3>Janela de pedidos pelo site</h3>
       <div class="sub">Muda na hora no site, sem precisar publicar nada.</div>
 
       <div class="cfg-linha">
-        <label>Começa a aceitar pedidos
-          <small>Antes disso o site mostra "Fechado agora"</small></label>
+        <label>Pedidos — começa
+          <small>A partir daqui o site aceita pedido</small></label>
         ${hora('ped', h.pedidos_h, h.pedidos_m)}
       </div>
       <div class="cfg-linha">
-        <label>Abertura do balcão
-          <small>A partir daqui o site para de aceitar pedido novo</small></label>
+        <label>Pedidos — encerra</label>
+        ${hora('pedf', h.pedidos_fim_h ?? 14, h.pedidos_fim_m ?? 0)}
+      </div>
+
+      <h3 style="margin-top:22px">Funcionamento do restaurante</h3>
+      <div class="sub">Quando o balcão atende. É o que define o selo "Aberto agora" no site — e é independente da janela de pedidos.</div>
+
+      <div class="cfg-linha">
+        <label>Abre</label>
         ${hora('abe', h.abertura_h, h.abertura_m)}
       </div>
       <div class="cfg-linha">
-        <label>Fechamento</label>
+        <label>Fecha</label>
         ${hora('fec', h.fechamento_h, h.fechamento_m)}
       </div>
 
@@ -778,34 +785,9 @@ function renderConfig() {
         <input type="number" step="0.01" min="0" id="p_kgsalada" value="${Number(p.kg_salada ?? 44.9).toFixed(2)}">
       </div>
 
-      <h3 style="margin-top:22px">Personalizada — usada na comanda do balcão</h3>
-      <div class="sub">É a conta que a comanda faz ao montar uma marmita item a item.</div>
+      <h3 style="margin-top:22px">Salada na comanda</h3>
+      <div class="sub">Quando a marmita fecha exatamente em 4 acompanhamentos e 3 carnes, cada salada soma este valor. Fora disso a marmita é pesada.</div>
 
-      <div class="cfg-linha">
-        <label>Base da média (R$)</label>
-        <input type="number" step="0.01" min="0" id="p_base" value="${Number(p.base_media).toFixed(2)}">
-      </div>
-      <div class="cfg-linha">
-        <label>Adicional da grande (R$)</label>
-        <input type="number" step="0.01" min="0" id="p_adic" value="${Number(p.adicional_grande).toFixed(2)}">
-      </div>
-      <div class="cfg-linha">
-        <label>Acompanhamentos inclusos
-          <small>Acima disso, cobra o valor extra por unidade</small></label>
-        <input type="number" min="0" id="p_acinc" value="${p.acomp_incluidos}">
-      </div>
-      <div class="cfg-linha">
-        <label>Valor por acompanhamento extra (R$)</label>
-        <input type="number" step="0.01" min="0" id="p_acval" value="${Number(p.acomp_valor_extra).toFixed(2)}">
-      </div>
-      <div class="cfg-linha">
-        <label>Pedaços de carne inclusos</label>
-        <input type="number" min="0" id="p_cninc" value="${p.carne_pedacos_inclusos}">
-      </div>
-      <div class="cfg-linha">
-        <label>Valor por pedaço extra (R$)</label>
-        <input type="number" step="0.01" min="0" id="p_cnval" value="${Number(p.carne_valor_extra).toFixed(2)}">
-      </div>
       <div class="cfg-linha">
         <label>Valor por salada (R$)</label>
         <input type="number" step="0.01" min="0" id="p_salada" value="${Number(p.salada_valor).toFixed(2)}">
@@ -839,6 +821,7 @@ async function salvarHorarios() {
   const v = id => Number(document.getElementById(id).value) || 0;
   const payload = {
     pedidos_h: v('ped_h'), pedidos_m: v('ped_m'),
+    pedidos_fim_h: v('pedf_h'), pedidos_fim_m: v('pedf_m'),
     abertura_h: v('abe_h'), abertura_m: v('abe_m'),
     fechamento_h: v('fec_h'), fechamento_m: v('fec_m')
   };
@@ -852,9 +835,6 @@ async function salvarPrecos() {
   const v = id => Number(document.getElementById(id).value) || 0;
   const payload = {
     padrao_media: v('p_media'), padrao_grande: v('p_grande'),
-    base_media: v('p_base'), adicional_grande: v('p_adic'),
-    acomp_incluidos: v('p_acinc'), acomp_valor_extra: v('p_acval'),
-    carne_pedacos_inclusos: v('p_cninc'), carne_valor_extra: v('p_cnval'),
     salada_valor: v('p_salada'),
     buffet_semana: v('p_bufsem'), buffet_sabado: v('p_bufsab'),
     kg_completo: v('p_kgcomp'), kg_carne: v('p_kgcarne'), kg_salada: v('p_kgsalada')

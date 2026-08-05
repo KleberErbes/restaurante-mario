@@ -10,7 +10,15 @@ const CONFIG = {
   supabaseUrl: 'https://kjbwnesvygisuwvoveli.supabase.co',
   supabaseKey: 'sb_publishable_XmVYyFWVyaG3zilJg6Otpg_YNYTWAGG',
   whatsappNumber: '554733752227',
-  horario: { pedidos: { h: 8, m: 0 }, abertura: { h: 14, m: 0 }, fechamento: { h: 14, m: 0 } },
+  // Fallback: só vale enquanto o banco não responde.
+  // pedidos = quando o SITE aceita pedido
+  // loja    = quando o RESTAURANTE atende
+  horario: {
+    pedidos:    { h: 7,  m: 0 },
+    pedidosFim: { h: 14, m: 0 },
+    abertura:   { h: 10, m: 30 },
+    fechamento: { h: 14, m: 0 }
+  },
   cartExpireHours: 4,
   limits: { acompMax: 6, carneMax: 3, saladaMax: 3 }
 };
@@ -254,18 +262,31 @@ const Schedule = {
     if (state.diasFechados.includes(dataHoje) || diaSem === 0) return 'fechado';
 
     const totalMin = hora * 60 + minuto;
-    const { pedidos, abertura, fechamento } = CONFIG.horario;
-    const inicioPedidos = pedidos.h * 60 + pedidos.m;
-    const abre = abertura.h * 60 + abertura.m;
-    const fecha = fechamento.h * 60 + fechamento.m;
+    const { pedidos, pedidosFim, abertura, fechamento } = CONFIG.horario;
+    const iniPed  = pedidos.h * 60 + pedidos.m;
+    const fimPed  = pedidosFim.h * 60 + pedidosFim.m;
+    const abre    = abertura.h * 60 + abertura.m;
+    const fecha   = fechamento.h * 60 + fechamento.m;
 
-    if (totalMin >= inicioPedidos && totalMin < abre) return 'pedidos';
+    // As duas janelas convivem: o site aceita pedido desde cedo, e o
+    // restaurante abre depois. Enquanto o balcão está aberto, o site
+    // continua aceitando pedido.
     if (totalMin >= abre && totalMin < fecha) return 'aberto';
+    if (totalMin >= iniPed && totalMin < fimPed) return 'pedidos';
     return 'fechado';
   },
 
+  // Pode pedir? Vale a janela de pedidos, independente de o balcão
+  // estar aberto ou não.
   isAberto() {
-    return this.getEstado() === 'pedidos';
+    const agora = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const dataHoje = agora.toLocaleDateString('en-CA');
+    if (state.diasFechados.includes(dataHoje) || agora.getDay() === 0) return false;
+
+    const totalMin = agora.getHours() * 60 + agora.getMinutes();
+    const { pedidos, pedidosFim } = CONFIG.horario;
+    return totalMin >= pedidos.h * 60 + pedidos.m
+        && totalMin <  pedidosFim.h * 60 + pedidosFim.m;
   },
 
   atualizarBadge() {
@@ -309,9 +330,11 @@ const CardapioManager = {
       const h = data.horarios;
       if (h) {
         CONFIG.horario = {
-          pedidos:    { h: h.pedidos_h,    m: h.pedidos_m },
-          abertura:   { h: h.abertura_h,   m: h.abertura_m },
-          fechamento: { h: h.fechamento_h, m: h.fechamento_m }
+          pedidos:    { h: h.pedidos_h,     m: h.pedidos_m },
+          pedidosFim: { h: h.pedidos_fim_h ?? h.abertura_h,
+                        m: h.pedidos_fim_m ?? h.abertura_m },
+          abertura:   { h: h.abertura_h,    m: h.abertura_m },
+          fechamento: { h: h.fechamento_h,  m: h.fechamento_m }
         };
         Schedule.atualizarBadge();
         HorarioTexto.pintar();
@@ -890,8 +913,13 @@ const HorarioTexto = {
   hm(h, m) { return m ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`; },
 
   faixa() {
-    const { pedidos, abertura } = CONFIG.horario;
-    return `${this.hm(pedidos.h, pedidos.m)} às ${this.hm(abertura.h, abertura.m)}`;
+    const { pedidos, pedidosFim } = CONFIG.horario;
+    return `${this.hm(pedidos.h, pedidos.m)} às ${this.hm(pedidosFim.h, pedidosFim.m)}`;
+  },
+
+  faixaLoja() {
+    const { abertura, fechamento } = CONFIG.horario;
+    return `${this.hm(abertura.h, abertura.m)} às ${this.hm(fechamento.h, fechamento.m)}`;
   },
 
   pintar() {
@@ -900,6 +928,8 @@ const HorarioTexto = {
     if (a) a.textContent = f.replace(' às ', ' até as ');
     const b = document.getElementById('pxFaixaAjuda');
     if (b) b.textContent = f;
+    const c = document.getElementById('pxFaixaLoja');
+    if (c) c.textContent = this.faixaLoja();
   }
 };
 
