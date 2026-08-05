@@ -314,6 +314,7 @@ const CardapioManager = {
           fechamento: { h: h.fechamento_h, m: h.fechamento_m }
         };
         Schedule.atualizarBadge();
+        HorarioTexto.pintar();
       }
       const pr = data.precos;
       if (pr && pr.padrao_media > 0 && pr.padrao_grande > 0) {
@@ -654,7 +655,7 @@ const CartManager = {
     if (!Schedule.isAberto()) {
       const msg = Schedule.getEstado() === 'fechado'
         ? 'Estamos fechados'
-        : 'Horário de pedidos encerrado! Aceitamos pedidos das 08h às 14h.';
+        : `Horário de pedidos encerrado! Aceitamos pedidos das ${HorarioTexto.faixa()}.`;
       UI.showToast(msg, 'aviso', 5000);
       return;
     }
@@ -878,6 +879,27 @@ const PedidoManager = {
 
   salvarLocal() {
     CartManager.salvarLocal();
+  }
+};
+
+// ============ HORÁRIO NA TELA ============
+// A lógica já usava o horário do banco, mas o texto que o cliente lê
+// estava escrito à mão em três lugares. Resultado: o site aceitava
+// pedido às 7h e continuava avisando que só a partir das 8h.
+const HorarioTexto = {
+  hm(h, m) { return m ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`; },
+
+  faixa() {
+    const { pedidos, abertura } = CONFIG.horario;
+    return `${this.hm(pedidos.h, pedidos.m)} às ${this.hm(abertura.h, abertura.m)}`;
+  },
+
+  pintar() {
+    const f = this.faixa();
+    const a = document.getElementById('pxFaixaHorario');
+    if (a) a.textContent = f.replace(' às ', ' até as ');
+    const b = document.getElementById('pxFaixaAjuda');
+    if (b) b.textContent = f;
   }
 };
 
