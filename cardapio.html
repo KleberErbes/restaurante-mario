@@ -55,6 +55,150 @@ main{max-width:1240px;margin:0 auto;padding:24px 22px 80px}
 
 .lista{min-height:8px}
 
+.modal{position:fixed;inset:0;background:rgba(20,18,16,.45);z-index:150;
+  display:flex;align-items:center;justify-content:center;padding:18px}
+.modal .janela{background:var(--carta);border-radius:12px;width:100%;
+  max-width:520px;padding:24px;max-height:88vh;overflow:auto}
+.modal .janela.chacoalha{animation:chacoalha .3s}
+@keyframes chacoalha{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.modal h3{font-size:17px;margin-bottom:4px}
+.rodape{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
+
+/* Abas: planejar a semana e montar o dia moram no mesmo lugar */
+.abas{display:flex;gap:6px;margin-bottom:18px;border-bottom:1.5px solid var(--linha)}
+.abas button{background:transparent;color:var(--tinta);border-radius:0;padding:11px 18px;
+  font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1.5px}
+.abas button.on{color:var(--preto);border-bottom-color:var(--preto)}
+.abas button:hover{color:var(--preto)}
+
+/* Semana: ver os seis dias juntos é o ponto — sem isso ele não percebe
+   que colocou bisteca na segunda e na quinta. */
+.semana{display:grid;grid-template-columns:repeat(6,1fr);gap:11px}
+.semana > *{min-width:0}
+@media(max-width:1150px){.semana{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.semana{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.semana{grid-template-columns:1fr}}
+
+.pdia{background:#fff;border:1.5px solid var(--linha);border-radius:10px;padding:12px 11px}
+.pdia.hoje{border-color:var(--preto);box-shadow:0 0 0 3px rgba(20,18,16,.07)}
+.pdia h4{font-size:13px;display:flex;align-items:baseline;gap:6px;margin-bottom:2px}
+.pdia h4 .num{font-size:11px;color:var(--tinta);font-weight:600}
+.pdia .acoes{display:flex;gap:5px;margin:9px 0 11px}
+.pdia .acoes button{font-size:11px;padding:4px 8px;flex:1}
+
+.grupo{margin-bottom:11px}
+.grupo .rot{font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--tinta);font-weight:700;margin-bottom:5px;display:flex;
+  align-items:center;justify-content:space-between}
+.grupo .rot button{background:transparent;color:var(--tinta);font-size:15px;
+  line-height:1;padding:0 4px}
+.grupo .rot button:hover{color:var(--preto)}
+.pill{display:flex;align-items:center;gap:5px;font-size:12.5px;padding:4px 7px;
+  border-radius:5px;margin-bottom:4px;line-height:1.35}
+.pill span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill button{background:transparent;padding:0 3px;font-size:14px;line-height:1;opacity:.5}
+.pill button:hover{opacity:1}
+.pill.a{background:#f0f6f2;color:#1a6b42}
+.pill.c{background:#fbeeea;color:#b84a1c}
+.pill.s{background:#f2f6fa;color:#17497f}
+.pill.d{background:#fdf6e5;color:#8a6400}
+.pill.rep{box-shadow:inset 0 0 0 1.5px var(--vermelho)}
+.vaziog{font-size:12px;color:#b9b0a0;font-style:italic}
+
+/* Contadores: com muitos itens, saber quantos entraram em cada
+   categoria evita a segunda-feira com 9 carnes e a quinta com 1 */
+.grupo .rot .etq{display:flex;align-items:center;gap:6px;min-width:0}
+.cont{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;
+  line-height:1.5;flex:none;letter-spacing:0}
+.cont.a{background:#dbeae1;color:#1a6b42}
+.cont.c{background:#f6d9cf;color:#b84a1c}
+.cont.s{background:#d8e5f0;color:#17497f}
+.cont.d{background:#f4e6c4;color:#8a6400}
+.totdia{margin-left:auto;font-size:10.5px;font-weight:700;background:var(--preto);
+  color:#fff;border-radius:20px;padding:1px 7px;line-height:1.6;flex:none}
+
+.navsem{display:flex;gap:8px;align-items:center;margin-bottom:16px;
+  padding-bottom:14px;border-bottom:1.5px solid var(--linha)}
+.navsem .seta{flex:none;font-size:16px;padding:8px 14px;line-height:1}
+.navsem .periodo{font-size:14.5px;flex:1;text-align:center;white-space:nowrap}
+.navsem .atual{flex:none}
+.navsem .fixsem{flex:none;font-size:13px;padding:8px 14px}
+.menufix{position:relative;flex:none}
+.dropfix{display:none;position:absolute;right:0;top:calc(100% + 5px);z-index:60;
+  background:var(--carta);border:1.5px solid var(--linha);border-radius:9px;
+  padding:5px;min-width:210px;box-shadow:0 8px 22px rgba(20,18,16,.16)}
+.dropfix.on{display:block}
+.dropfix button{display:block;width:100%;text-align:left;background:transparent;
+  color:var(--preto);font-size:13.5px;padding:9px 11px;border-radius:6px}
+.dropfix button:hover{background:#f2ecdd}
+.dropfix hr{border:none;border-top:1.5px solid var(--linha);margin:4px 6px}
+
+/* ===== CELULAR =====
+   Ele planeja no celular, então os seis dias empilham. O valor de ver a
+   semana inteira se mantém pelos avisos de repetição, que continuam
+   marcando o prato em vermelho onde quer que ele esteja. */
+@media(max-width:600px){
+  .abas button{padding:11px 13px;font-size:14px;flex:1}
+  .navsem{gap:6px;flex-wrap:wrap}
+  .navsem .seta{padding:9px 15px}
+  .navsem .periodo{font-size:14px;order:-1;width:100%;flex:none;margin-bottom:4px}
+  .navsem .atual{margin-left:auto}
+
+  .semana{gap:12px}
+  .pdia{padding:14px 13px}
+  .pdia h4{font-size:15px;margin-bottom:4px}
+  .pdia h4 .num{font-size:12.5px}
+  .pdia .acoes button{font-size:12.5px;padding:8px 10px}
+
+  .grupo{margin-bottom:13px}
+  .grupo .rot{font-size:11px;margin-bottom:7px}
+  .cont{font-size:11px;padding:2px 7px}
+  .totdia{font-size:12px;padding:2px 9px}
+  .grupo .rot button{font-size:22px;padding:2px 10px}
+  .item .fix{font-size:19px;padding:3px 6px}
+  .menufix{width:100%;order:9;margin-top:2px}
+  .navsem .fixsem{width:100%}
+  .dropfix{left:0;right:0;min-width:0}
+  .dropfix button{font-size:15px;padding:12px 13px}
+  .pill{font-size:14px;padding:8px 10px;margin-bottom:6px}
+  .pill button{font-size:19px;padding:0 6px;opacity:.7}
+
+  .modal .janela{padding:18px 15px;max-height:92vh}
+  .escolha{max-height:62vh}
+  .opt{padding:13px 12px;margin-bottom:7px}
+  .opt .n{font-size:15px}
+  .opt .dias{font-size:12px}
+  .opt .marca{width:23px;height:23px}
+  .contsel{font-size:13.5px}
+}
+
+.repaviso{background:#fbe6e5;color:var(--vermelho);border-radius:7px;
+  padding:10px 13px;font-size:13px;margin-bottom:14px}
+
+/* Escolher item: ordenado por quem está há mais tempo sem sair */
+.escolha{max-height:60vh;overflow:auto;margin:4px -4px 0;padding:0 4px}
+.opt{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;
+  border:1.5px solid var(--linha);background:#fff;margin-bottom:5px;cursor:pointer}
+.opt:hover{border-color:var(--preto)}
+.opt.ja{opacity:.45}
+.opt.sel{border-color:var(--verde);background:#f0f6f2}
+.opt .marca{flex:none;width:19px;height:19px;border-radius:5px;border:1.5px solid var(--linha);
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;line-height:1}
+.opt.sel .marca{background:var(--verde);border-color:var(--verde)}
+.opt.sel .marca::after{content:'✓'}
+.opt.ja .marca{background:#ccc;border-color:#ccc;color:#fff}
+.contsel{margin-right:auto;font-size:13px;color:var(--tinta);align-self:center}
+.secfix{margin-bottom:14px}
+.rotfix{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--tinta);font-weight:700;margin-bottom:6px}
+.opt .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opt .dias{font-size:11.5px;font-weight:700;flex:none;padding:2px 8px;border-radius:20px}
+.dias.novo{background:#e3f2e9;color:var(--verde)}
+.dias.longe{background:#eef2f6;color:var(--tinta)}
+.dias.perto{background:#fdf2dd;color:#8a6400}
+.dias.recente{background:#fbe6e5;color:var(--vermelho)}
+
 /* Barra de filtros: com muitos itens, achar um vira o gargalo */
 .filtros{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:16px;
   padding-bottom:15px;border-bottom:1.5px solid var(--linha)}
@@ -68,6 +212,8 @@ main{max-width:1240px;margin:0 auto;padding:24px 22px 80px}
   background:#fff}
 .chkbox:hover{border-color:var(--preto)}
 .chkbox.on{background:#eef5f0;border-color:var(--verde);color:var(--verde);font-weight:600}
+.chkbox.estrela input{accent-color:var(--amarelo)}
+.chkbox.estrela.on{background:#fdf6e5;border-color:var(--amarelo);color:#8a6400}
 .chkbox input{width:auto;flex:none;margin:0;accent-color:var(--verde)}
 .filtros .resumo{font-size:12.5px;color:var(--tinta);margin-left:auto}
 .semresultado{font-size:13px;color:#a89e8c;padding:10px 4px;font-style:italic}
@@ -82,6 +228,10 @@ body.filtrado .pega{opacity:.3}
   text-overflow:ellipsis;white-space:nowrap;cursor:text;padding:2px 3px;border-radius:4px}
 .item .nome:hover{background:#f2ecdd}
 .item input.edita{flex:1;min-width:0;font-size:14px;padding:3px 6px}
+.item .fix{background:transparent;color:#cec5b4;padding:2px 4px;font-size:15px;
+  line-height:1;flex:none}
+.item .fix:hover{color:var(--amarelo)}
+.item .fix.on{color:var(--amarelo)}
 .item .x{background:transparent;color:#b9b0a0;padding:2px 5px;font-size:17px;line-height:1;flex:none}
 .item .x:hover{color:var(--vermelho)}
 
@@ -272,7 +422,12 @@ let ITENS = [];
 let FECHADOS = [];
 let OCUPADO = false;
 let BUSCA = '';
+let ABA = 'hoje';
+let PLANO = {};          // 'YYYY-MM-DD' -> [itens]
+let HIST = {};           // categoria -> [{id,nome,dias,...}]
+let SEG = null;          // segunda da semana mostrada
 let SO_ATIVOS = false;
+let SO_FIXOS = false;
 
 /* Tira acento e caixa para a busca achar "polenta" digitando "polenta"
    ou "Polênta" — no balcão ninguém acentua direito com pressa. */
@@ -282,6 +437,7 @@ const chave = t => String(t||'').toLowerCase()
 function filtrada(k){
   let l = daCat(k);
   if(SO_ATIVOS) l = l.filter(i => i.ativo);
+  if(SO_FIXOS)  l = l.filter(i => i.fixo);
   if(BUSCA.trim()){
     const b = chave(BUSCA.trim());
     l = l.filter(i => chave(i.nome).includes(b));
@@ -289,9 +445,98 @@ function filtrada(k){
   return l;
 }
 
-const filtroLigado = () => SO_ATIVOS || BUSCA.trim().length > 0;
+const filtroLigado = () => SO_ATIVOS || SO_FIXOS || BUSCA.trim().length > 0;
 
 function alternarSoAtivos(v){ SO_ATIVOS = v; render(); }
+function alternarSoFixos(v){ SO_FIXOS = v; render(); }
+
+/* Editar os fixos sem sair do planejamento. Antes isso jogava o dono
+   na aba do cardápio de hoje — e ali a estrela fica ao lado do
+   interruptor do dia, o que faz parecer que uma coisa mexe na outra. */
+function editarFixos(){
+  abrirModal(`
+    <h3>Itens de todo dia</h3>
+    <div class="ajuda" style="margin-bottom:6px">Entram na semana pelo "Preencher a semana". Não ligam nem desligam nada no cardápio de hoje.</div>
+    <input id="bFix" placeholder="Buscar…" autocomplete="off"
+           oninput="filtrarFix(this.value)" style="margin:10px 0">
+    <div class="escolha" id="listaFix">${listaFixHTML()}</div>
+    <div class="rodape">
+      <span class="contsel" id="contFix"></span>
+      <button class="btn" onclick="fecharModal()">Pronto</button>
+    </div>
+  `);
+  atualizarContFix();
+  setTimeout(()=>$('bFix')?.focus(), 60);
+}
+
+function listaFixHTML(){
+  return CATS.map(c => {
+    const its = daCat(c.key);
+    if(!its.length) return '';
+    return `<div class="secfix">
+      <div class="rotfix">${c.rot}</div>
+      ${its.map(i => `<div class="opt ${i.fixo?'sel':''}" data-nome="${esc(chave(i.nome))}"
+             data-id="${i.id}" onclick="marcarFixo(this,'${i.id}')">
+        <span class="marca"></span>
+        <span class="n">${esc(i.nome)}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function atualizarContFix(){
+  const n = ITENS.filter(i => i.fixo).length;
+  const el = $('contFix');
+  if(el) el.textContent = n === 0 ? 'Nenhum item de todo dia'
+                        : n === 1 ? '1 item de todo dia' : `${n} itens de todo dia`;
+}
+
+function filtrarFix(v){
+  const b = chave(v.trim());
+  $('listaFix').querySelectorAll('.opt').forEach(el => {
+    el.style.display = !b || el.dataset.nome.includes(b) ? '' : 'none';
+  });
+  // Categoria sem nenhum resultado some junto com o rótulo
+  $('listaFix').querySelectorAll('.secfix').forEach(sec => {
+    const algum = [...sec.querySelectorAll('.opt')].some(o => o.style.display !== 'none');
+    sec.style.display = algum ? '' : 'none';
+  });
+}
+
+async function marcarFixo(el, id){
+  const it = ITENS.find(i => i.id === id);
+  const novo = !it.fixo;
+  it.fixo = novo;
+  el.classList.toggle('sel', novo);
+  atualizarContFix();
+
+  const { error } = await sb.from('cardapio_itens').update({ fixo: novo }).eq('id', id);
+  if(error){
+    it.fixo = !novo;
+    el.classList.toggle('sel', !novo);
+    atualizarContFix();
+    toast(erroDe(error), true);
+    return;
+  }
+  // O selo "todo dia" na lista de escolha vem daqui
+  if(HIST){
+    Object.values(HIST).forEach(arr => {
+      const h = arr.find(x => x.id === id);
+      if(h) h.fixo = novo;
+    });
+  }
+}
+
+/* Item fixo: entra todo dia no planejamento e fica fora do alerta de
+   repetição. Não tem efeito nenhum sobre o cardápio do dia. */
+async function alternarFixo(id){
+  const it = ITENS.find(i => i.id === id);
+  const novo = !it.fixo;
+  it.fixo = novo; render();
+  const { error } = await sb.from('cardapio_itens').update({ fixo: novo }).eq('id', id);
+  if(error){ it.fixo = !novo; render(); toast(erroDe(error), true); return; }
+  toast(novo ? 'Marcado como item de todo dia.' : 'Não é mais item de todo dia.');
+}
 
 function limparBusca(){
   BUSCA = '';
@@ -358,6 +603,8 @@ async function carregar(){
     if(a.error) throw a.error;
     if(b.error) throw b.error;
     ITENS = a.data; FECHADOS = b.data;
+    if(!SEG) SEG = segundaDe(hoje());
+    if(ABA === 'semana') await carregarPlano();
     render();
   }catch(e){
     $('app').innerHTML = `<div class="aviso erro">${esc(erroDe(e))}</div>`;
@@ -367,9 +614,316 @@ async function carregar(){
 const daCat = k => ITENS.filter(i => i.categoria === k);
 const ativos = k => daCat(k).filter(i => i.ativo);
 
+/* ===================================================================
+   PLANEJAMENTO DA SEMANA
+   Só orientação: não liga nem desliga nada no cardápio do dia. O dono
+   projeta aqui e, no dia, monta o cardápio na aba "Hoje".
+   =================================================================== */
+const NOMES_DIA = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+function segundaDe(iso){
+  const d = new Date(iso + 'T12:00:00');
+  const dow = d.getDay();                       // 0=dom
+  const recuo = dow === 0 ? 6 : dow - 1;        // domingo cai na semana anterior
+  d.setDate(d.getDate() - recuo);
+  return d.toLocaleDateString('en-CA');
+}
+
+function somaDias(iso, n){
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toLocaleDateString('en-CA');
+}
+
+const diasSemana = () => [0,1,2,3,4,5].map(i => somaDias(SEG, i));  // seg..sáb
+
+async function carregarPlano(){
+  const [p, h] = await Promise.all([
+    sb.rpc('fn_plano_semana', { p_inicio: SEG }),
+    sb.rpc('fn_itens_com_historico', { p_ref: null })
+  ]);
+  if(p.error) throw p.error;
+  if(h.error) throw h.error;
+  PLANO = p.data || {};
+  HIST  = h.data || {};
+}
+
+async function trocarAba(a){
+  ABA = a;
+  if(a === 'semana'){
+    try{ await carregarPlano(); }
+    catch(e){ toast(erroDe(e), true); }
+  }
+  render();
+}
+
+async function irSemana(n){
+  SEG = somaDias(SEG, n * 7);
+  try{ await carregarPlano(); render(); }
+  catch(e){ toast(erroDe(e), true); }
+}
+
+/* Um prato repetido na mesma semana é exatamente o que ele quer evitar */
+function repetidos(){
+  const conta = {};
+  diasSemana().forEach(d => (PLANO[d] || []).forEach(i => {
+    // Fixo fora da conta: arroz todo dia é proposital, e sem isso a
+    // semana inteira ficaria marcada como repetida.
+    if(i.fixo) return;
+    conta[i.id] = (conta[i.id] || 0) + 1;
+  }));
+  return new Set(Object.keys(conta).filter(k => conta[k] > 1));
+}
+
+function selo(dias){
+  if(dias === null || dias === undefined)
+    return '<span class="dias novo">nunca</span>';
+  if(dias <= 6)  return `<span class="dias recente">há ${dias}d</span>`;
+  if(dias <= 13) return `<span class="dias perto">há ${dias}d</span>`;
+  return `<span class="dias longe">há ${dias}d</span>`;
+}
+
+function semanaHTML(){
+  const rep = repetidos();
+  const hj = hoje();
+  const fim = somaDias(SEG, 5);
+  const temRep = rep.size > 0;
+
+  return `
+    <div class="cartao">
+      <h2>Planejamento da semana</h2>
+      <div class="ajuda">Só para se orientar — não altera o cardápio do dia. No dia, monte o cardápio na aba "Hoje".</div>
+
+      <div class="navsem">
+        <button class="btn-2 seta" onclick="irSemana(-1)" title="Semana anterior">←</button>
+        <strong class="periodo">${dbr(SEG).slice(0,5)} a ${dbr(fim).slice(0,5)}</strong>
+        <button class="btn-2 seta" onclick="irSemana(1)" title="Próxima semana">→</button>
+        <button class="btn-2 atual" onclick="SEG=segundaDe(hoje());irSemana(0)">Hoje</button>
+        <span class="menufix">
+          <button class="btn fixsem" onclick="menuFixos(event)">★ Fixos ▾</button>
+          <div class="dropfix" id="dropFix">
+            <button onclick="preencherFixos()">Preencher a semana</button>
+            <button onclick="removerFixos()">Remover da semana</button>
+            <hr>
+            <button onclick="editarFixos()">Editar quais são fixos…</button>
+          </div>
+        </span>
+      </div>
+
+      ${temRep ? `<div class="repaviso">Há prato repetido nesta semana (marcado em vermelho).</div>` : ''}
+
+      <div class="semana">
+        ${diasSemana().map((d, i) => {
+          const itens = PLANO[d] || [];
+          return `<div class="pdia ${d === hj ? 'hoje' : ''}">
+            <h4>${NOMES_DIA[i]} <span class="num">${dbr(d).slice(0,5)}</span>
+              ${itens.length ? `<span class="totdia">${itens.length}</span>` : ''}</h4>
+            <div class="acoes">
+              <button class="btn-2" onclick="copiarDia('${d}')">Copiar de…</button>
+              <button class="btn-2" onclick="limparDia('${d}')" ${itens.length?'':'disabled'}>Limpar</button>
+            </div>
+            ${CATS.map(c => {
+              const meus = itens.filter(x => x.categoria === c.key);
+              return `<div class="grupo">
+                <div class="rot">
+                  <span class="etq">${c.rot}${meus.length ? `<span class="cont ${c.tag}">${meus.length}</span>` : ''}</span>
+                  <button onclick="escolher('${d}','${c.key}')" title="Adicionar">+</button>
+                </div>
+                ${meus.length
+                  ? meus.map(x => `<div class="pill ${c.tag} ${rep.has(x.id)?'rep':''}">
+                      <span title="${esc(x.nome)}${x.fixo?' (todo dia)':''}">${x.fixo?'★ ':''}${esc(x.nome)}</span>
+                      <button onclick="tirarDoPlano('${d}','${x.id}')" title="Tirar">×</button>
+                    </div>`).join('')
+                  : '<div class="vaziog">—</div>'}
+              </div>`;
+            }).join('')}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* Escolher itens: ordenado por quem está há mais tempo sem entrar num
+   plano. Ele escolhe de cima para baixo e para de repetir sozinho.
+   Seleção múltipla: marca vários e adiciona de uma vez, porque montar
+   um dia inteiro reabrindo a lista a cada item é o que cansa. */
+let SEL = new Set();
+
+function escolher(dia, cat){
+  const c = CATS.find(x => x.key === cat);
+  const jaTem = new Set((PLANO[dia] || []).map(x => x.id));
+  const lista = (HIST[cat] || []);
+  SEL = new Set();
+
+  abrirModal(`
+    <h3>${c.rot} — ${NOMES_DIA[diasSemana().indexOf(dia)]}, ${dbr(dia)}</h3>
+    <div class="ajuda" style="margin-bottom:12px">Em cima, o que está há mais tempo sem entrar no plano. Marque quantos quiser.</div>
+    <input id="bModal" placeholder="Buscar…" autocomplete="off"
+           oninput="filtrarModal(this.value)" style="margin-bottom:10px">
+    <div class="escolha" id="listaModal">
+      ${lista.map(i => jaTem.has(i.id)
+        ? `<div class="opt ja" data-nome="${esc(chave(i.nome))}">
+             <span class="marca">✓</span>
+             <span class="n">${esc(i.nome)}</span>
+             <span class="dias longe">já está</span>
+           </div>`
+        : `<div class="opt" data-nome="${esc(chave(i.nome))}" data-id="${i.id}"
+                onclick="marcar(this,'${i.id}')">
+             <span class="marca"></span>
+             <span class="n">${i.fixo?'★ ':''}${esc(i.nome)}</span>
+             ${i.fixo ? '<span class="dias longe">todo dia</span>' : selo(i.dias)}
+           </div>`).join('') || '<div class="vaziog">Nenhum item nesta categoria.</div>'}
+    </div>
+    <div class="rodape">
+      <span class="contsel" id="contSel">Nenhum marcado</span>
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      <button class="btn" id="btnAdd" onclick="adicionarMarcados('${dia}')" disabled>Adicionar</button>
+    </div>
+  `);
+  setTimeout(()=>$('bModal')?.focus(), 60);
+}
+
+function marcar(el, id){
+  if(SEL.has(id)){ SEL.delete(id); el.classList.remove('sel'); }
+  else           { SEL.add(id);    el.classList.add('sel'); }
+
+  const n = SEL.size;
+  $('contSel').textContent = n === 0 ? 'Nenhum marcado'
+                           : n === 1 ? '1 marcado' : `${n} marcados`;
+  $('btnAdd').disabled = n === 0;
+  $('btnAdd').textContent = n > 1 ? `Adicionar ${n}` : 'Adicionar';
+}
+
+function filtrarModal(v){
+  const b = chave(v.trim());
+  $('listaModal').querySelectorAll('.opt').forEach(el => {
+    el.style.display = !b || el.dataset.nome.includes(b) ? '' : 'none';
+  });
+}
+
+async function adicionarMarcados(dia){
+  const ids = [...SEL];
+  if(!ids.length) return;
+
+  const btn = $('btnAdd');
+  btn.disabled = true; btn.textContent = 'Adicionando…';
+
+  // Um por vez: se algum falhar, os outros já entraram e a tela mostra
+  // exatamente o que ficou de fora.
+  const falhas = [];
+  for(const id of ids){
+    const { error } = await sb.rpc('fn_plano_marcar', { p_data: dia, p_item: id, p_incluir: true });
+    if(error) falhas.push(id);
+  }
+
+  fecharModal();
+  await carregarPlano(); render();
+
+  if(falhas.length) toast(`${falhas.length} ${falhas.length===1?'item não entrou':'itens não entraram'}. Tente de novo.`, true);
+  else toast(ids.length === 1 ? 'Item adicionado.' : `${ids.length} itens adicionados.`);
+}
+
+async function tirarDoPlano(dia, id){
+  const { error } = await sb.rpc('fn_plano_marcar', { p_data: dia, p_item: id, p_incluir: false });
+  if(error){ toast(erroDe(error), true); return; }
+  await carregarPlano(); render();
+}
+
+function menuFixos(e){
+  e.stopPropagation();
+  $('dropFix').classList.toggle('on');
+}
+document.addEventListener('click', () => $('dropFix')?.classList.remove('on'));
+
+/* Remove só os fixos da semana, preservando tudo que foi planejado à
+   mão. Diferente do "Limpar", que apaga o dia inteiro. */
+async function removerFixos(){
+  const dias = diasSemana();
+  const alvo = [];
+  dias.forEach(d => (PLANO[d] || []).forEach(i => { if(i.fixo) alvo.push([d, i.id]); }));
+
+  if(!alvo.length){ toast('Não há fixos na semana.'); return; }
+  if(!confirm(`Tirar ${alvo.length} ${alvo.length===1?'item fixo':'itens fixos'} desta semana?\n\nO que você planejou à mão continua.`)) return;
+
+  const falhas = [];
+  for(const [d, id] of alvo){
+    const { error } = await sb.rpc('fn_plano_marcar', { p_data: d, p_item: id, p_incluir: false });
+    if(error) falhas.push(id);
+  }
+  await carregarPlano(); render();
+  if(falhas.length) toast(`${falhas.length} não saíram. Tente de novo.`, true);
+  else toast(`${alvo.length} ${alvo.length===1?'item removido':'itens removidos'}.`);
+}
+
+/* Um clique preenche os seis dias com o que sai todo dia. Depois ele
+   edita à vontade — viram itens normais do plano. */
+async function preencherFixos(){
+  const fim = somaDias(SEG, 5);
+  const { data, error } = await sb.rpc('fn_plano_preencher_fixos', { p_de: SEG, p_ate: fim });
+  if(error){ toast(erroDe(error), true); return; }
+  await carregarPlano(); render();
+  toast(data ? `${data} ${data===1?'item adicionado':'itens adicionados'}.`
+             : 'Os fixos já estavam na semana toda.');
+}
+
+async function limparDia(dia){
+  if(!confirm(`Limpar o planejamento de ${dbr(dia)}?`)) return;
+  const { error } = await sb.rpc('fn_plano_limpar', { p_data: dia });
+  if(error){ toast(erroDe(error), true); return; }
+  await carregarPlano(); render();
+}
+
+/* Semana parecida com a anterior é comum. Sem isso, redigitar tudo é o
+   que faz o dono largar a ferramenta na segunda semana. */
+function copiarDia(destino){
+  const opcoes = [];
+  for(let k = -7; k <= 5; k++){
+    const d = somaDias(SEG, k);
+    if(d === destino) continue;
+    if((PLANO[d] || []).length) opcoes.push(d);
+  }
+  const anteriores = [];
+  for(let k = 1; k <= 21; k++) anteriores.push(somaDias(destino, -k));
+
+  abrirModal(`
+    <h3>Copiar para ${dbr(destino)}</h3>
+    <div class="ajuda" style="margin-bottom:12px">Os itens são somados ao que já existe no dia.</div>
+    <div class="campo">
+      <label>Copiar de qual dia</label>
+      <input type="date" id="dCopia" value="${somaDias(destino,-7)}">
+    </div>
+    <div class="rodape">
+      <button class="btn-2" onclick="fecharModal()">Cancelar</button>
+      <button class="btn" onclick="fazerCopia('${destino}')">Copiar</button>
+    </div>
+  `);
+}
+
+async function fazerCopia(destino){
+  const de = $('dCopia').value;
+  if(!de) return;
+  const { data, error } = await sb.rpc('fn_plano_copiar', { p_de: de, p_para: destino });
+  if(error){ toast(erroDe(error), true); return; }
+  fecharModal();
+  await carregarPlano(); render();
+  toast(data ? `${data} ${data===1?'item copiado':'itens copiados'}.` : 'Nada para copiar nesse dia.');
+}
+
 /* ================= RENDER ================= */
 function render(){
-  $('app').innerHTML = `
+  const abas = `
+    <div class="abas">
+      <button class="${ABA==='hoje'?'on':''}"   onclick="trocarAba('hoje')">Cardápio de hoje</button>
+      <button class="${ABA==='semana'?'on':''}" onclick="trocarAba('semana')">Planejar a semana</button>
+    </div>`;
+
+  if(ABA === 'semana'){
+    $('app').innerHTML = abas + semanaHTML();
+    return;
+  }
+
+  $('app').innerHTML = abas + `
     <div class="cartao">
       <h2>Itens do cardápio</h2>
       <div class="ajuda">O interruptor define o que aparece no site hoje. Desligar não apaga o item — ele fica guardado para os próximos dias.</div>
@@ -385,8 +939,17 @@ function render(){
           <input type="checkbox" ${SO_ATIVOS?'checked':''} onchange="alternarSoAtivos(this.checked)">
           Só os do cardápio de hoje
         </label>
+        <label class="chkbox estrela ${SO_FIXOS?'on':''}">
+          <input type="checkbox" ${SO_FIXOS?'checked':''} onchange="alternarSoFixos(this.checked)">
+          ★ Só os de todo dia
+        </label>
         <span class="resumo" id="resumoFiltro"></span>
       </div>
+
+      ${SO_FIXOS ? `<div class="aviso info" style="margin-bottom:14px">
+        Mostrando só os itens que entram todo dia no planejamento. Use a
+        estrela para tirar ou incluir. Isso não liga nem desliga nada no
+        cardápio de hoje.</div>` : ''}
 
       <div class="colunas">
         ${CATS.map(c => colunaHTML(c)).join('')}
@@ -538,6 +1101,8 @@ function colunaHTML(c){
           <button class="chave ${i.ativo?'on':''}" onclick="alternar('${i.id}')"
                   title="${i.ativo?'No cardápio de hoje':'Fora do cardápio'}"></button>
           <span class="nome" title="Clique para renomear">${esc(i.nome)}</span>
+          <button class="fix ${i.fixo?'on':''}" onclick="alternarFixo('${i.id}')"
+                  title="${i.fixo?'Entra todo dia no planejamento':'Marcar como item de todo dia'}">${i.fixo?'★':'☆'}</button>
           <button class="x" onclick="remover('${i.id}')" title="Excluir">×</button>
         </div>`;
       }).join('')}
@@ -691,6 +1256,26 @@ document.addEventListener('click', e => {
     if(ev.key === 'Escape'){ ev.preventDefault(); encerrar(false); }
   };
 });
+
+/* ================= MODAL ================= */
+/* Clique fora não fecha: perder a escolha por um toque errado custa
+   mais que o atalho economiza. */
+function abrirModal(html){
+  fecharModal();
+  const d = document.createElement('div');
+  d.className = 'modal';
+  d.onclick = e => {
+    if(e.target !== d) return;
+    const j = d.querySelector('.janela');
+    if(!j || j.classList.contains('chacoalha')) return;
+    j.classList.add('chacoalha');
+    setTimeout(()=>j.classList.remove('chacoalha'), 320);
+  };
+  d.innerHTML = `<div class="janela">${html}</div>`;
+  document.body.appendChild(d);
+}
+function fecharModal(){ document.querySelector('.modal')?.remove(); }
+document.addEventListener('keydown', e => { if(e.key === 'Escape') fecharModal(); });
 
 /* ================= AÇÕES ================= */
 async function alternar(id){

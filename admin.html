@@ -437,6 +437,38 @@
     table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde-800); white-space: nowrap; }
 
     /* ===== CALENDÁRIO DIAS FECHADOS ===== */
+    /* Preços e horários */
+    .cfg-bloco {
+      background: #fffdf8; border: 1.5px solid #e0d8c8; border-radius: 12px;
+      padding: 20px; margin: 0 auto 16px; max-width: 640px;
+    }
+    .cfg-bloco h3 { font-size: 1rem; margin-bottom: 4px; color: #141210; }
+    .cfg-bloco .sub { font-size: 0.82rem; color: #4a4237; margin-bottom: 16px; line-height: 1.5; }
+    .cfg-linha {
+      display: flex; align-items: center; gap: 12px; padding: 10px 0;
+      border-bottom: 1px solid #eee5d5;
+    }
+    .cfg-linha:last-child { border-bottom: none; }
+    .cfg-linha label { flex: 1; font-size: 0.88rem; color: #141210; }
+    .cfg-linha label small { display: block; color: #8a8070; font-size: 0.75rem; margin-top: 2px; }
+    .cfg-linha input {
+      width: 92px; padding: 9px 11px; border: 1.5px solid #e0d8c8; border-radius: 7px;
+      font-family: inherit; font-size: 0.95rem; text-align: right; background: #fff;
+    }
+    .cfg-linha input:focus { outline: none; border-color: #141210; }
+    .cfg-hora { display: flex; align-items: center; gap: 5px; }
+    .cfg-hora input { width: 62px; text-align: center; }
+    .cfg-salvar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; align-items: center; }
+    .cfg-aviso { font-size: 0.82rem; margin-right: auto; }
+    .cfg-aviso.ok { color: #1f7a4c; }
+    .cfg-aviso.erro { color: #b3261e; }
+    .btn-salvar {
+      background: #141210; color: #fff; border: none; border-radius: 8px;
+      padding: 11px 22px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-salvar:hover { background: #2c2823; }
+    .btn-salvar:disabled { opacity: .5; cursor: not-allowed; }
+
     /* Atalho para o painel do cardápio, onde ficam os itens do dia e os
        dias fechados. Sem ele o dono não teria como chegar lá pelo admin. */
     .btn-cardapio {
@@ -527,6 +559,7 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
     <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
+    <button class="admin-tab" data-tab="config" onclick="trocarTab('config')">Preços &amp; Horários</button>
   </nav>
 
   <div class="admin-body">
@@ -549,6 +582,14 @@
     </div>
 
     <!-- ===== ABA: RESUMO & HISTÓRICO ===== -->
+    <!-- ===== ABA: PREÇOS E HORÁRIOS ===== -->
+    <div class="tab-panel" id="tab-config">
+      <div class="admin-info-bar"><h2>Preços &amp; Horários</h2></div>
+      <div id="configConteudo">
+        <div class="carregando-box"><div class="spinner"></div>Carregando…</div>
+      </div>
+    </div>
+
     <div class="tab-panel" id="tab-resumo">
       <div class="admin-info-bar"><h2>Resumo &amp; Histórico</h2></div>
       <div id="resumoConteudo">
@@ -635,6 +676,194 @@ window.addEventListener('DOMContentLoaded', async () => {
     iniciarAdmin();
   }
 });
+
+// ========== PREÇOS E HORÁRIOS ==========
+let configJaCarregado = false;
+let CFG = { precos: null, horarios: null };
+
+async function carregarConfig() {
+  configJaCarregado = true;
+  try {
+    const [p, h] = await Promise.all([
+      sb.from('precos').select('*').eq('id', 1).single(),
+      sb.from('horarios').select('*').eq('id', 1).single()
+    ]);
+    if (p.error) throw p.error;
+    if (h.error) throw h.error;
+    CFG = { precos: p.data, horarios: h.data };
+    renderConfig();
+  } catch (e) {
+    configJaCarregado = false;
+    document.getElementById('configConteudo').innerHTML =
+      `<div class="pedido-vazio">Não consegui carregar. ${escaparHTML(e.message || '')}</div>`;
+  }
+}
+
+function renderConfig() {
+  const p = CFG.precos, h = CFG.horarios;
+  const hora = (pre, hh, mm) => `<div class="cfg-hora">
+      <input type="number" min="0" max="23" id="${pre}_h" value="${hh}">
+      <strong>:</strong>
+      <input type="number" min="0" max="59" id="${pre}_m" value="${String(mm).padStart(2,'0')}">
+    </div>`;
+
+  document.getElementById('configConteudo').innerHTML = `
+    <div class="cfg-bloco">
+      <h3>Horários</h3>
+      <div class="sub">Muda na hora no site, sem precisar publicar nada.</div>
+
+      <div class="cfg-linha">
+        <label>Começa a aceitar pedidos
+          <small>Antes disso o site mostra "Fechado agora"</small></label>
+        ${hora('ped', h.pedidos_h, h.pedidos_m)}
+      </div>
+      <div class="cfg-linha">
+        <label>Abertura do balcão
+          <small>A partir daqui o site para de aceitar pedido novo</small></label>
+        ${hora('abe', h.abertura_h, h.abertura_m)}
+      </div>
+      <div class="cfg-linha">
+        <label>Fechamento</label>
+        ${hora('fec', h.fechamento_h, h.fechamento_m)}
+      </div>
+
+      <div class="cfg-salvar">
+        <span class="cfg-aviso" id="avisoHor"></span>
+        <button class="btn-salvar" onclick="salvarHorarios()">Salvar horários</button>
+      </div>
+    </div>
+
+    <div class="cfg-bloco">
+      <h3>Buffet livre</h3>
+      <div class="sub">Aparece no topo do site.</div>
+
+      <div class="cfg-linha">
+        <label>Segunda a sexta (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_bufsem" value="${Number(p.buffet_semana ?? 39).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Sábado (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_bufsab" value="${Number(p.buffet_sabado ?? 42).toFixed(2)}">
+      </div>
+    </div>
+
+    <div class="cfg-bloco">
+      <h3>Marmita padrão</h3>
+      <div class="sub">É o preço que aparece no site e o que o cliente paga ao pedir.</div>
+
+      <div class="cfg-linha">
+        <label>Média (R$)
+          <small>aprox. 750g</small></label>
+        <input type="number" step="0.01" min="0" id="p_media" value="${Number(p.padrao_media).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Grande (R$)
+          <small>aprox. 900g</small></label>
+        <input type="number" step="0.01" min="0" id="p_grande" value="${Number(p.padrao_grande).toFixed(2)}">
+      </div>
+
+      <h3 style="margin-top:22px">Marmita por quilo</h3>
+      <div class="sub">Os valores do quadro "Valores da marmita por quilo", na área de pedidos.</div>
+
+      <div class="cfg-linha">
+        <label>Acompanhamento + carne + salada (R$/kg)</label>
+        <input type="number" step="0.01" min="0" id="p_kgcomp" value="${Number(p.kg_completo ?? 62.9).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Somente carne (R$/kg)</label>
+        <input type="number" step="0.01" min="0" id="p_kgcarne" value="${Number(p.kg_carne ?? 79.9).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Somente salada (R$/kg)</label>
+        <input type="number" step="0.01" min="0" id="p_kgsalada" value="${Number(p.kg_salada ?? 44.9).toFixed(2)}">
+      </div>
+
+      <h3 style="margin-top:22px">Personalizada — usada na comanda do balcão</h3>
+      <div class="sub">É a conta que a comanda faz ao montar uma marmita item a item.</div>
+
+      <div class="cfg-linha">
+        <label>Base da média (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_base" value="${Number(p.base_media).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Adicional da grande (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_adic" value="${Number(p.adicional_grande).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Acompanhamentos inclusos
+          <small>Acima disso, cobra o valor extra por unidade</small></label>
+        <input type="number" min="0" id="p_acinc" value="${p.acomp_incluidos}">
+      </div>
+      <div class="cfg-linha">
+        <label>Valor por acompanhamento extra (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_acval" value="${Number(p.acomp_valor_extra).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Pedaços de carne inclusos</label>
+        <input type="number" min="0" id="p_cninc" value="${p.carne_pedacos_inclusos}">
+      </div>
+      <div class="cfg-linha">
+        <label>Valor por pedaço extra (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_cnval" value="${Number(p.carne_valor_extra).toFixed(2)}">
+      </div>
+      <div class="cfg-linha">
+        <label>Valor por salada (R$)</label>
+        <input type="number" step="0.01" min="0" id="p_salada" value="${Number(p.salada_valor).toFixed(2)}">
+      </div>
+
+      <div class="cfg-salvar">
+        <span class="cfg-aviso" id="avisoPre"></span>
+        <button class="btn-salvar" onclick="salvarPrecos()">Salvar preços</button>
+      </div>
+    </div>
+
+    <div class="cfg-bloco" style="background:#fdf6e5;border-color:#ecd9a8">
+      <div class="sub" style="margin:0">
+        Mudar preço aqui <strong>não altera pedido já feito</strong>. Cada pedido
+        guarda o valor praticado no momento, então faturas e histórico
+        continuam mostrando o que foi cobrado de verdade.
+      </div>
+    </div>
+  `;
+}
+
+function avisar(id, txt, erro) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = txt;
+  el.className = 'cfg-aviso ' + (erro ? 'erro' : 'ok');
+  if (!erro) setTimeout(() => { el.textContent = ''; }, 3500);
+}
+
+async function salvarHorarios() {
+  const v = id => Number(document.getElementById(id).value) || 0;
+  const payload = {
+    pedidos_h: v('ped_h'), pedidos_m: v('ped_m'),
+    abertura_h: v('abe_h'), abertura_m: v('abe_m'),
+    fechamento_h: v('fec_h'), fechamento_m: v('fec_m')
+  };
+  const { data, error } = await sb.rpc('fn_salvar_horarios', { p: payload });
+  if (error) { avisar('avisoHor', error.message || 'Erro ao salvar.', true); return; }
+  CFG.horarios = { id: 1, ...data };
+  avisar('avisoHor', 'Horários salvos.');
+}
+
+async function salvarPrecos() {
+  const v = id => Number(document.getElementById(id).value) || 0;
+  const payload = {
+    padrao_media: v('p_media'), padrao_grande: v('p_grande'),
+    base_media: v('p_base'), adicional_grande: v('p_adic'),
+    acomp_incluidos: v('p_acinc'), acomp_valor_extra: v('p_acval'),
+    carne_pedacos_inclusos: v('p_cninc'), carne_valor_extra: v('p_cnval'),
+    salada_valor: v('p_salada'),
+    buffet_semana: v('p_bufsem'), buffet_sabado: v('p_bufsab'),
+    kg_completo: v('p_kgcomp'), kg_carne: v('p_kgcarne'), kg_salada: v('p_kgsalada')
+  };
+  const { data, error } = await sb.rpc('fn_salvar_precos', { p: payload });
+  if (error) { avisar('avisoPre', error.message || 'Erro ao salvar.', true); return; }
+  CFG.precos = { id: 1, ...data };
+  avisar('avisoPre', 'Preços salvos. O site já está usando.');
+}
 
 // ========== BUSCAR PEDIDOS DO GOOGLE SHEETS ==========
 async function buscarPedidos() {
@@ -907,6 +1136,7 @@ function trocarTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
 
   if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
+  if (tab === 'config' && !configJaCarregado) carregarConfig();
 }
 
 // ============================================================

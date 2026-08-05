@@ -303,6 +303,25 @@ const CardapioManager = {
       state.diasFechados = data.fechado || [];
       state.cardapioAtualizado = data.atualizado || '';
 
+      // Horários e preços vêm do banco: o dono muda no painel e o site
+      // acompanha, sem publicação. Os valores no CONFIG viram só o
+      // fallback de quando o banco não responde.
+      const h = data.horarios;
+      if (h) {
+        CONFIG.horario = {
+          pedidos:    { h: h.pedidos_h,    m: h.pedidos_m },
+          abertura:   { h: h.abertura_h,   m: h.abertura_m },
+          fechamento: { h: h.fechamento_h, m: h.fechamento_m }
+        };
+        Schedule.atualizarBadge();
+      }
+      const pr = data.precos;
+      if (pr && pr.padrao_media > 0 && pr.padrao_grande > 0) {
+        Builder.PRECOS = { media: Number(pr.padrao_media), grande: Number(pr.padrao_grande) };
+        Builder.atualizarPreco();
+        Precos.pintar(pr);
+      }
+
       this.renderizar();
       this.mostrarSkeleton(false);
     } catch (e) {
@@ -859,6 +878,27 @@ const PedidoManager = {
 
   salvarLocal() {
     CartManager.salvarLocal();
+  }
+};
+
+// ============ PREÇOS NA TELA ============
+// Buffet, marmita e valor por quilo ficavam escritos no index.html.
+// Agora vêm do banco: o dono muda no painel e o site acompanha. Os
+// números no HTML viram só o que aparece enquanto o banco não responde.
+const Precos = {
+  pintar(p) {
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    const brl = v => Number(v).toFixed(2).replace('.', ',');
+
+    if (p.buffet_semana) set('pxBuffetSemana', brl(p.buffet_semana));
+    if (p.buffet_sabado) set('pxBuffetSabado', brl(p.buffet_sabado));
+
+    set('pxMedia',  `R$ ${brl(p.padrao_media)}`);
+    set('pxGrande', `R$ ${brl(p.padrao_grande)}`);
+
+    if (p.kg_completo) set('pxKgCompleto', `R$ ${brl(p.kg_completo)}/kg`);
+    if (p.kg_carne)    set('pxKgCarne',    `R$ ${brl(p.kg_carne)}/kg`);
+    if (p.kg_salada)   set('pxKgSalada',   `R$ ${brl(p.kg_salada)}/kg`);
   }
 };
 
