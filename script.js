@@ -606,6 +606,7 @@ const Builder = {
     state.pedido.qty = Math.max(1, state.pedido.qty + delta);
     const el = document.getElementById('qtyPedido');
     if (el) el.textContent = state.pedido.qty;
+    this.conferirNomes();
     this.atualizarPreco();
   },
 
@@ -645,6 +646,21 @@ const Builder = {
     }
   },
 
+  /* Detecta nome de mais de uma pessoa: "Thiago e Donato", "Ana, Bia",
+     "João/Pedro", "Ana + Bia". Só avisa se a quantidade for 1 — quem
+     já ajustou não precisa de aviso nenhum. */
+  variosNomes(txt) {
+    const t = ` ${String(txt || '').trim().toLowerCase()} `;
+    return /[,/+&]/.test(t) || / (e|com) /.test(t);
+  },
+
+  conferirNomes() {
+    const el = document.getElementById('avisoVariosNomes');
+    if (!el) return;
+    const nome = document.getElementById('nomeMarmita')?.value || '';
+    el.hidden = !(this.variosNomes(nome) && state.pedido.qty === 1);
+  },
+
   nomePessoa() {
     // O "|" é o separador da descrição gravada na planilha — se o cliente
     // digitar um, a impressora e o admin leriam o nome errado.
@@ -667,6 +683,7 @@ const Builder = {
       const nome = document.getElementById('nomeMarmita');
       if (nome) { nome.value = ''; nome._resetContador?.(); }
     }
+    this.conferirNomes();
     this.atualizarPreco();
   }
 };
@@ -1122,6 +1139,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // o campo simplesmente para de aceitar letra e o cliente não entende.
   ligarContador('obsPedido', 'contadorObs');
   ligarContador('nomeMarmita', 'contadorNome');
+
+  // Reavalia o aviso a cada letra digitada no nome
+  document.getElementById('nomeMarmita')
+    ?.addEventListener('input', () => Builder.conferirNomes());
 
   // Allow Enter key in name input
   dom.inputNome?.addEventListener('keydown', (e) => {

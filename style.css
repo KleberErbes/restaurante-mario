@@ -2313,3 +2313,22 @@ footer {
   .cardapio-grid { grid-template-columns: repeat(4, 1fr); }
   .cardapio-box-list { grid-template-columns: 1fr 1fr; }
 }
+
+/* Aviso de vários nomes com quantidade 1.
+   O campo "Para quem é" convida a escrever "Thiago e Donato", e nesse
+   momento ninguém lembra de mexer na quantidade. O cliente acha que
+   pediu duas marmitas e sai uma — e o problema só aparece no balcão.
+   Avisa sem bloquear: quem quer mesmo 1 marmita para dois, ignora. */
+.aviso-varios {
+  display: block;
+  margin: 8px 0 0;
+  padding: 10px 13px;
+  border-radius: 8px;
+  background: #fdf2dd;
+  border: 1.5px solid #ecd9a8;
+  color: #8a6400;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+.aviso-varios[hidden] { display: none; }
+.aviso-varios b { color: #b3261e; }
