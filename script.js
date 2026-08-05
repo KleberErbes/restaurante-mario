@@ -915,8 +915,13 @@ const Precos = {
     if (p.buffet_semana) set('pxBuffetSemana', brl(p.buffet_semana));
     if (p.buffet_sabado) set('pxBuffetSabado', brl(p.buffet_sabado));
 
-    set('pxMedia',  `R$ ${brl(p.padrao_media)}`);
-    set('pxGrande', `R$ ${brl(p.padrao_grande)}`);
+    // O preço da marmita aparece em DOIS lugares: no card de valores e
+    // dentro do botão de escolha. Marcar só um deixa a tela se
+    // contradizendo — R$ 27 em cima e R$ 26 no botão.
+    set('pxMedia',     `R$ ${brl(p.padrao_media)}`);
+    set('pxGrande',    `R$ ${brl(p.padrao_grande)}`);
+    set('pxBtnMedia',  `R$ ${brl(p.padrao_media)}`);
+    set('pxBtnGrande', `R$ ${brl(p.padrao_grande)}`);
 
     if (p.kg_completo) set('pxKgCompleto', `R$ ${brl(p.kg_completo)}/kg`);
     if (p.kg_carne)    set('pxKgCarne',    `R$ ${brl(p.kg_carne)}/kg`);
