@@ -221,8 +221,6 @@ main{max-width:1240px;margin:0 auto;padding:24px 22px 80px}
 .item{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:7px;
   border:1.5px solid var(--linha);background:#fff;margin-bottom:6px;
   cursor:grab;user-select:none}
-body.filtrado .item,body.filtrado .pega{cursor:default}
-body.filtrado .pega{opacity:.3}
 .item.off{opacity:.5;background:#f4f0e6}
 .item .nome{flex:1;min-width:0;font-size:14px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;cursor:text;padding:2px 3px;border-radius:4px}
@@ -1002,10 +1000,9 @@ function render(){
 
   const total = CATS.reduce((n,c) => n + daCat(c.key).length, 0);
   const vis   = CATS.reduce((n,c) => n + filtrada(c.key).length, 0);
-  document.body.classList.toggle('filtrado', filtroLigado());
   const el = $('resumoFiltro');
   if(el) el.textContent = filtroLigado()
-    ? `mostrando ${vis} de ${total} · arrastar desativado`
+    ? `mostrando ${vis} de ${total}`
     : `${total} ${total===1?'item':'itens'} no total`;
 
   pintarZap();
@@ -1135,15 +1132,6 @@ document.addEventListener('pointerdown', e => {
   const lista = item.closest('.lista');
   if(!lista) return;
 
-  /* Com filtro ligado a lista na tela é um recorte. Reordenar um
-     recorte e gravar só os ids visíveis apagaria a posição de tudo que
-     está escondido. Em vez de arriscar, o arrasto fica desativado e a
-     tela diz o porquê. */
-  if(filtroLigado()){
-    toast('Limpe o filtro para reordenar.', true);
-    return;
-  }
-
   const r = item.getBoundingClientRect();
   ARR = {
     item, lista,
@@ -1151,7 +1139,8 @@ document.addEventListener('pointerdown', e => {
     dy: e.clientY - r.top,
     larg: r.width,
     x0: e.clientX, y0: e.clientY,
-    ativo: false,
+    x: e.clientX, y: e.clientY,
+    ativo: false, vel: 0, rolando: false,
     ptr: e.pointerId
   };
 });
@@ -1174,30 +1163,84 @@ document.addEventListener('pointermove', e => {
   }
 
   e.preventDefault();
-  ARR.clone.style.left = (e.clientX - ARR.dx) + 'px';
-  ARR.clone.style.top  = (e.clientY - ARR.dy) + 'px';
+  ARR.x = e.clientX;
+  ARR.y = e.clientY;
+  moverClone();
+  reposicionar();
+  avaliarRolagem();
+}, { passive:false });
 
-  // Reordena ao vivo: o espaço abre antes de soltar
+function moverClone(){
+  if(!ARR?.clone) return;
+  ARR.clone.style.left = (ARR.x - ARR.dx) + 'px';
+  ARR.clone.style.top  = (ARR.y - ARR.dy) + 'px';
+}
+
+/* Reordena ao vivo: o espaço abre antes de soltar */
+function reposicionar(){
+  if(!ARR) return;
   const alvo = [...ARR.lista.querySelectorAll('.item:not(.fantasma)')]
     .find(el => {
       const r = el.getBoundingClientRect();
-      return e.clientY < r.top + r.height / 2;
+      return ARR.y < r.top + r.height / 2;
     });
   if(alvo) ARR.lista.insertBefore(ARR.item, alvo);
   else     ARR.lista.appendChild(ARR.item);
-}, { passive:false });
+}
+
+/* Rolagem automática ao chegar perto das bordas.
+   Sem isso, mover um item para longe exige soltar no meio do caminho,
+   rolar a página e pegar de novo — várias vezes. A velocidade cresce
+   conforme o dedo se aproxima da borda, então dá para ajustar fino
+   perto do alvo e correr quando está longe. */
+const BORDA = 90;      // distância da borda onde a rolagem começa
+const VEL_MAX = 22;    // pixels por quadro
+
+function avaliarRolagem(){
+  if(!ARR) return;
+  const alturaTela = window.innerHeight;
+  let v = 0;
+
+  if(ARR.y < BORDA)                     v = -((BORDA - ARR.y) / BORDA) * VEL_MAX;
+  else if(ARR.y > alturaTela - BORDA)   v =  ((ARR.y - (alturaTela - BORDA)) / BORDA) * VEL_MAX;
+
+  ARR.vel = v;
+  if(v !== 0 && !ARR.rolando) iniciarRolagem();
+}
+
+function iniciarRolagem(){
+  ARR.rolando = true;
+  const passo = () => {
+    if(!ARR || !ARR.ativo || !ARR.vel){ if(ARR) ARR.rolando = false; return; }
+
+    const antes = window.scrollY;
+    window.scrollBy(0, ARR.vel);
+    const andou = window.scrollY - antes;
+
+    if(andou === 0){ ARR.rolando = false; return; }   // chegou no fim da página
+
+    // A página andou debaixo do dedo: o clone segue o ponteiro e a
+    // posição do item precisa ser recalculada.
+    moverClone();
+    reposicionar();
+    requestAnimationFrame(passo);
+  };
+  requestAnimationFrame(passo);
+}
 
 document.addEventListener('pointerup', async e => {
   if(!ARR || e.pointerId !== ARR.ptr) return;
   const a = ARR; ARR = null;
   if(!a.ativo) return;
+  a.vel = 0;
 
   a.clone.remove();
   a.item.classList.remove('fantasma');
   document.body.classList.remove('arrastando');
 
-  const ids = [...a.lista.querySelectorAll('.item')].map(el => el.dataset.id);
   const cat = a.lista.dataset.cat;
+  const visiveis = [...a.lista.querySelectorAll('.item')].map(el => el.dataset.id);
+  const ids = ordemCompleta(cat, visiveis);
 
   // Estado local primeiro, para a marca laranja das carnes acompanhar na hora
   ids.forEach((id, i) => {
@@ -1222,6 +1265,17 @@ document.addEventListener('pointercancel', () => {
   }
   ARR = null;
 });
+
+/* Encaixa a nova ordem dos itens VISÍVEIS na lista completa.
+   Com filtro ligado, a tela mostra um recorte. Gravar só o recorte
+   zeraria a posição de tudo que está escondido. Aqui cada posição que
+   hoje é ocupada por um item visível recebe o próximo da nova ordem;
+   os escondidos ficam onde estavam. */
+function ordemCompleta(cat, visiveis){
+  const vis = new Set(visiveis);
+  let k = 0;
+  return daCat(cat).map(it => vis.has(it.id) ? visiveis[k++] : it.id);
+}
 
 /* Renomear clicando no nome */
 document.addEventListener('click', e => {
