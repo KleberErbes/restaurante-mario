@@ -348,6 +348,7 @@ const CardapioManager = {
 
       this.renderizar();
       this.mostrarSkeleton(false);
+      Aviso.mostrar(data.aviso);
     } catch (e) {
       console.error('Erro ao carregar cardápio:', e);
       // Rede de proteção: o site nunca fica sem cardápio na tela.
@@ -922,6 +923,104 @@ const PedidoManager = {
   }
 };
 
+// ============ AVISO AO CLIENTE ============
+// Pop-up que o dono liga quando precisa avisar algo (Dia dos Pais,
+// fechamento, promoção). Vem junto com o cardápio, sem chamada extra.
+const Aviso = {
+  chaveDe(a) { return 'rdm_aviso_' + a.id; },
+
+  jaViu(a) {
+    try {
+      if (a.frequencia === 'sempre') return false;
+      if (a.frequencia === 'dia') {
+        const q = localStorage.getItem(this.chaveDe(a));
+        const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+        return q === hoje;
+      }
+      return sessionStorage.getItem(this.chaveDe(a)) === '1';
+    } catch (e) {
+      // Navegador com armazenamento bloqueado: mostra e segue a vida
+      return false;
+    }
+  },
+
+  marcarVisto(a) {
+    try {
+      if (a.frequencia === 'dia') {
+        localStorage.setItem(this.chaveDe(a),
+          new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }));
+      } else if (a.frequencia !== 'sempre') {
+        sessionStorage.setItem(this.chaveDe(a), '1');
+      }
+    } catch (e) { /* sem armazenamento, aparece de novo — aceitável */ }
+  },
+
+  /* Busca o aviso numa chamada própria, disparada assim que a página
+     abre. Antes ele vinha junto com o cardápio, e só aparecia depois
+     que os itens carregavam — o cliente já tinha visto a página e
+     começado a rolar. Esta chamada é leve e vai na frente. */
+  async buscarCedo() {
+    try {
+      const { data, error } = await sbCardapio.rpc('fn_aviso_vigente');
+      if (error) throw error;
+      this.mostrar(data);
+    } catch (e) {
+      // Se falhar, o aviso ainda vem junto com o cardápio
+      console.warn('Aviso não carregou cedo:', e.message || e);
+    }
+  },
+
+  mostrar(a) {
+    if (!a || !a.id || this.jaViu(a)) return;
+    if (this.exibido === a.id) return;   // evita a 2a via vinda do cardápio
+    this.exibido = a.id;
+
+    const cx  = document.querySelector('.aviso-caixa');
+    const img = document.getElementById('avisoImg');
+    const tit = document.getElementById('avisoTitulo');
+    const msg = document.getElementById('avisoMsg');
+    const lnk = document.getElementById('avisoLink');
+    const ov  = document.getElementById('avisoOverlay');
+    if (!ov) return;
+
+    if (a.imagem_url) { img.src = a.imagem_url; img.alt = a.titulo || 'Aviso'; img.hidden = false; }
+    else img.hidden = true;
+
+    if (a.titulo)   { tit.textContent = a.titulo;   tit.hidden = false; } else tit.hidden = true;
+    if (a.mensagem) { msg.textContent = a.mensagem; msg.hidden = false; } else msg.hidden = true;
+    lnk.hidden = true;
+
+    cx.classList.toggle('so-imagem', !!a.imagem_url && !a.titulo && !a.mensagem);
+
+    const fechar = () => {
+      ov.hidden = true;
+      this.marcarVisto(a);
+      document.body.style.overflow = '';
+    };
+
+    document.getElementById('avisoFechar').onclick = fechar;
+    // Clique fora fecha: aqui não há formulário para perder
+    ov.onclick = e => { if (e.target === ov) fechar(); };
+    document.addEventListener('keydown', function esc(e) {
+      if (e.key === 'Escape') { fechar(); document.removeEventListener('keydown', esc); }
+    });
+
+    // Espera a imagem carregar para não piscar a caixa vazia
+    const abrir = () => {
+      ov.hidden = false;
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('avisoFechar')?.focus(), 120);
+    };
+    if (a.imagem_url && !img.complete) {
+      img.onload = abrir;
+      img.onerror = () => { img.hidden = true; abrir(); };
+      setTimeout(() => { if (ov.hidden) abrir(); }, 2500);   // rede lenta não engole o aviso
+    } else {
+      abrir();
+    }
+  }
+};
+
 // ============ HORÁRIO NA TELA ============
 // A lógica já usava o horário do banco, mas o texto que o cliente lê
 // estava escrito à mão em três lugares. Resultado: o site aceitava
@@ -1113,6 +1212,7 @@ function ligarContador(idCampo, idContador) {
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
   dom.init();
+  Aviso.buscarCedo();          // primeiro: é a primeira coisa que o cliente vê
   CardapioManager.carrega();
   CartManager.carregarLocal();
   Schedule.atualizarBadge();

@@ -2332,3 +2332,69 @@ footer {
 }
 .aviso-varios[hidden] { display: none; }
 .aviso-varios b { color: #b3261e; }
+
+
+/* ===== AVISO AO CLIENTE =====
+   Pop-up que o dono liga quando precisa avisar algo. A imagem manda:
+   quase sempre ele vai subir uma arte pronta, e o texto é opcional. */
+.aviso-overlay {
+  /* z-index alto de propósito: precisa cobrir o cabeçalho fixo, o
+     carrinho e qualquer modal. É a primeira coisa que o cliente vê. */
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(20, 18, 16, .62);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: avisoFade .18s ease-out;
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+.aviso-overlay[hidden] { display: none; }
+@keyframes avisoFade { from { opacity: 0 } to { opacity: 1 } }
+
+.aviso-caixa {
+  position: relative;
+  background: #fffdf8;
+  border-radius: 16px;
+  max-width: 440px;
+  width: 100%;
+  max-height: 88vh;
+  overflow: auto;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .35);
+  animation: avisoSobe .26s cubic-bezier(.2, .9, .3, 1);
+}
+@keyframes avisoSobe { from { transform: translateY(18px) scale(.97) } to { transform: none } }
+
+/* O botão fica sobre a imagem, então precisa de fundo próprio para
+   não sumir numa arte clara. */
+.aviso-fechar {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  width: 36px; height: 36px; border: none; border-radius: 50%;
+  background: rgba(20, 18, 16, .55); color: #fff;
+  font-size: 24px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.aviso-fechar:hover { background: rgba(20, 18, 16, .8); }
+
+.aviso-img { display: block; width: 100%; height: auto; }
+.aviso-img[hidden] { display: none; }
+
+.aviso-texto:empty { display: none; }
+.aviso-texto { padding: 20px 22px 22px; text-align: center; }
+.aviso-texto h3 { font-size: 1.25rem; margin: 0 0 8px; color: #141210; }
+.aviso-texto h3[hidden], .aviso-texto p[hidden] { display: none; }
+.aviso-texto p { margin: 0; color: #4a4237; line-height: 1.55; font-size: 0.95rem; white-space: pre-line; }
+.aviso-link {
+  display: inline-block; margin-top: 16px; text-decoration: none;
+  background: #141210; color: #fff; padding: 11px 24px;
+  border-radius: 8px; font-weight: 600; font-size: 0.92rem;
+}
+.aviso-link[hidden] { display: none; }
+.aviso-link:hover { background: #2c2823; }
+
+/* Aviso só de imagem: sem padding sobrando embaixo */
+.aviso-caixa.so-imagem .aviso-texto { padding: 0; }
+
+@media (max-width: 600px) {
+  .aviso-overlay { padding: 14px; }
+  .aviso-caixa { max-width: 100%; }
+  .aviso-texto { padding: 17px 18px 19px; }
+}

@@ -437,6 +437,60 @@
     table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde-800); white-space: nowrap; }
 
     /* ===== CALENDÁRIO DIAS FECHADOS ===== */
+    /* Avisos */
+    .av-topo { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+    .av-topo .dica { font-size: 0.82rem; color: #4a4237; flex: 1; min-width: 180px; }
+    .av-lista { display: flex; flex-direction: column; gap: 10px; }
+    .av-card {
+      display: flex; gap: 13px; align-items: flex-start;
+      background: #fffdf8; border: 1.5px solid #e0d8c8; border-radius: 11px; padding: 13px;
+    }
+    .av-card.on { border-color: #1f7a4c; box-shadow: 0 0 0 3px rgba(31,122,76,.1); }
+    .av-thumb {
+      width: 76px; height: 76px; flex: none; border-radius: 8px; object-fit: cover;
+      background: #f2ecdd; border: 1px solid #e0d8c8;
+    }
+    .av-thumb.vazia { display: flex; align-items: center; justify-content: center;
+      color: #b9b0a0; font-size: 0.7rem; text-align: center; }
+    .av-info { flex: 1; min-width: 0; }
+    .av-info h4 { font-size: 0.98rem; margin: 0 0 3px; color: #141210; }
+    .av-info p { margin: 0 0 6px; font-size: 0.85rem; color: #4a4237;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .av-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+    .av-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 20px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em; }
+    .av-tag.ligado { background: #e3f2e9; color: #1f7a4c; }
+    .av-tag.desligado { background: #efe9dc; color: #8a8070; }
+    .av-tag.periodo { background: #e8eef5; color: #17497f; }
+    .av-tag.vigente { background: #fdf2dd; color: #8a6400; }
+    .av-acoes { display: flex; flex-direction: column; gap: 6px; flex: none; }
+    .av-acoes button { font-size: 0.78rem; padding: 6px 12px; border-radius: 6px;
+      border: 1.5px solid #e0d8c8; background: #fff; cursor: pointer; font-family: inherit; }
+    .av-acoes button:hover { border-color: #141210; }
+    .av-acoes .del { color: #b3261e; }
+
+    .av-form { background: #fffdf8; border: 1.5px solid #e0d8c8; border-radius: 12px;
+      padding: 20px; max-width: 620px; margin: 0 auto 16px; }
+    .av-form h3 { font-size: 1rem; margin-bottom: 14px; }
+    .av-form label { display: block; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: .05em; color: #4a4237; font-weight: 700; margin-bottom: 5px; }
+    .av-form input[type=text], .av-form input[type=url], .av-form input[type=date],
+    .av-form select, .av-form textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #e0d8c8; border-radius: 7px;
+      font-family: inherit; font-size: 0.92rem; background: #fff; color: #141210; margin-bottom: 13px;
+    }
+    .av-form textarea { min-height: 84px; resize: vertical; }
+    .av-form input:focus, .av-form select:focus, .av-form textarea:focus {
+      outline: none; border-color: #141210; }
+    .av-duas { display: flex; gap: 12px; }
+    .av-duas > div { flex: 1; }
+    .av-upload { display: flex; gap: 12px; align-items: center; margin-bottom: 13px; }
+    .av-preview { width: 92px; height: 92px; border-radius: 9px; object-fit: cover;
+      border: 1.5px solid #e0d8c8; background: #f2ecdd; flex: none; }
+    .av-chk { display: flex; align-items: center; gap: 9px; margin-bottom: 15px;
+      font-size: 0.92rem; cursor: pointer; }
+    .av-chk input { width: auto; margin: 0; accent-color: #1f7a4c; }
+
     /* Histórico */
     .hist-filtros {
       display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
@@ -636,6 +690,7 @@
     <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
     <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
     <button class="admin-tab" data-tab="historico" onclick="trocarTab('historico')">Histórico de Pedidos</button>
+    <button class="admin-tab" data-tab="avisos" onclick="trocarTab('avisos')">Avisos</button>
     <button class="admin-tab" data-tab="config" onclick="trocarTab('config')">Preços &amp; Horários</button>
   </nav>
 
@@ -700,6 +755,14 @@
         <div class="pedido-vazio">Escolha um período e clique em Buscar.</div>
       </div>
       <div id="histPaginacao"></div>
+    </div>
+
+    <!-- ===== ABA: AVISOS ===== -->
+    <div class="tab-panel" id="tab-avisos">
+      <div class="admin-info-bar"><h2>Avisos ao cliente</h2></div>
+      <div id="avisosConteudo">
+        <div class="carregando-box"><div class="spinner"></div>Carregando…</div>
+      </div>
     </div>
 
     <!-- ===== ABA: PREÇOS E HORÁRIOS ===== -->
@@ -796,6 +859,229 @@ window.addEventListener('DOMContentLoaded', async () => {
     iniciarAdmin();
   }
 });
+
+// ========== AVISOS AO CLIENTE ==========
+let avisosJaCarregado = false;
+let AVISOS = [];
+let AV_EDIT = null;
+
+async function carregarAvisos() {
+  avisosJaCarregado = true;
+  try {
+    const { data, error } = await sb.from('avisos').select('*').order('atualizado_em', { ascending: false });
+    if (error) throw error;
+    AVISOS = data || [];
+    renderAvisos();
+  } catch (e) {
+    avisosJaCarregado = false;
+    document.getElementById('avisosConteudo').innerHTML =
+      `<div class="pedido-vazio">Não consegui carregar. ${escaparHTML(e.message || '')}</div>`;
+  }
+}
+
+function avisoVigente(a) {
+  if (!a.ativo) return false;
+  const h = hojeISO();
+  if (a.inicio && h < a.inicio) return false;
+  if (a.fim && h > a.fim) return false;
+  return true;
+}
+
+function renderAvisos() {
+  if (AV_EDIT !== null) { renderFormAviso(); return; }
+
+  const vig = AVISOS.filter(avisoVigente);
+  document.getElementById('avisosConteudo').innerHTML = `
+    <div class="av-topo">
+      <span class="dica">${vig.length
+        ? 'Aparecendo no site agora: <strong>' + escaparHTML(vig[0].titulo || 'aviso com imagem') + '</strong>'
+        : 'Nenhum aviso aparecendo no site no momento.'}</span>
+      <button class="btn-salvar" onclick="novoAviso()">Novo aviso</button>
+    </div>
+
+    ${AVISOS.length === 0
+      ? '<div class="pedido-vazio">Nenhum aviso criado ainda.</div>'
+      : `<div class="av-lista">${AVISOS.map(a => {
+          const v = avisoVigente(a);
+          return `<div class="av-card ${v ? 'on' : ''}">
+            ${a.imagem_url
+              ? `<img class="av-thumb" src="${escaparHTML(a.imagem_url)}" alt="">`
+              : '<div class="av-thumb vazia">sem<br>imagem</div>'}
+            <div class="av-info">
+              <h4>${escaparHTML(a.titulo || '(sem título)')}</h4>
+              ${a.mensagem ? `<p>${escaparHTML(a.mensagem)}</p>` : ''}
+              <div class="av-meta">
+                <span class="av-tag ${a.ativo ? 'ligado' : 'desligado'}">${a.ativo ? 'Ligado' : 'Desligado'}</span>
+                ${v ? '<span class="av-tag vigente">No ar agora</span>' : ''}
+                ${(a.inicio || a.fim)
+                  ? `<span class="av-tag periodo">${a.inicio ? dataBR(a.inicio) : '—'} a ${a.fim ? dataBR(a.fim) : '—'}</span>`
+                  : ''}
+              </div>
+            </div>
+            <div class="av-acoes">
+              <button onclick="alternarAviso('${a.id}')">${a.ativo ? 'Desligar' : 'Ligar'}</button>
+              <button onclick="editarAviso('${a.id}')">Editar</button>
+              <button class="del" onclick="excluirAviso('${a.id}')">Excluir</button>
+            </div>
+          </div>`;
+        }).join('')}</div>`}
+  `;
+}
+
+function novoAviso() {
+  // Uma vez por visita é fixo: se aparecesse a cada clique em "Início",
+  // o cliente aprenderia a fechar sem ler.
+  AV_EDIT = { id: '', titulo: '', mensagem: '', imagem_url: '',
+              ativo: true, inicio: '', fim: '' };
+  renderAvisos();
+}
+
+function editarAviso(id) {
+  const a = AVISOS.find(x => x.id === id);
+  if (!a) return;
+  AV_EDIT = { ...a, inicio: a.inicio || '', fim: a.fim || '',
+              titulo: a.titulo || '', mensagem: a.mensagem || '',
+              imagem_url: a.imagem_url || '' };
+  renderAvisos();
+}
+
+function renderFormAviso() {
+  const a = AV_EDIT;
+  document.getElementById('avisosConteudo').innerHTML = `
+    <div class="av-form">
+      <h3>${a.id ? 'Editar aviso' : 'Novo aviso'}</h3>
+      <div id="avErro"></div>
+
+      <label>Imagem</label>
+      <div class="av-upload">
+        <img class="av-preview" id="avPreview" src="${escaparHTML(a.imagem_url || '')}"
+             alt="" ${a.imagem_url ? '' : 'style="visibility:hidden"'}>
+        <div style="flex:1">
+          <input type="file" id="avArquivo" accept="image/*" onchange="subirImagem()"
+                 style="font-size:0.85rem;margin-bottom:6px">
+          <div style="font-size:0.78rem;color:#8a8070">
+            A imagem manda no aviso. Um quadrado ou retrato funciona melhor que paisagem.
+          </div>
+          ${a.imagem_url ? '<button onclick="tirarImagem()" style="margin-top:7px;font-size:0.78rem;padding:5px 11px;border:1.5px solid #e0d8c8;border-radius:6px;background:#fff;cursor:pointer">Remover imagem</button>' : ''}
+        </div>
+      </div>
+
+      <label>Título (opcional)</label>
+      <input type="text" id="avTitulo" maxlength="80" value="${escaparHTML(a.titulo)}">
+
+      <label>Mensagem (opcional)</label>
+      <textarea id="avMsg" maxlength="400">${escaparHTML(a.mensagem)}</textarea>
+
+      <div class="av-duas">
+        <div>
+          <label>Aparece a partir de</label>
+          <input type="date" id="avInicio" value="${a.inicio}">
+        </div>
+        <div>
+          <label>Até</label>
+          <input type="date" id="avFim" value="${a.fim}">
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:#8a8070;margin:-6px 0 14px">
+        Deixe em branco para não ter prazo. Assim dá para preparar o aviso com antecedência.
+      </div>
+
+      <label class="av-chk">
+        <input type="checkbox" id="avAtivo" ${a.ativo ? 'checked' : ''}>
+        Ligado — aparece no site dentro do período acima
+      </label>
+
+      <div class="cfg-salvar">
+        <span class="cfg-aviso" id="avAviso"></span>
+        <button onclick="cancelarAviso()" style="background:#fff;border:1.5px solid #e0d8c8;border-radius:8px;padding:11px 20px;font-family:inherit;cursor:pointer">Cancelar</button>
+        <button class="btn-salvar" onclick="salvarAviso()">Salvar</button>
+      </div>
+    </div>`;
+}
+
+function cancelarAviso() { AV_EDIT = null; renderAvisos(); }
+
+function tirarImagem() {
+  colher();
+  AV_EDIT.imagem_url = '';
+  renderAvisos();
+}
+
+// Guarda o que já foi digitado antes de redesenhar o formulário
+function colher() {
+  if (!AV_EDIT) return;
+  const g = id => document.getElementById(id);
+  if (g('avTitulo')) AV_EDIT.titulo = g('avTitulo').value;
+  if (g('avMsg'))    AV_EDIT.mensagem = g('avMsg').value;
+  if (g('avInicio')) AV_EDIT.inicio = g('avInicio').value;
+  if (g('avFim'))    AV_EDIT.fim = g('avFim').value;
+  if (g('avAtivo'))  AV_EDIT.ativo = g('avAtivo').checked;
+}
+
+async function subirImagem() {
+  const arq = document.getElementById('avArquivo').files[0];
+  if (!arq) return;
+
+  if (arq.size > 3 * 1024 * 1024) {
+    avisar('avAviso', 'Imagem acima de 3 MB. Reduza antes de enviar.', true);
+    return;
+  }
+
+  avisar('avAviso', 'Enviando imagem…');
+  const ext = (arq.name.split('.').pop() || 'jpg').toLowerCase();
+  const nome = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const { error } = await sb.storage.from('avisos').upload(nome, arq, {
+    cacheControl: '3600', upsert: false
+  });
+  if (error) { avisar('avAviso', 'Falha ao enviar: ' + error.message, true); return; }
+
+  const { data } = sb.storage.from('avisos').getPublicUrl(nome);
+  colher();
+  AV_EDIT.imagem_url = data.publicUrl;
+  renderAvisos();
+  avisar('avAviso', 'Imagem enviada.');
+}
+
+async function salvarAviso() {
+  colher();
+  const a = AV_EDIT;
+
+  if (!a.imagem_url && !a.titulo.trim() && !a.mensagem.trim()) {
+    avisar('avAviso', 'Coloque ao menos uma imagem, um título ou uma mensagem.', true);
+    return;
+  }
+  if (a.inicio && a.fim && a.fim < a.inicio) {
+    avisar('avAviso', 'A data final é anterior à inicial.', true);
+    return;
+  }
+
+  const { error } = await sb.rpc('fn_salvar_aviso', { p: {
+    id: a.id || null, titulo: a.titulo, mensagem: a.mensagem,
+    imagem_url: a.imagem_url, ativo: a.ativo,
+    inicio: a.inicio || null, fim: a.fim || null, frequencia: 'sessao'
+  }});
+  if (error) { avisar('avAviso', error.message || 'Erro ao salvar.', true); return; }
+
+  AV_EDIT = null;
+  await carregarAvisos();
+}
+
+async function alternarAviso(id) {
+  const a = AVISOS.find(x => x.id === id);
+  if (!a) return;
+  const { error } = await sb.from('avisos').update({ ativo: !a.ativo }).eq('id', id);
+  if (error) { alert(error.message); return; }
+  await carregarAvisos();
+}
+
+async function excluirAviso(id) {
+  const a = AVISOS.find(x => x.id === id);
+  if (!confirm(`Excluir o aviso "${a?.titulo || 'sem título'}"?`)) return;
+  const { error } = await sb.rpc('fn_excluir_aviso', { p_id: id });
+  if (error) { alert(error.message); return; }
+  await carregarAvisos();
+}
 
 // ========== HISTÓRICO DE PEDIDOS ==========
 // Nada é apagado desde a migração, então a tabela cresce para sempre.
@@ -1370,6 +1656,7 @@ function trocarTab(tab) {
   if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
   if (tab === 'config' && !configJaCarregado) carregarConfig();
   if (tab === 'historico' && !historicoJaCarregado) iniciarHistorico();
+  if (tab === 'avisos' && !avisosJaCarregado) carregarAvisos();
 }
 
 // ============================================================
