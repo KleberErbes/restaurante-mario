@@ -437,6 +437,82 @@
     table.hist td.dia { text-align: left; font-weight: 700; color: var(--verde-800); white-space: nowrap; }
 
     /* ===== CALENDÁRIO DIAS FECHADOS ===== */
+    /* Histórico */
+    .hist-filtros {
+      display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+      background: #fffdf8; border: 1.5px solid #e0d8c8; border-radius: 10px;
+      padding: 14px; margin-bottom: 10px;
+    }
+    .hf-campo { display: flex; flex-direction: column; gap: 4px; }
+    .hf-campo.cresce { flex: 1; min-width: 160px; }
+    .hf-campo label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em;
+      color: #4a4237; font-weight: 700;
+    }
+    .hf-campo input, .hf-campo select {
+      padding: 9px 11px; border: 1.5px solid #e0d8c8; border-radius: 7px;
+      font-family: inherit; font-size: 0.9rem; background: #fff; color: #141210;
+    }
+    .hf-campo input:focus, .hf-campo select:focus { outline: none; border-color: #141210; }
+
+    .hist-atalhos { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+    .hist-atalhos button {
+      background: #fff; border: 1.5px solid #e0d8c8; border-radius: 20px;
+      padding: 6px 14px; font-family: inherit; font-size: 0.82rem; cursor: pointer; color: #4a4237;
+    }
+    .hist-atalhos button:hover { border-color: #141210; color: #141210; }
+
+    .hist-resumo {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .hr-card {
+      flex: 1; min-width: 120px; background: #141210; color: #fff;
+      border-radius: 10px; padding: 13px 16px;
+    }
+    .hr-card .v { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
+    .hr-card .r { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .05em; opacity: .72; }
+
+    .hist-dia {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: .05em;
+      color: #4a4237; font-weight: 700; margin: 18px 0 8px; padding-bottom: 5px;
+      border-bottom: 1.5px solid #e0d8c8; display: flex; justify-content: space-between;
+    }
+    .hist-item {
+      background: #fffdf8; border: 1.5px solid #e0d8c8; border-radius: 9px;
+      padding: 11px 14px; margin-bottom: 7px; cursor: pointer;
+    }
+    .hist-item:hover { border-color: #141210; }
+    .hist-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .hist-topo .nome { font-weight: 700; flex: 1; min-width: 0; }
+    .hist-hora { font-size: 0.82rem; color: #4a4237; font-variant-numeric: tabular-nums; }
+    .hist-selo {
+      font-size: 0.66rem; text-transform: uppercase; letter-spacing: .04em;
+      font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    }
+    .hist-selo.site { background: #e8eef5; color: #17497f; }
+    .hist-selo.balcao { background: #f0f6f2; color: #1a6b42; }
+    .hist-selo.pesar { background: #fdf2dd; color: #8a6400; }
+    .hist-valor { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .hist-det { margin-top: 9px; padding-top: 9px; border-top: 1px solid #eee5d5; font-size: 0.85rem; }
+    .hist-det .m { padding: 3px 0; color: #4a4237; }
+    .hist-det .m b { color: #141210; }
+
+    .hist-pag { display: flex; gap: 9px; justify-content: center; align-items: center; margin-top: 16px; }
+    .hist-pag button {
+      background: #fff; border: 1.5px solid #e0d8c8; border-radius: 7px;
+      padding: 9px 16px; font-family: inherit; font-size: 0.85rem; cursor: pointer;
+    }
+    .hist-pag button:disabled { opacity: .4; cursor: not-allowed; }
+    .hist-pag span { font-size: 0.85rem; color: #4a4237; }
+
+    @media (max-width: 600px) {
+      .hist-filtros { padding: 12px; gap: 8px; }
+      .hf-campo { flex: 1; min-width: 130px; }
+      .hist-filtros .btn-salvar { width: 100%; }
+      .hr-card { min-width: 100px; padding: 11px 13px; }
+      .hr-card .v { font-size: 1.15rem; }
+    }
+
     /* Preços e horários */
     .cfg-bloco {
       background: #fffdf8; border: 1.5px solid #e0d8c8; border-radius: 12px;
@@ -559,6 +635,7 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
     <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
+    <button class="admin-tab" data-tab="historico" onclick="trocarTab('historico')">Histórico de Pedidos</button>
     <button class="admin-tab" data-tab="config" onclick="trocarTab('config')">Preços &amp; Horários</button>
   </nav>
 
@@ -582,6 +659,49 @@
     </div>
 
     <!-- ===== ABA: RESUMO & HISTÓRICO ===== -->
+    <!-- ===== ABA: HISTÓRICO ===== -->
+    <div class="tab-panel" id="tab-historico">
+      <div class="admin-info-bar"><h2>Histórico de Pedidos</h2></div>
+
+      <div class="hist-filtros">
+        <div class="hf-campo">
+          <label>De</label>
+          <input type="date" id="hDe">
+        </div>
+        <div class="hf-campo">
+          <label>Até</label>
+          <input type="date" id="hAte">
+        </div>
+        <div class="hf-campo cresce">
+          <label>Cliente</label>
+          <input type="text" id="hBusca" placeholder="Buscar pelo nome…" autocomplete="off"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();buscarHistorico(0)}">
+        </div>
+        <div class="hf-campo">
+          <label>Origem</label>
+          <select id="hOrigem">
+            <option value="">Site e balcão</option>
+            <option value="site">Só site</option>
+            <option value="balcao">Só balcão</option>
+          </select>
+        </div>
+        <button class="btn-salvar" onclick="buscarHistorico(0)">Buscar</button>
+      </div>
+
+      <div class="hist-atalhos">
+        <button onclick="periodoRapido(0)">Hoje</button>
+        <button onclick="periodoRapido(6)">7 dias</button>
+        <button onclick="periodoRapido(29)">30 dias</button>
+        <button onclick="periodoMes()">Este mês</button>
+      </div>
+
+      <div id="histResumo"></div>
+      <div id="histConteudo">
+        <div class="pedido-vazio">Escolha um período e clique em Buscar.</div>
+      </div>
+      <div id="histPaginacao"></div>
+    </div>
+
     <!-- ===== ABA: PREÇOS E HORÁRIOS ===== -->
     <div class="tab-panel" id="tab-config">
       <div class="admin-info-bar"><h2>Preços &amp; Horários</h2></div>
@@ -676,6 +796,138 @@ window.addEventListener('DOMContentLoaded', async () => {
     iniciarAdmin();
   }
 });
+
+// ========== HISTÓRICO DE PEDIDOS ==========
+// Nada é apagado desde a migração, então a tabela cresce para sempre.
+// Por isso: sempre filtrado por período e paginado. Carregar tudo
+// funcionaria hoje e travaria daqui a um ano.
+let historicoJaCarregado = false;
+let HIST = null;
+const HIST_POR_PAGINA = 50;
+
+function hojeISO() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+}
+function somaDiasISO(iso, n) {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toLocaleDateString('en-CA');
+}
+
+function iniciarHistorico() {
+  historicoJaCarregado = true;
+  periodoRapido(6);
+}
+
+function periodoRapido(dias) {
+  document.getElementById('hAte').value = hojeISO();
+  document.getElementById('hDe').value = somaDiasISO(hojeISO(), -dias);
+  buscarHistorico(0);
+}
+
+function periodoMes() {
+  const h = hojeISO();
+  document.getElementById('hDe').value = h.slice(0, 8) + '01';
+  document.getElementById('hAte').value = h;
+  buscarHistorico(0);
+}
+
+async function buscarHistorico(offset) {
+  const cont = document.getElementById('histConteudo');
+  cont.innerHTML = '<div class="carregando-box"><div class="spinner"></div>Buscando…</div>';
+  document.getElementById('histPaginacao').innerHTML = '';
+
+  try {
+    const { data, error } = await sb.rpc('fn_pedidos_historico', {
+      p_de:     document.getElementById('hDe').value || null,
+      p_ate:    document.getElementById('hAte').value || null,
+      p_busca:  document.getElementById('hBusca').value.trim() || null,
+      p_origem: document.getElementById('hOrigem').value || null,
+      p_limite: HIST_POR_PAGINA,
+      p_offset: offset || 0
+    });
+    if (error) throw error;
+    HIST = data;
+    renderHistorico();
+  } catch (e) {
+    cont.innerHTML = `<div class="pedido-vazio">Erro ao buscar. ${escaparHTML(e.message || '')}</div>`;
+  }
+}
+
+function renderHistorico() {
+  const d = HIST;
+  const brl = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
+  const media = d.dias_com_venda > 0 ? Math.round(d.marmitas / d.dias_com_venda) : 0;
+
+  document.getElementById('histResumo').innerHTML = `
+    <div class="hist-resumo">
+      <div class="hr-card"><div class="v">${d.total}</div><div class="r">Pedidos</div></div>
+      <div class="hr-card"><div class="v">${d.marmitas}</div><div class="r">Marmitas</div></div>
+      <div class="hr-card"><div class="v">${brl(d.valor)}</div><div class="r">Valor</div></div>
+      <div class="hr-card"><div class="v">${media}</div><div class="r">Marmitas/dia</div></div>
+    </div>`;
+
+  const cont = document.getElementById('histConteudo');
+  if (!d.pedidos.length) {
+    cont.innerHTML = '<div class="pedido-vazio">Nenhum pedido nesse período.</div>';
+    return;
+  }
+
+  // Agrupa por dia: uma lista corrida de 50 pedidos sem separador é
+  // ilegível, e o dono quase sempre está procurando "aquele dia".
+  const porDia = {};
+  d.pedidos.forEach(p => { (porDia[p.data] = porDia[p.data] || []).push(p); });
+
+  cont.innerHTML = Object.keys(porDia).sort().reverse().map(dia => {
+    const lista = porDia[dia];
+    const marm = lista.reduce((s, p) => s + (p.total_marmitas || 0), 0);
+    const val = lista.reduce((s, p) => s + Number(p.valor_total || 0), 0);
+    return `
+      <div class="hist-dia">
+        <span>${dataBR(dia)} · ${diaDaSemana(dia)}</span>
+        <span>${marm} marmita${marm === 1 ? '' : 's'} · ${brl(val)}</span>
+      </div>
+      ${lista.map(p => `
+        <div class="hist-item" onclick="this.querySelector('.hist-det')?.toggleAttribute('hidden')">
+          <div class="hist-topo">
+            <span class="hist-hora">${p.hora}</span>
+            <span class="nome">${escaparHTML(p.nome)}</span>
+            <span class="hist-selo ${p.origem}">${p.origem === 'balcao' ? 'Balcão' : 'Site'}</span>
+            ${p.tem_pesar ? '<span class="hist-selo pesar">A pesar</span>' : ''}
+            <span class="hist-valor">${p.total_marmitas}x · ${p.tem_pesar && !Number(p.valor_total) ? '—' : brl(p.valor_total)}</span>
+          </div>
+          <div class="hist-det" hidden>
+            ${agruparMarmitas(p.marmitas || []).map(m => `
+              <div class="m"><b>${m.qty > 1 ? m.qty + 'x ' : ''}${escaparHTML(m.tipo || '')}</b>
+                ${m.itens ? ' — ' + escaparHTML(m.itens) : ''}</div>`).join('')}
+          </div>
+        </div>`).join('')}`;
+  }).join('');
+
+  // Paginação
+  const pag = document.getElementById('histPaginacao');
+  const ini = d.offset;
+  const fim = Math.min(d.offset + d.limite, d.total);
+  if (d.total > d.limite) {
+    pag.innerHTML = `
+      <div class="hist-pag">
+        <button onclick="buscarHistorico(${Math.max(0, ini - d.limite)})" ${ini === 0 ? 'disabled' : ''}>← Anteriores</button>
+        <span>${ini + 1}–${fim} de ${d.total}</span>
+        <button onclick="buscarHistorico(${ini + d.limite})" ${fim >= d.total ? 'disabled' : ''}>Próximos →</button>
+      </div>`;
+  } else {
+    pag.innerHTML = '';
+  }
+}
+
+function dataBR(iso) {
+  const p = String(iso).split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+}
+function diaDaSemana(iso) {
+  const nomes = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  return nomes[new Date(iso + 'T12:00:00').getDay()];
+}
 
 // ========== PREÇOS E HORÁRIOS ==========
 let configJaCarregado = false;
@@ -1117,6 +1369,7 @@ function trocarTab(tab) {
 
   if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
   if (tab === 'config' && !configJaCarregado) carregarConfig();
+  if (tab === 'historico' && !historicoJaCarregado) iniciarHistorico();
 }
 
 // ============================================================
