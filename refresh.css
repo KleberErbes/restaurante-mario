@@ -1,0 +1,136 @@
+/* Interface isolada da lógica de pedidos e do painel. */
+.restaurant-refresh{--wood:repeating-linear-gradient(3deg,#ffffff0c 0 2px,#65310e0c 3px 5px,transparent 6px 14px),linear-gradient(100deg,#dcb17b,#f1cf9d 35%,#cfa06b 75%,#e7bd87);background:#faf7ef}
+.restaurant-refresh header{position:sticky;top:0;z-index:100;padding:0;background:#fffdf8;border-bottom:1px solid #e4dcca}
+.new-header{max-width:1180px;margin:auto;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;padding:8px 22px;height:94px}
+.new-header button{width:48px;height:48px;border:1px solid #dcdaca;border-radius:50%;background:#fffdf8;color:#23452b;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;padding:10px}
+.new-header svg{width:24px;height:24px}.brand{justify-self:center}.brand img{width:150px;height:76px;object-fit:contain}.new-header .cart-count{position:absolute;top:-4px;right:-4px}
+.restaurant-refresh #siteMenu{position:absolute;top:100%;left:16px;bottom:auto;transform:none;width:min(320px,calc(100vw - 32px));display:flex;flex-direction:column;align-items:stretch;border-radius:16px;background:#fffdf8;padding:12px;box-shadow:0 18px 40px #192b1929;gap:4px}
+.restaurant-refresh #siteMenu[hidden]{display:none}.restaurant-refresh #siteMenu button{width:100%;justify-content:flex-start;border-radius:8px;padding:14px;min-height:48px}.restaurant-refresh #siteMenu .nav-label{display:inline;opacity:1;max-width:none;width:auto;transform:none}.restaurant-refresh #siteMenu svg{width:22px;height:22px}
+.restaurant-refresh .hero{display:grid;grid-template-columns:1.3fr 1fr;align-items:center;gap:64px;min-height:580px;padding:70px max(24px,calc((100vw - 1160px)/2));background:#eef0e5;color:#233d28}.restaurant-refresh .hero-inner{max-width:650px}.restaurant-refresh .hero-title{font-size:clamp(2.6rem,4.8vw,4.7rem);color:#243d28}.restaurant-refresh .hero-lead,.restaurant-refresh .hero-kicker{color:#4e604f}.restaurant-refresh .hero-link{color:#304d34}
+.wood-sign{width:100%;max-width:400px;height:245px;perspective:1200px;position:relative;background:none;border:0;cursor:pointer;justify-self:center;color:#382716;font:inherit;margin-top:45px}.wood-sign:before{content:'';position:absolute;width:55%;height:90px;border:4px solid #765c3c;border-bottom:0;border-radius:60% 60% 0 0;left:22%;top:-65px}.sign-turn{display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.2,.7,.2,1)}.flipped .sign-turn{transform:rotateY(180deg)}.sign-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--wood);border:9px solid #98683c;border-radius:15px;box-shadow:inset 0 0 0 2px #f5dcb0,0 15px 28px #34230f25;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:20px}.sign-back{transform:rotateY(180deg)}.sign-kicker{text-transform:uppercase;letter-spacing:.16em;font-size:12px}.sign-face strong{font:600 25px Fraunces,serif}.sign-face small{font-size:13px;line-height:1.6}.wood-sign .badge-horario{white-space:normal;font:600 clamp(25px,3vw,36px) Fraunces,serif;background:transparent;border:0;padding:0;box-shadow:none;color:#3c301f}.wood-sign .badge-horario:before{display:none}
+.restaurant-refresh .cardapio-box{background:transparent;box-shadow:none;overflow:visible;border:0}.restaurant-refresh .cardapio-box-banner{border-radius:18px 18px 0 0;overflow:hidden}.restaurant-refresh .cardapio-box-list{background:var(--wood);border:7px solid #bf915e;border-top:0;border-radius:0 0 30px 30px;min-height:180px;padding:25px 18px 35px;box-shadow:inset 0 0 0 2px #f4d6a5,0 10px 18px #53341020;color:#352717}.restaurant-refresh .cardapio-box-list>*{color:#352717;background:#fff9edb8;border-color:#b38a58}
+.restaurant-refresh #precos{padding:65px 22px;background:#eeeade;scroll-margin-top:110px}.restaurant-refresh .buffet-home-inner{max-width:1100px}.restaurant-refresh #precos .precos-topo{margin-top:22px}.restaurant-refresh #precos .horario-card,.restaurant-refresh #precos .aviso-horario{display:none}
+.restaurant-refresh #localizacao{padding:75px 24px}.location-layout{max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 1.2fr;gap:18px 48px}.location-layout>.loc-eyebrow-wrap,.location-layout>.loc-title,.location-layout>.loc-sub{grid-column:1/-1}.location-layout .loc-mapa{margin:0;align-self:center}.location-layout .loc-mapa-foto img{width:100%;height:270px;object-fit:cover}.location-layout .loc-mapa-btn{min-height:48px}.restaurant-refresh section{scroll-margin-top:110px}.restaurant-refresh button:focus-visible,.restaurant-refresh a:focus-visible{outline:3px solid #98683c;outline-offset:5px}
+@media(max-width:760px){.restaurant-refresh .hero{grid-template-columns:1fr;gap:45px;padding:45px 24px 60px;min-height:0}.wood-sign{max-width:340px;height:225px}.restaurant-refresh .hero-title{font-size:clamp(2.5rem,10vw,3.8rem)}.location-layout{grid-template-columns:1fr;gap:20px}.new-header{height:84px;padding:5px 16px}.brand img{height:70px;width:140px}.restaurant-refresh #precos{padding:45px 18px}}
+@media(prefers-reduced-motion:reduce){.sign-turn{transition:none}.restaurant-refresh{scroll-behavior:auto}}
+/* Refinamento da identidade: verde-floresta e dourado. */
+.restaurant-refresh{font-family:var(--fonte-corpo);background:var(--papel)}
+.restaurant-refresh h1,.restaurant-refresh h2,.restaurant-refresh h3{font-family:var(--fonte-display)}
+.restaurant-refresh header{border-bottom:2px solid var(--dourado)}
+.new-header button{color:var(--verde-900);border-color:var(--dourado)}
+.restaurant-refresh .hero{grid-template-columns:minmax(0,1.5fr) minmax(230px,.75fr);background:linear-gradient(90deg,rgba(10,35,12,.93),rgba(14,42,16,.76) 55%,rgba(10,30,12,.5)),url('IMG_4031.png') center/cover no-repeat;color:#fff;gap:40px}
+.restaurant-refresh .hero-title{color:#fff}.restaurant-refresh .hero-title em{color:var(--dourado-claro)}
+.restaurant-refresh .hero-kicker{color:var(--dourado-claro)}.restaurant-refresh .hero-lead{color:#f4f5eb}.restaurant-refresh .hero-link{color:#fff;text-decoration-color:var(--dourado)}
+.restaurant-refresh .hero-btn-primary{background:var(--dourado);color:var(--verde-900);border:1px solid var(--dourado-claro)}
+.restaurant-refresh .hero-btn-primary:hover{background:var(--dourado-claro)}
+.restaurant-refresh .wood-sign{max-width:290px;height:195px;margin-top:35px}.restaurant-refresh .wood-sign:before{height:65px;top:-47px}
+.restaurant-refresh .sign-face{gap:12px;padding:14px;border-width:6px}.restaurant-refresh .wood-sign .badge-horario{font-size:27px}.restaurant-refresh .sign-face strong{font-size:21px}.restaurant-refresh .sign-face small{font-size:12px}.restaurant-refresh .sign-kicker{font-size:10px}
+.restaurant-refresh .cardapio-box-banner{border:2px solid var(--dourado);outline:1px solid var(--verde-900);outline-offset:3px;margin:4px 4px 0}.restaurant-refresh .cardapio-box-title{background:var(--verde-900);color:#fff}
+.restaurant-refresh #precos{background:var(--verde-050)}
+.payment-prices{margin-top:24px;padding:24px;background:var(--verde-900);color:#fff;border:1px solid var(--dourado);border-radius:16px;text-align:center}.payment-prices h3{color:var(--dourado-claro);margin:0 0 15px}.payment-options{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}.payment-options span{padding:8px 16px;border:1px solid #c9a05088;border-radius:24px}
+.restaurant-refresh footer{background:var(--verde-900);color:#fff;border-top:3px solid var(--dourado);padding:42px 24px;text-align:center}.restaurant-refresh .footer-logo,.restaurant-refresh .footer-copy{color:#fff}.restaurant-refresh .footer-logo em{color:var(--dourado-claro)}.footer-details{margin:20px auto;max-width:800px;line-height:1.8}.footer-details p{margin:6px 0}.footer-contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 28px}.footer-contacts a{color:var(--dourado-claro);padding:8px 0;text-underline-offset:4px}
+@media(max-width:760px){.restaurant-refresh .hero{grid-template-columns:1fr;background-position:center;gap:35px}.restaurant-refresh .wood-sign{max-width:260px;height:180px}.restaurant-refresh .wood-sign .badge-horario{font-size:24px}.footer-contacts{flex-direction:column;gap:0}}
+/* Ajustes de contraste, proporções e alternância das seções. */
+.restaurant-refresh #siteMenu button,
+.restaurant-refresh #siteMenu button .nav-label{color:var(--verde-900)}
+.restaurant-refresh #siteMenu button{background:transparent}
+.restaurant-refresh #siteMenu button:hover,
+.restaurant-refresh #siteMenu button.active{background:var(--verde-100);color:var(--verde-900)}
+.restaurant-refresh .wood-sign:before{display:none}
+.restaurant-refresh .wood-sign{margin-top:0}
+.restaurant-refresh .cardapio-box-banner{border:7px solid #bf915e;border-bottom:0;outline:none;margin:0;border-radius:30px 30px 0 0}
+.restaurant-refresh .cardapio-box-title{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);width:max-content;max-width:calc(100% - 20px);text-align:center;white-space:normal;font-size:clamp(.7rem,1.1vw,.9rem);padding:9px 14px;background:var(--verde-900);color:#fff}
+.restaurant-refresh .cardapio-box-banner:after{background:linear-gradient(180deg,#071c0710,#071c0745 50%,#071c0720)}
+.restaurant-refresh #cardapio-dia-sec,
+.restaurant-refresh #pedidos{background:#fff}
+.restaurant-refresh #precos,
+.restaurant-refresh #localizacao{background:var(--verde-900)}
+.restaurant-refresh #precos .buffet-home-title,
+.restaurant-refresh #localizacao .loc-title{color:#fff}
+.restaurant-refresh #precos .buffet-home-sub,
+.restaurant-refresh #localizacao .loc-sub,
+.restaurant-refresh #localizacao .loc-value{color:#edf3e9}
+.restaurant-refresh #localizacao .loc-label,
+.restaurant-refresh #localizacao .loc-eyebrow,
+.restaurant-refresh #localizacao .loc-title em{color:var(--dourado-claro)}
+.restaurant-refresh #localizacao .loc-info-row{border-color:#ffffff30}
+.restaurant-refresh .payment-prices{padding:14px 18px;background:var(--papel-card);color:var(--tinta);border:1px solid var(--borda);border-radius:var(--raio);margin-top:18px}
+.restaurant-refresh .payment-prices h3{font-family:var(--fonte-corpo);font-size:.88rem;color:var(--verde-900);margin:0 0 8px}
+.restaurant-refresh .payment-options{gap:6px 16px;font-size:.85rem}
+.restaurant-refresh .payment-options span{padding:2px 0;border:0;border-radius:0}
+.restaurant-refresh footer{background:#fff;color:var(--verde-900);border-top:1px solid var(--borda)}
+.restaurant-refresh .footer-logo{color:var(--verde-900)}
+.restaurant-refresh .footer-logo em,
+.restaurant-refresh .footer-contacts a{color:var(--dourado-texto)}
+.restaurant-refresh .footer-copy{color:var(--tinta-suave)}
+@media(max-width:760px){
+ .restaurant-refresh .wood-sign{max-width:220px;height:155px;margin:0 auto}
+ .restaurant-refresh .sign-face{gap:8px;padding:10px;border-width:5px;border-radius:12px}
+ .restaurant-refresh .wood-sign .badge-horario{font-size:21px}
+ .restaurant-refresh .sign-face strong{font-size:17px}
+ .restaurant-refresh .sign-face small{font-size:11px;line-height:1.4}
+ .restaurant-refresh .sign-kicker{font-size:9px}
+ .restaurant-refresh .sign-back #pxFaixaLoja{font-size:15px}
+}
+/* Categorias no topo central da fotografia. */
+.restaurant-refresh .cardapio-box-title{top:14px;left:50%;bottom:auto;transform:translateX(-50%)}
+/* Hierarquia consistente entre as seções. */
+.restaurant-refresh #cardapio-dia-sec>h2,
+.restaurant-refresh #pedidos>h2,
+.restaurant-refresh #precos .buffet-home-title,
+.restaurant-refresh #localizacao .loc-title{font-family:var(--fonte-display);font-size:clamp(1.9rem,3.3vw,2.6rem);font-weight:600;line-height:1.2;letter-spacing:-.025em;text-align:center;margin:0 0 12px!important}
+.restaurant-refresh #cardapio-dia-sec>.subtitle,
+.restaurant-refresh #pedidos>.subtitle,
+.restaurant-refresh .buffet-home-sub,
+.restaurant-refresh .loc-sub{font-family:var(--fonte-corpo);font-size:1rem;font-weight:400;line-height:1.6;text-align:center;margin:0 0 36px}
+.restaurant-refresh #localizacao .loc-title em{font-style:normal}
+.restaurant-refresh #cardapio-dia-sec,.restaurant-refresh #pedidos,.restaurant-refresh #precos,.restaurant-refresh #localizacao{padding-top:64px;padding-bottom:64px}
+.price-board{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:18px;text-align:left}
+.price-group{min-width:0;background:#fffdf8;border:1px solid #e4d9bf;border-top:3px solid var(--dourado);border-radius:18px;padding:28px 24px;box-shadow:0 12px 30px #05160520}
+.price-eyebrow{font:700 .68rem var(--fonte-corpo);letter-spacing:.12em;text-transform:uppercase;color:var(--dourado-texto)}
+.restaurant-refresh .price-group>h3{font:600 1.5rem/1.3 var(--fonte-display);color:var(--verde-900);margin:8px 0 24px}
+.restaurant-refresh .price-group .buffet-grid,.restaurant-refresh .price-group .precos-topo,.restaurant-refresh .price-group .kilo-options{display:flex;flex-direction:column;gap:0;max-width:none;margin:0;background:transparent}
+.restaurant-refresh .price-group .buffet-card,.restaurant-refresh .price-group .preco-card,.restaurant-refresh .price-group .kilo-tag{background:transparent;box-shadow:none;border:0;border-radius:0;padding:17px 0;border-bottom:1px solid #e8e1d3;transform:none;text-align:left;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;color:var(--verde-900)}
+.restaurant-refresh .price-group .buffet-card:last-child,.restaurant-refresh .price-group .preco-card:last-child,.restaurant-refresh .price-group .kilo-tag:last-child{border-bottom:0}
+.restaurant-refresh .price-group .buffet-card h3,.restaurant-refresh .price-group .preco-card-nome{font:400 .95rem var(--fonte-corpo);margin:0;text-transform:none;letter-spacing:0;color:var(--tinta)}
+.restaurant-refresh .price-group .buffet-price,.restaurant-refresh .price-group .preco-card-valor{font:600 1.5rem var(--fonte-display);color:var(--verde-900);margin:0}
+.restaurant-refresh .price-group .buffet-price span{font:400 .8rem var(--fonte-corpo)}
+.restaurant-refresh .price-group .preco-card-obs{flex-basis:100%;font-size:.8rem;color:var(--tinta-suave)}
+.price-note{font-size:.88rem;line-height:1.5;color:var(--tinta-suave);margin:-10px 0 4px}
+.restaurant-refresh .price-group .kilo-tag{font-size:.88rem;line-height:1.4}
+.restaurant-refresh .price-group .kilo-tag span{font:700 1rem var(--fonte-corpo);white-space:nowrap;color:var(--verde-900);background:none;padding:0}
+.restaurant-refresh .payment-prices{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 24px;background:#fffdf8;padding:14px 20px}.restaurant-refresh .payment-prices h3{margin:0}
+@media(max-width:900px){.price-board{grid-template-columns:1fr 1fr}.price-group:last-child{grid-column:1/-1}}
+@media(max-width:600px){.price-board{grid-template-columns:1fr}.price-group:last-child{grid-column:auto}.price-group{padding:24px}.restaurant-refresh #cardapio-dia-sec,.restaurant-refresh #pedidos,.restaurant-refresh #precos,.restaurant-refresh #localizacao{padding-top:44px;padding-bottom:44px}.restaurant-refresh .cardapio-box-title{top:12px}}
+/* Títulos maiores e mais encorpados; placa antes das boas-vindas no celular. */
+.restaurant-refresh #cardapio-dia-sec>h2,
+.restaurant-refresh #pedidos>h2,
+.restaurant-refresh #precos .buffet-home-title,
+.restaurant-refresh #localizacao .loc-title{
+ font-family:var(--fonte-display);
+ font-size:clamp(2.35rem,4.5vw,3.5rem);
+ font-weight:700;
+ line-height:1.15;
+ letter-spacing:-.025em;
+}
+@media(max-width:760px){
+ .restaurant-refresh .hero>.wood-sign{grid-row:1;justify-self:center}
+ .restaurant-refresh .hero>.hero-inner{grid-row:2}
+}
+/* Acolhimento e tradição da casa. */
+.restaurant-refresh .hero-kicker{font-size:clamp(.8rem,1.2vw,1rem);letter-spacing:.1em;line-height:1.6}
+.restaurant-refresh .hero-title{font-weight:700}
+.house-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;background:#fffdf8;padding:30px max(24px,calc((100vw - 1100px)/2));border-bottom:1px solid #c9a05055}
+.house-value{display:flex;align-items:center;justify-content:center;gap:15px;min-width:0;color:var(--verde-900)}
+.house-value svg{width:32px;height:32px;flex-shrink:0;color:var(--dourado-texto)}
+.house-value strong{display:block;font-family:var(--fonte-display);font-size:1.12rem;font-weight:600;line-height:1.3}
+.house-value span{display:block;font-size:.85rem;color:var(--tinta-suave);margin-top:4px;line-height:1.4}
+.restaurant-refresh #precos,.restaurant-refresh #localizacao{border-top:1px solid var(--dourado);border-bottom:1px solid var(--dourado)}
+.restaurant-refresh #cardapio-dia-sec>h2:after,.restaurant-refresh #pedidos>h2:after,.restaurant-refresh #precos .buffet-home-title:after{content:'';display:block;width:38px;height:3px;border-radius:3px;background:var(--dourado);margin:18px auto}
+.restaurant-refresh .loc-mapa{border-color:var(--dourado);box-shadow:0 16px 36px #06150533}
+.restaurant-refresh .location-layout .loc-mapa-foto{height:auto;aspect-ratio:2/1}
+.restaurant-refresh .location-layout .loc-mapa-foto img{display:block;width:100%;height:100%;object-fit:cover}
+.footer-brand{display:block;width:160px;margin:0 auto 18px}
+.footer-brand img{display:block;width:100%;height:auto}
+.restaurant-refresh footer{padding-top:38px;padding-bottom:48px}
+@media(max-width:760px){.house-strip{grid-template-columns:1fr;gap:20px;padding:26px 24px}.house-value{justify-content:flex-start;max-width:320px;width:100%;margin:auto}.house-value strong{font-size:1.05rem}.house-value svg{width:28px;height:28px}.restaurant-refresh .hero-kicker{font-size:.78rem;letter-spacing:.07em}.footer-brand{width:140px}}

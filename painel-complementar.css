@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Literata:wght@600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap');
+:root{--preto:#373d20;--papel:#eff1ed;--carta:#fff;--linha:#d7ddcf;--tinta:#626957;--verde:#527b16;--destaque:#527b16}
+body{font-family:'Nunito Sans',sans-serif}h1,h2,h3{font-family:'Literata',Georgia,serif}.cartao,.metrica{border-radius:18px;box-shadow:0 3px 12px #373d2006}button,.btn,.btn-2,input,select,textarea{border-radius:10px}button,.btn,.btn-2{min-height:42px}.btn,.btn-verde{background:#72b01d;color:#23300f;font-weight:800}.btn:hover,.btn-verde:hover{background:#86c333}header{background:#373d20}input:focus,select:focus,textarea:focus{outline:2px solid #527b16;outline-offset:2px}
+@media(max-width:600px){header{flex-wrap:wrap;gap:8px}header .dir{flex-wrap:wrap}main{padding:20px 14px 60px}.cartao{padding:16px}}
+
+/* Preserva o interruptor compacto, sem a altura dos botões comuns. */
+button.chave{width:40px;height:23px;min-height:23px;min-width:40px;border-radius:20px;padding:0;border:0;flex:none}
+button.chave::after{top:3px;left:3px;width:17px;height:17px;border-radius:50%}
+button.chave.on::after{transform:translateX(17px)}
+button.chave:focus-visible{outline:2px solid #373d20;outline-offset:3px}

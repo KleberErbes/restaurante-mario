@@ -1,0 +1,110 @@
+/* Identidade visual do site, isolada das funções administrativas. */
+:root{--verde-900:#373d20;--verde-800:#373d20;--verde-700:#465227;--verde-600:#527b16;--verde-100:#eff1ed;--dourado:#72b01d;--dourado-claro:#86c333;--dourado-texto:#46691a;--papel:#eff1ed;--tinta:#373d20;--cinza:#626957;--borda:#d7ddcf;--raio:16px;--raio-g:24px;--sombra-1:0 2px 8px #373d2008;--sombra-2:0 8px 28px #373d200b;--sombra-3:0 24px 60px #18200c33}
+body{font-family:'Nunito Sans',sans-serif;background:#eff1ed;color:#373d20}
+button,input,select,textarea{font-family:inherit}
+h1,h2,h3,.login-logo,.admin-header-title,.pedido-cliente,.stat-num,.stat-valor,.prev-dia,.prev-n b{font-family:'Literata',Georgia,serif}
+#telaLogin{background:linear-gradient(120deg,#222a18dc,#373d207d),url('posto.webp') center/cover;min-height:100svh;padding:28px 20px}
+.login-box{max-width:420px;padding:40px 32px;background:#eff1edf5;border:1px solid #ffffff80;box-shadow:var(--sombra-3)}
+.login-box:before{content:'';display:block;width:84px;height:84px;margin:0 auto 20px;background:white url('logo.png') center/contain no-repeat;border-radius:18px}
+.login-logo{font-size:1.65rem;line-height:1.25}.login-sub{letter-spacing:.14em;margin-top:12px;color:var(--cinza)}
+.login-btn,.btn-salvar,.btn-imprimir{background:#72b01d;color:#23300f;font-weight:800;border-radius:12px;min-height:44px}
+.login-btn:hover,.btn-salvar:hover,.btn-imprimir:hover{background:#86c333}
+.admin-header{height:76px;padding:0 clamp(16px,4vw,56px);background:#eff1edf5;color:#373d20;border-bottom:1px solid var(--borda);box-shadow:none;backdrop-filter:blur(14px)}
+.admin-header-title{font-size:1.1rem}.badge-total{background:#e2ecd7;border-color:#c9d9b6;color:#373d20}
+.btn-cardapio,.btn-sair{background:white;border:1px solid var(--borda);color:#373d20;border-radius:12px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.btn-cardapio:hover,.btn-sair:hover{background:#e2ecd7}
+.admin-tabs{top:76px;gap:8px;background:#eff1edf5;padding:10px clamp(16px,4vw,56px);border-bottom:1px solid var(--borda);backdrop-filter:blur(14px)}
+.admin-tab{color:#626957;border:1px solid transparent;border-radius:12px;min-height:44px;padding:10px 18px}
+.admin-tab:hover{color:#373d20;background:#e3e8dd}.admin-tab.active{background:#373d20;color:#fff;border-color:#373d20}
+.admin-body{max-width:1160px;padding:36px 24px 64px}.admin-info-bar{margin-bottom:26px}.admin-info-bar h2{font-size:clamp(1.6rem,3vw,2.25rem);letter-spacing:-.035em;line-height:1.25}
+.pedido-card,.stat-card,.cfg-bloco,.av-card,.av-form,.hist-item,.hr-card{background:#fff;border:1px solid var(--borda);border-radius:18px;box-shadow:var(--sombra-1)}
+.pedido-card{border-top:3px solid #72b01d}.pedido-card:after{display:none}.pedido-header,.marmita-linha,.cfg-linha{border-color:var(--borda)}
+.cfg-bloco{max-width:none;padding:26px}.cfg-bloco h3,.av-form h3{font-size:1.2rem;color:#373d20}.cfg-bloco .sub,.av-info p,.av-topo .dica,.hist-hora{color:var(--cinza)}
+.cfg-linha label,.av-info h4{color:#373d20}.cfg-linha label small{color:var(--cinza)}
+.login-box input,.cfg-linha input,.hf-campo input,.hf-campo select,.av-form input,.av-form textarea,.av-form select{border-color:var(--borda);border-radius:10px;color:#373d20;background:#fff;min-height:44px}
+input:focus,select:focus,textarea:focus{outline:2px solid #527b16!important;outline-offset:2px}
+.hist-atalhos button,.av-acoes button{border-color:var(--borda);border-radius:10px;min-height:40px;background:#eff1ed;color:#373d20}.av-acoes .del{color:#b3261e}
+.prev-card{background:#373d20;border-radius:20px}.prev-eyebrow{color:#b9df89}.av-card.on{border-color:#72b01d;box-shadow:0 0 0 2px #72b01d18}
+.av-tag.desligado{background:#eff1ed;color:#626957}.av-thumb.vazia{background:#eff1ed;color:#626957}.hist-dia{color:#373d20}
+@media(max-width:600px){
+ .admin-header{height:116px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:10px;padding:12px 16px}
+ .admin-header-title{font-size:1rem;text-align:center}.admin-header-right{justify-content:center;gap:8px}.admin-header-right>*{flex:1}.admin-header-right .badge-total{display:none}
+ .admin-tabs{top:116px;padding:8px 12px;gap:5px}.admin-tab{padding:9px 12px;font-size:.82rem}
+ .admin-body{padding:24px 14px 48px}.cfg-bloco{padding:18px}.admin-info-bar h2{font-size:1.65rem}.login-box{padding:32px 24px}
+ .av-duas{flex-direction:column;gap:0}.cfg-linha{flex-wrap:wrap}.cfg-linha label{min-width:130px}.cfg-salvar{flex-wrap:wrap}.av-upload{flex-wrap:wrap}
+}
+@media print{.admin-header,.admin-tabs{position:static;backdrop-filter:none}.admin-body{max-width:none}.pedido-card,.stat-card{box-shadow:none;break-inside:avoid}}
+.web-queue{margin-bottom:32px}.web-queue h2{font-size:1.65rem;margin-bottom:12px}.web-queue>p{margin-bottom:12px}.web-queue-list{margin-top:18px}.web-queue .pedido-card{padding:20px;overflow-wrap:anywhere}.web-queue .pedido-card p{margin:8px 0}.web-queue .btn-salvar{margin-top:10px}
+#tab-confirmar h2{font-family:'Literata',Georgia,serif;font-size:1.9rem;margin-bottom:14px}
+#tab-confirmar .pedido-card{padding:24px;margin-top:18px}
+#tab-confirmar .pedido-card p{margin:10px 0}
+#confirmationFeedback{margin:14px 0}
+/* Painel com navegação lateral — novembro 2026 */
+.admin-sidebar{position:fixed;inset:0 auto 0 0;width:264px;background:#373d20;color:#eff1ed;padding:32px 18px;z-index:60;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-brand{font-family:'Literata',Georgia,serif;font-size:1.55rem;font-weight:800;line-height:1.35;color:#eff1ed;text-decoration:none;padding:0 14px 30px;display:block}
+.sidebar-brand span{display:block;font:800 .67rem 'Nunito Sans',sans-serif;letter-spacing:.2em;color:#b8da88;margin-top:12px}
+.sidebar-label{font-size:.62rem;letter-spacing:.14em;color:#c2c9b4;padding:0 14px;margin-bottom:14px}
+.admin-sidebar .admin-tabs{position:static;display:flex;flex-direction:column;overflow:visible;gap:7px;padding:0;background:transparent;border:0;backdrop-filter:none}
+.admin-sidebar .admin-tab{display:flex;align-items:center;gap:12px;text-align:left;white-space:normal;color:#e2e6da;padding:14px;border:1px solid transparent;min-height:52px;font-size:.9rem}
+.admin-tab svg{width:21px;height:21px;flex-shrink:0}
+.admin-sidebar .admin-tab:hover{background:#ffffff10;color:white}
+.admin-sidebar .admin-tab.active{background:#72b01d;color:#19220c;border-color:#72b01d;font-weight:900}
+.sidebar-footer{margin-top:auto;padding:38px 14px 0;font-size:.78rem;line-height:1.7;color:#c2c9b4}
+.admin-header{margin-left:264px;height:88px;padding:0 36px;background:#373d20;color:#eff1ed;top:0;border-bottom:1px solid #ffffff20;backdrop-filter:none}
+.admin-header-title{font-family:'Nunito Sans',sans-serif;font-size:.9rem;color:#e2e6da;letter-spacing:.02em}
+.admin-header-right{gap:12px}.admin-header .badge-total{background:#ffffff12;color:#eff1ed;border-color:#ffffff30}
+.admin-header .btn-cardapio,.admin-header .btn-sair{background:transparent;color:#eff1ed;border-color:#ffffff40;padding:10px 16px}
+.admin-header .btn-cardapio:hover,.admin-header .btn-sair:hover{background:#ffffff15}
+.admin-body{margin:0 0 0 264px;max-width:none;padding:48px clamp(24px,4vw,64px) 72px;min-height:calc(100svh - 88px);background:#eff1ed}
+.section-eyebrow{display:block;font-size:.68rem;letter-spacing:.18em;font-weight:900;color:#527b16;margin-bottom:12px}
+#tab-confirmar h2,.admin-info-bar h2{font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.2;letter-spacing:-.04em}
+#tab-confirmar>p{color:#626957;max-width:650px;margin:12px 0 22px}
+.web-queue-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:22px;align-items:start}
+#tab-confirmar .pedido-card{margin:0;padding:26px;background:white}.web-queue-list>p{grid-column:1/-1;background:white;padding:44px 28px;border:1px dashed #b9c5aa;border-radius:18px;color:#626957;text-align:center}
+#tab-config:not([data-view="horarios"]) .cfg-horarios{display:none}
+#tab-config[data-view="horarios"] .cfg-bloco:not(.cfg-horarios){display:none}
+button:focus-visible,a:focus-visible{outline:3px solid #72b01d;outline-offset:4px}
+@media(max-width:1100px){.admin-header-title{display:none}.admin-header-right{width:100%;justify-content:flex-end}.admin-header{padding:0 22px}}
+@media(max-width:760px){
+.admin-sidebar{position:static;width:100%;padding:22px 16px 14px;overflow:visible}.sidebar-brand{font-size:1.25rem;padding:0 4px 16px}.sidebar-brand span{margin-top:5px;font-size:.6rem}.sidebar-label,.sidebar-footer{display:none}
+.admin-sidebar .admin-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.admin-sidebar .admin-tab{font-size:.78rem;min-height:44px;padding:10px;gap:8px}.admin-sidebar .admin-tab:first-child{grid-column:1/-1}
+.admin-header{margin:0;height:auto;padding:12px 16px;position:sticky;top:0;display:block}.admin-header-right{display:flex;flex-wrap:wrap;gap:8px}.admin-header-right>*{flex:1}.admin-header-right .badge-total{display:none}.admin-header .btn-cardapio,.admin-header .btn-imprimir,.admin-header .btn-sair{font-size:.75rem;padding:10px;min-height:44px}.admin-header .btn-sair{flex:0 0 auto}
+.admin-body{margin:0;padding:28px 16px 48px;min-height:60svh}.web-queue-list{grid-template-columns:1fr}#tab-confirmar .pedido-card{padding:20px}
+}
+@media print{.admin-sidebar,.admin-header{display:none}.admin-body{margin:0;padding:0;background:white}}
+
+/* Todas as ações na navegação lateral. */
+.admin-body{min-height:100svh}
+.sidebar-action{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:14px;border:1px solid #ffffff25;border-radius:12px;background:transparent;color:#eff1ed;text-decoration:none;text-align:left;font:700 .9rem 'Nunito Sans',sans-serif;cursor:pointer;box-sizing:border-box}
+.sidebar-action:hover{background:#ffffff12;color:white}
+.sidebar-action:first-child{margin-bottom:14px}
+.sidebar-count{padding:18px 14px 10px}.sidebar-count .badge-total{background:#ffffff10;border-color:#ffffff25;color:#eff1ed}
+.sidebar-download{background:#72b01d;color:#19220c;border-color:#72b01d;font-weight:900;margin-top:6px}.sidebar-download:hover{background:#86c333;color:#19220c}
+@media(max-width:760px){.sidebar-action{font-size:.78rem;padding:10px}.admin-sidebar .sidebar-action:first-child{grid-column:1/-1;margin-bottom:4px}.sidebar-count{grid-column:1/-1;padding:10px}.sidebar-download{margin-top:0}.admin-body{min-height:60svh}}
+
+/* Ordem final da navegação e marca no topo. */
+.sidebar-logo{padding:0;margin:0 auto 18px;display:block;width:112px;flex-shrink:0}
+.sidebar-logo img{display:block;width:100%;height:auto;border-radius:16px}
+.admin-sidebar>.sidebar-count{padding:0 12px 22px;text-align:center}
+.sidebar-total-label{display:block;font-size:.6rem;letter-spacing:.1em;color:#c2c9b4;margin-bottom:10px}
+.sidebar-count .badge-total{display:inline-block}
+.admin-sidebar .sidebar-action:first-child{margin-bottom:0}
+@media(max-width:760px){.admin-sidebar .admin-tabs{display:flex;flex-direction:column}.sidebar-logo{width:90px;margin-bottom:14px}.admin-sidebar>.sidebar-count{padding-bottom:18px}}
+
+.admin-mobile-bar,.admin-menu-close,.admin-menu-backdrop{display:none}
+@media(max-width:760px){
+.admin-mobile-bar{display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:55;background:#eff1ed;border-bottom:1px solid #d7ddcf;padding:12px 16px;color:#373d20}
+#adminMenuToggle{display:grid;place-items:center;width:44px;height:44px;border:1px solid #d7ddcf;border-radius:12px;background:white;color:#373d20;cursor:pointer}
+.admin-sidebar{position:fixed;inset:0 auto 0 0;width:min(320px,86vw);height:100dvh;box-sizing:border-box;overflow-y:auto;z-index:100;transform:translateX(-100%);visibility:hidden;transition:transform .25s ease,visibility .25s}
+.admin-menu-open .admin-sidebar{transform:translateX(0);visibility:visible}
+.admin-menu-open{overflow:hidden}
+.admin-menu-close{display:block;align-self:flex-end;flex-shrink:0;background:transparent;color:#eff1ed;font-size:28px;border:1px solid #ffffff40;border-radius:10px;width:44px;min-height:44px;margin-bottom:8px;cursor:pointer}
+.admin-menu-backdrop:not([hidden]){display:block;position:fixed;inset:0;z-index:90;background:#10170aa0;border:0;width:100%;height:100%;padding:0}
+}
+@media(prefers-reduced-motion:reduce){.admin-sidebar{transition:none}}
+@media print{.admin-mobile-bar,.admin-menu-backdrop{display:none!important}}
+
+/* Contraste dos indicadores do histórico. */
+.hr-card{background:#fff;color:#373d20}
+.hr-card .v{color:#373d20}
+.hr-card .r{color:#626957;opacity:1}

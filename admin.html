@@ -651,6 +651,8 @@
       table.hist td.dia { font-size: 0.72rem; }
     }
   </style>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-interface.css">
 </head>
 <body>
 
@@ -672,27 +674,28 @@
 
 <!-- ===== PAINEL ADMIN ===== -->
 <div id="telaAdmin">
-  <header class="admin-header">
-    <div class="admin-header-title">Restaurante do Mário — Admin</div>
-    <div class="admin-header-right">
-      <span class="badge-total" id="badgeTotal">0 pedidos</span>
-      <a class="btn-cardapio" href="cardapio.html">Cardápio</a>
-      <button class="btn-imprimir" onclick="gerarWord()">Baixar</button>
-      <button class="btn-sair" onclick="sair()">Sair</button>
-    </div>
-  </header>
+<div class="admin-mobile-bar"><button id="adminMenuToggle" aria-label="Abrir menu" aria-controls="adminSidebar" aria-expanded="false"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><strong>Painel do restaurante</strong></div>
+<button class="admin-menu-backdrop" id="adminMenuBackdrop" aria-label="Fechar menu" tabindex="-1" hidden></button>
 
-  <nav class="admin-tabs">
-    <button class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')">Pedidos do Dia</button>
-    <button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')">Resumo &amp; Histórico</button>
-    <button class="admin-tab" data-tab="historico" onclick="trocarTab('historico')">Histórico de Pedidos</button>
-    <button class="admin-tab" data-tab="avisos" onclick="trocarTab('avisos')">Avisos</button>
-    <button class="admin-tab" data-tab="config" onclick="trocarTab('config')">Preços &amp; Horários</button>
-  </nav>
 
-  <div class="admin-body">
+<aside class="admin-sidebar" id="adminSidebar"><button class="admin-menu-close" id="adminMenuClose" aria-label="Fechar menu">×</button>
+<a class="sidebar-brand sidebar-logo" href="admin.html" aria-label="Restaurante do Mário — painel administrativo"><img src="logo.png" alt="Restaurante do Mário"></a>
+<div class="sidebar-count"><span class="sidebar-total-label">TOTAL DE PEDIDOS DO DIA</span><span class="badge-total" id="badgeTotal">0 pedidos</span></div>
+<nav class="admin-tabs" aria-label="Seções do painel">
+<a class="sidebar-action" href="cardapio.html">Ir para cardápio</a>
+<button class="admin-tab active" data-tab="confirmar" onclick="trocarTab('confirmar')" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l2 2 4-4 M5 3h14v18H5z"/></svg><span>Pedidos a confirmar</span></button>
+<button class="admin-tab" data-tab="pedidos" onclick="trocarTab('pedidos')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"/></svg><span>Pedidos do dia</span></button>
+<button class="admin-tab" data-tab="historico" onclick="trocarTab('historico')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-7 M3 3v5h5 M12 7v5l3 2"/></svg><span>Histórico de pedidos</span></button>
+<button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10h4v10 M10 20V4h4v16 M16 20v-7h4v7"/></svg><span>Resumo</span></button>
+<button class="admin-tab" data-tab="config" onclick="trocarTab('config')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z M12 9v6 M10 10h4 M10 14h4"/></svg><span>Preços</span></button>
+<button class="admin-tab" data-tab="horarios" onclick="trocarTab('horarios')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg><span>Horários</span></button>
+<button class="admin-tab" data-tab="avisos" onclick="trocarTab('avisos')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H9l-5 4z M8 9h8 M8 13h5"/></svg><span>Quadro de avisos</span></button>
+<button class="sidebar-action sidebar-download" onclick="gerarWord()">Baixar pedidos do dia</button>
+<button class="sidebar-action" onclick="sair()">Sair da conta</button>
+</nav></aside>
+  <div class="admin-body"><div class="tab-panel active" id="tab-confirmar"></div>
     <!-- ===== ABA: PEDIDOS DO DIA ===== -->
-    <div class="tab-panel active" id="tab-pedidos">
+    <div class="tab-panel" id="tab-pedidos">
       <div class="admin-info-bar">
         <h2>Pedidos do Dia</h2>
         <div class="status-atualizacao">
@@ -763,7 +766,7 @@
 
     <!-- ===== ABA: PREÇOS E HORÁRIOS ===== -->
     <div class="tab-panel" id="tab-config">
-      <div class="admin-info-bar"><h2>Preços &amp; Horários</h2></div>
+      <div class="admin-info-bar"><h2 id="configTitulo">Preços</h2></div>
       <div id="configConteudo">
         <div class="carregando-box"><div class="spinner"></div>Carregando…</div>
       </div>
@@ -1242,7 +1245,7 @@ function renderConfig() {
     </div>`;
 
   document.getElementById('configConteudo').innerHTML = `
-    <div class="cfg-bloco">
+    <div class="cfg-bloco cfg-horarios">
       <h3>Janela de pedidos pelo site</h3>
       <div class="sub">Muda na hora no site.</div>
 
@@ -1434,7 +1437,13 @@ function renderizarPedidos() {
   badge.textContent = `${pedidos.length} pedido${pedidos.length !== 1 ? 's' : ''}`;
   container.innerHTML = '';
 
-  pedidos.forEach(pedido => {
+  const horarioEmSegundos = pedido => {
+    const partes = String(pedido.hora || '').match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    return partes ? Number(partes[1]) * 3600 + Number(partes[2]) * 60 + Number(partes[3] || 0) : -1;
+  };
+  const maisRecentes = pedidos.map((pedido, indice) => ({ pedido, indice }))
+    .sort((a, b) => horarioEmSegundos(b.pedido) - horarioEmSegundos(a.pedido) || b.indice - a.indice);
+  maisRecentes.forEach(({ pedido }) => {
     const card = document.createElement('div');
     card.className = 'pedido-card';
 
@@ -1450,16 +1459,16 @@ function renderizarPedidos() {
       return `
       <div class="marmita-linha">
         <div>
-          <span class="marmita-badge">${m.qty > 1 ? m.qty + 'x ' : ''}${m.tipo}</span>${nomeHTML}
+          <span class="marmita-badge">${m.qty > 1 ? m.qty + 'x ' : ''}${escaparHTML(m.tipo)}</span>${nomeHTML}
         </div>
-        <div class="marmita-itens">${String(resto).replace('⚠️ Obs:', '<span class="obs-destaque">Obs:</span>')}</div>
+        <div class="marmita-itens">${escaparHTML(String(resto)).replace('⚠️ Obs:', '<span class="obs-destaque">Obs:</span>')}</div>
       </div>
     `;
     }).join('');
 
     card.innerHTML = `
       <div class="pedido-header">
-        <div class="pedido-cliente">${pedido.nome}</div>
+        <div class="pedido-cliente">${escaparHTML(pedido.nome)}</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span class="pedido-hora">${pedido.hora || ''}</span>
           <span class="pedido-total-tag">Total: ${totalMarmitas} marmita${totalMarmitas !== 1 ? 's' : ''}</span>
@@ -1646,11 +1655,14 @@ async function gerarWord() {
 let resumoJaCarregado = false;
 
 function trocarTab(tab) {
-  document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  document.querySelectorAll('.admin-tab').forEach(b => { const active = b.dataset.tab === tab; b.classList.toggle('active', active); b.setAttribute('aria-pressed', String(active)); });
+  const panel = tab === 'horarios' ? 'config' : tab;
+  document.getElementById('tab-config').dataset.view = tab;
+  document.getElementById('configTitulo').textContent = tab === 'horarios' ? 'Horários' : 'Preços';
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + panel));
 
   if (tab === 'resumo' && !resumoJaCarregado) carregarResumo();
-  if (tab === 'config' && !configJaCarregado) carregarConfig();
+  if (panel === 'config' && !configJaCarregado) carregarConfig();
   if (tab === 'historico' && !historicoJaCarregado) iniciarHistorico();
   if (tab === 'avisos' && !avisosJaCarregado) carregarAvisos();
 }
@@ -1678,23 +1690,6 @@ async function carregarResumo() {
     const pctM = totMarm > 0 ? Math.round(h.media / totMarm * 100) : 0;
     const pctG = 100 - pctM;
     const pesarTxt = (h.pesar || 0) > 0 ? ` · ${h.pesar} a pesar` : '';
-
-    const p = d.previsao;
-    let prevHtml = `<div class="prev-card">
-      <div class="prev-eyebrow">Previsão · próximo dia</div>
-      <div class="prev-dia">${p.diaSemana}, ${fmtDataBR(p.data)}</div>`;
-    if (p.baseAmostras === 0) {
-      prevHtml += `<div style="font-size:0.9rem;opacity:0.9;">Ainda sem dados suficientes de ${p.diaSemana.toLowerCase()}s anteriores para prever.</div>`;
-    } else {
-      prevHtml += `<div class="prev-nums">
-          <div class="prev-n"><b>${p.totalPrevisto}</b><span>marmitas previstas</span></div>
-          <div class="prev-n"><b>${p.mediaPrevista}</b><span>médias</span></div>
-          <div class="prev-n"><b>${p.grandePrevista}</b><span>grandes</span></div>
-          <div class="prev-n"><b>${fmtR(p.valorPrevisto).replace('R$ ','R$')}</b><span>estimado</span></div>
-        </div>
-        <div class="prev-conf">Baseado em ${p.baseAmostras} ${p.diaSemana.toLowerCase()}${p.baseAmostras>1?'s':''} anterior${p.baseAmostras>1?'es':''} · confiança ${p.confianca}</div>`;
-    }
-    prevHtml += `</div>`;
 
     const ant = (d.anteriores || []).slice().reverse();
     let tabela;
@@ -1727,7 +1722,7 @@ async function carregarResumo() {
         <div class="stat-card"><div class="stat-label">Marmitas Média</div><div class="stat-num media">${h.media}</div></div>
         <div class="stat-card"><div class="stat-label">Marmitas Grande</div><div class="stat-num grande">${h.grande}</div></div>
       </div>
-      <div style="margin-top:18px;">${prevHtml}</div>
+
       <div class="admin-info-bar" style="margin:4px 0 12px;"><h2 style="font-size:1.1rem;">Dias anteriores</h2></div>
       ${tabela}
       <div style="text-align:center;color:var(--cinza);font-size:0.76rem;margin-top:14px;">Conta pedidos do balcão e do site · atualizado ${d.geradoEm}</div>
@@ -1738,5 +1733,5 @@ async function carregarResumo() {
 }
 
 </script>
-</body>
+<script src="admin-pedidos-web.js"></script><script src="admin-menu.js"></script></body>
 </html>

@@ -14,7 +14,7 @@ const CONFIG = {
   // pedidos = quando o SITE aceita pedido
   // loja    = quando o RESTAURANTE atende
   horario: {
-    pedidos:    { h: 7,  m: 0 },
+    pedidos:    { h: 8,  m: 0 },
     pedidosFim: { h: 14, m: 0 },
     abertura:   { h: 10, m: 30 },
     fechamento: { h: 14, m: 0 }
@@ -291,15 +291,8 @@ const Schedule = {
 
   atualizarBadge() {
     if (!dom.badgeHorario) return;
-    const estado = this.getEstado();
-    const estadoMap = {
-      aberto: { text: 'Aberto agora', class: 'badge-aberto' },
-      pedidos: { text: 'Pedidos disponíveis', class: 'badge-pedidos' },
-      fechado: { text: 'Fechado agora', class: 'badge-fechado' }
-    };
-    const { text, class: cls } = estadoMap[estado];
-    dom.badgeHorario.textContent = text;
-    dom.badgeHorario.className = `badge-horario ${cls}`;
+    dom.badgeHorario.textContent = 'Nossos horários';
+    dom.badgeHorario.className = 'badge-horario';
   }
 };
 
@@ -346,10 +339,12 @@ const CardapioManager = {
         Precos.pintar(pr);
       }
 
+      state.cardapioValidado = !!(pr && pr.padrao_media > 0 && pr.padrao_grande > 0);
       this.renderizar();
       this.mostrarSkeleton(false);
       Aviso.mostrar(data.aviso);
     } catch (e) {
+      state.cardapioValidado = false;
       console.error('Erro ao carregar cardápio:', e);
       // Rede de proteção: o site nunca fica sem cardápio na tela.
       state.cardapio = {
@@ -739,6 +734,7 @@ const CartManager = {
       preco: p.pesar ? 0 : p.valor * qty,
       qty,
       aPesar: p.pesar,
+      receita: {pers, tamanho, label, acomp: [...state.personalizadaSel.acomp], carne: {...state.personalizadaSel.carne}, salada: [...state.personalizadaSel.salada], obs},
       composicao: pers
         ? {
             tipoPedido: 'personalizada', tamanho, pesar: true, nomePessoa: nome || null,
@@ -1044,9 +1040,15 @@ const HorarioTexto = {
     if (a) a.textContent = f.replace(' às ', ' até as ');
     const b = document.getElementById('pxFaixaAjuda');
     if (b) b.textContent = f;
+    const dialogOrders = document.getElementById('hoursOrders');
+    if (dialogOrders) dialogOrders.textContent = f;
     // O horário de FUNCIONAMENTO aparece em dois cards, separado da
     // janela de pedidos. Estava escrito à mão nos dois.
+    const footerOrders = document.getElementById('footerOrders');
+    if (footerOrders) footerOrders.textContent = f;
     const loja = this.faixaLoja();
+    const footerHours = document.getElementById('footerHours');
+    if (footerHours) footerHours.textContent = loja;
     ['pxFaixaLoja', 'pxLojaCard', 'pxLojaLoc'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.textContent = loja;

@@ -1,0 +1,222 @@
+/* Modelo Terra: estrutura visual adaptada às funções reais do Mário. */
+:root{--verde-900:#315a3d;--verde-800:#3b6c49;--verde-700:#4a7c59;--verde-600:#4a7c59;--verde-100:#e6eee3;--verde-050:#f5f1ea;--dourado:#c4a66a;--dourado-claro:#dcc48e;--dourado-texto:#705c30;--papel:#faf6f0;--papel-card:#fff;--tinta:#2e3230;--tinta-suave:#666b62;--borda:#e4e0d8;--fonte-display:'Literata',Georgia,serif;--fonte-corpo:'Nunito Sans',Arial,sans-serif}
+.restaurant-refresh{background:var(--papel);color:var(--tinta);font-family:var(--fonte-corpo)}
+.restaurant-refresh header{background:#faf6f0f5;border-bottom:1px solid var(--borda);backdrop-filter:blur(12px)}
+.new-header{height:84px;max-width:1180px}.brand img{height:66px;width:140px;border-radius:8px}.new-header button{background:#f0ece4;border:0;color:var(--verde-900);border-radius:12px}
+.restaurant-refresh .hero{background:var(--papel);color:var(--tinta);max-width:1180px;margin:auto;padding:70px 24px;min-height:560px;grid-template-columns:1.2fr 1fr;gap:55px}
+.restaurant-refresh .hero-title{font-family:var(--fonte-display);font-size:clamp(2.5rem,4.5vw,4.1rem);line-height:1.14;color:var(--tinta);letter-spacing:-.045em}.restaurant-refresh .hero-title em{color:var(--verde-700)}
+.restaurant-refresh .hero-kicker{color:var(--verde-700);font-size:.73rem;letter-spacing:.08em;background:#e9eee3;padding:8px 12px;border:0;border-radius:30px;display:inline-block}
+.restaurant-refresh .hero-lead{color:var(--tinta-suave);font-size:1.05rem;line-height:1.7}.restaurant-refresh .hero-btn-primary{background:var(--verde-700);color:white;border:0;border-radius:12px}.restaurant-refresh .hero-link{background:#eeeae1;color:var(--verde-900);border-radius:12px;padding:14px 20px;text-decoration:none}.hero-actions{gap:12px}
+.model-hero-card{position:relative;border-radius:20px;background:white;overflow:hidden;box-shadow:0 8px 26px #2e323016}.model-hero-card>img{width:100%;height:310px;object-fit:cover;display:block}.model-hero-caption{padding:25px}.model-hero-caption>span{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dourado-texto)}.model-hero-caption h3{font:600 1.4rem/1.4 var(--fonte-display);margin:8px 0}.model-hero-caption p{font-size:.9rem;color:var(--tinta-suave);line-height:1.5}
+.restaurant-refresh .model-hero-card .wood-sign{position:absolute;z-index:2;left:14px;top:14px;width:230px;height:100px;max-width:calc(100% - 28px);margin:0}.restaurant-refresh .sign-face{background:#fffdf8f5;border:1px solid #d9dfd2;box-shadow:0 3px 10px #0001;border-radius:12px;padding:8px;gap:4px}.restaurant-refresh .sign-kicker{display:none}.restaurant-refresh .wood-sign .badge-horario{font:800 1rem var(--fonte-corpo);color:var(--verde-900)}.restaurant-refresh .sign-face strong{font:700 .85rem var(--fonte-corpo)}.restaurant-refresh .sign-face small{font-size:.68rem}.restaurant-refresh #pxFaixaLoja{font-size:.8rem}
+.house-strip{background:var(--papel);border:0;padding-top:0;padding-bottom:45px}.house-value{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:20px}.house-value strong{font-size:1rem}.house-value span{font-size:.8rem}
+.restaurant-refresh #cardapio-dia-sec,.restaurant-refresh #precos{background:#f0ece4;border:0}.restaurant-refresh #pedidos,.restaurant-refresh #localizacao{background:var(--papel);border:0}
+.restaurant-refresh #cardapio-dia-sec>h2,.restaurant-refresh #pedidos>h2,.restaurant-refresh #precos .buffet-home-title,.restaurant-refresh #localizacao .loc-title{font:700 clamp(2rem,3vw,2.8rem)/1.2 var(--fonte-display);color:var(--tinta)}
+.restaurant-refresh #precos .buffet-home-sub,.restaurant-refresh #localizacao .loc-sub,.restaurant-refresh #localizacao .loc-value{color:var(--tinta-suave)}
+.restaurant-refresh #cardapio-dia-sec>h2:after,.restaurant-refresh #pedidos>h2:after,.restaurant-refresh #precos .buffet-home-title:after{display:none}
+.restaurant-refresh .cardapio-grid{gap:22px}.restaurant-refresh .cardapio-box{background:white;border:1px solid var(--borda);border-radius:16px;overflow:hidden;box-shadow:none}.restaurant-refresh .cardapio-box-banner{border:0;border-radius:0;margin:0}.restaurant-refresh .cardapio-box-img{height:170px;aspect-ratio:auto}.restaurant-refresh .cardapio-box-title{top:14px;font:800 .78rem var(--fonte-corpo);letter-spacing:.03em;background:#fffef5ed;color:var(--verde-900);border-radius:9px}.restaurant-refresh .cardapio-box-list{background:white;border:0;border-radius:0;box-shadow:none;padding:20px;min-height:150px;display:flex;flex-direction:column}.restaurant-refresh .cardapio-box-list>*{background:transparent;color:var(--tinta);border:0;border-bottom:1px solid #efeee7;border-radius:0;box-shadow:none}
+.restaurant-refresh .pedido-box{max-width:850px;background:white;border:1px solid var(--borda);border-radius:20px;box-shadow:0 5px 24px #2e32300d;padding:32px}.restaurant-refresh .tipo-btn{border-radius:12px;background:#f7f4ed;color:var(--tinta)}.restaurant-refresh .tipo-btn.selected{background:#e9f1e7;border-color:var(--verde-700);color:var(--verde-900)}.restaurant-refresh .section-label{color:var(--tinta)}.restaurant-refresh .btn-add{background:var(--verde-700);border-radius:12px}.restaurant-refresh .obs-input,.restaurant-refresh .nome-marmita-input{background:#f5f1ea;border:1px solid var(--borda);border-radius:12px}
+.restaurant-refresh .price-group{border:1px solid var(--borda);border-radius:16px;box-shadow:none;background:white}.restaurant-refresh .price-group:nth-child(2){border:2px solid var(--verde-700)}.restaurant-refresh .payment-prices{background:white;border:1px solid var(--borda)}
+.restaurant-refresh #localizacao .loc-label,.restaurant-refresh #localizacao .loc-eyebrow{color:var(--verde-700)}.restaurant-refresh #localizacao .loc-info-row{background:#f0ece4;border:1px solid var(--borda);border-radius:14px;padding:18px;margin-bottom:12px}.restaurant-refresh .loc-mapa{border:1px solid var(--borda);box-shadow:0 5px 20px #2e323010}.restaurant-refresh .loc-mapa-btn{background:var(--verde-700);color:white;border-radius:12px}
+.restaurant-refresh footer{background:#e8e3da;border:0}.footer-brand img{border-radius:12px}.restaurant-refresh #siteMenu{background:var(--papel)}
+@media(max-width:760px){.restaurant-refresh .hero{grid-template-columns:1fr;padding:34px 22px 40px;gap:28px}.restaurant-refresh .hero>.hero-inner{grid-row:1}.model-hero-card{grid-row:2}.model-hero-card>img{height:250px}.restaurant-refresh .hero-title{font-size:clamp(2.4rem,9vw,3.2rem)}.house-strip{gap:12px}.house-value{max-width:none}.restaurant-refresh .pedido-box{padding:20px 16px}.restaurant-refresh .model-hero-card .wood-sign{width:210px;height:95px}.restaurant-refresh .sign-face{gap:3px}.restaurant-refresh .cardapio-box-img{height:190px}}
+/* Correção da largura da montagem e dimensionamento das fotografias. */
+.restaurant-refresh .model-hero-card{min-width:0;width:100%}
+.restaurant-refresh .model-hero-card>img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center}
+.restaurant-refresh .box-acomp .cardapio-box-img{display:block;width:100%;object-fit:cover;object-position:center}
+@media(min-width:761px){
+ .restaurant-refresh #pedidos{width:100%;max-width:none;box-sizing:border-box;padding-left:clamp(24px,4vw,64px);padding-right:clamp(24px,4vw,64px)}
+ .restaurant-refresh #pedidos .pedido-box{width:100%;max-width:none;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto}
+ .restaurant-refresh #pedidos .obs-input,
+ .restaurant-refresh #pedidos .nome-marmita-input,
+ .restaurant-refresh #pedidos .char-count{width:100%;max-width:none;box-sizing:border-box}
+}
+/* Paleta fornecida: 606C38 / 283618 / FEFAE0 / DDA15E. */
+:root{--verde-900:#283618;--verde-800:#46532b;--verde-700:#606c38;--verde-600:#606c38;--verde-100:#e9ebd3;--verde-050:#f6f1d7;--dourado:#dda15e;--dourado-claro:#efc99c;--dourado-texto:#805020;--papel:#fefae0;--papel-card:#fffef5;--tinta:#283618;--tinta-suave:#61664c;--borda:#dedcc2}
+.restaurant-refresh,.restaurant-refresh .hero,.house-strip{background:var(--papel)}
+.restaurant-refresh header{background:#fefae0f5}
+.restaurant-refresh #pedidos,.restaurant-refresh #localizacao{background:var(--papel)}
+.restaurant-refresh #cardapio-dia-sec,.restaurant-refresh #precos{background:#f1edd3}
+.restaurant-refresh .hero-kicker,.new-header button,.restaurant-refresh .hero-link{background:#e9ebd3;color:var(--verde-900)}
+.restaurant-refresh .house-value,.restaurant-refresh .model-hero-card,.restaurant-refresh .pedido-box,.restaurant-refresh .cardapio-box,.restaurant-refresh .cardapio-box-list,.restaurant-refresh .price-group,.restaurant-refresh .payment-prices,.restaurant-refresh .loc-mapa{background:var(--papel-card)}
+.restaurant-refresh .tipo-btn,.restaurant-refresh .obs-input,.restaurant-refresh .nome-marmita-input,.restaurant-refresh #localizacao .loc-info-row{background:#f4f0d9}
+.restaurant-refresh .tipo-btn.selected{background:#e8ecd5;border-color:#606c38}
+.restaurant-refresh .sign-face{background:#fefae0f5;border-color:var(--borda)}
+.restaurant-refresh .cardapio-box-title{background:#fefae0ed;color:var(--verde-900)}
+.restaurant-refresh .stitch-footer{background:#e9e5cb;color:#283618;text-align:left;padding:48px clamp(22px,4vw,64px) 22px;border-top:1px solid #d6d4b7}
+.stitch-footer-grid{display:grid;grid-template-columns:1.3fr 1fr .85fr 1.2fr;gap:40px;max-width:1280px;margin:auto}
+.footer-wordmark{font:700 1.25rem/1.4 var(--fonte-display);text-decoration:none;color:#283618}.footer-wordmark em{font-style:normal;color:#606c38}
+.stitch-footer-grid h3{font:800 .72rem/1.5 var(--fonte-corpo);text-transform:uppercase;letter-spacing:.07em;margin:0 0 18px;color:#283618}
+.stitch-footer-grid p{font:400 .84rem/1.7 var(--fonte-corpo);color:#596046;margin:10px 0 14px}
+.stitch-footer-grid strong{font-size:.83rem}.footer-closed{font-size:.8rem;color:#46532b;font-weight:700}
+.stitch-footer-grid ul{list-style:none;margin:0;padding:0}.stitch-footer-grid li{margin-bottom:10px}.stitch-footer-grid li a,.footer-contact{font-size:.83rem;color:#46532b;text-decoration:none;line-height:1.7}.footer-contact{display:block;margin:8px 0;overflow-wrap:anywhere}
+.stitch-footer-grid a:hover{text-decoration:underline;text-underline-offset:4px}.footer-social{display:flex;gap:10px;margin-top:18px}.footer-social a{width:40px;height:40px;background:#fefae0;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#606c38}.footer-social svg{width:20px;height:20px}
+.stitch-footer-bottom{max-width:1280px;margin:36px auto 0;padding-top:20px;border-top:1px solid #c9cbb0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;font:400 .72rem/1.6 var(--fonte-corpo);color:#596046}
+@media(max-width:950px){.stitch-footer-grid{grid-template-columns:1fr 1fr;gap:30px}}
+@media(max-width:520px){.stitch-footer-grid{grid-template-columns:1fr;gap:28px}.stitch-footer-bottom{flex-direction:column}.stitch-footer-grid li a{display:inline-block;padding:5px 0}.restaurant-refresh .stitch-footer{padding-top:36px}}
+/* Paleta atual: fundo EFF1ED, texto 373D20, destaque 72B01D. */
+:root{--verde-900:#373d20;--verde-800:#373d20;--verde-700:#72b01d;--verde-600:#72b01d;--verde-100:#e4ebd9;--verde-050:#eff1ed;--dourado:#72b01d;--dourado-claro:#cde5ad;--dourado-texto:#373d20;--papel:#eff1ed;--papel-card:#fff;--tinta:#373d20;--tinta-suave:#373d20;--borda:#d8ddcf}
+.restaurant-refresh,.restaurant-refresh .hero,.house-strip,.restaurant-refresh #pedidos,.restaurant-refresh #localizacao{background:#eff1ed;color:#373d20}
+.restaurant-refresh header{background:#eff1edf5}
+.restaurant-refresh #cardapio-dia-sec,.restaurant-refresh #precos,.restaurant-refresh .stitch-footer{background:#e4e8de;color:#373d20}
+.restaurant-refresh .hero-kicker,.new-header button,.restaurant-refresh .hero-link,.restaurant-refresh .tipo-btn,.restaurant-refresh .obs-input,.restaurant-refresh .nome-marmita-input,.restaurant-refresh #localizacao .loc-info-row{background:#eff1ed;color:#373d20}
+.restaurant-refresh .hero-title,.restaurant-refresh .hero-title em,.restaurant-refresh .hero-lead,.restaurant-refresh .house-value,.restaurant-refresh .house-value span,.restaurant-refresh #localizacao .loc-label,.restaurant-refresh #localizacao .loc-value,.restaurant-refresh #localizacao .loc-sub,.restaurant-refresh .price-eyebrow,.restaurant-refresh .price-note{color:#373d20}
+.restaurant-refresh .hero-btn-primary,.restaurant-refresh .btn-add,.restaurant-refresh .loc-mapa-btn{background:#72b01d;color:#172006}
+.restaurant-refresh .hero-btn-primary:hover,.restaurant-refresh .btn-add:hover,.restaurant-refresh .loc-mapa-btn:hover{background:#83c32a;color:#172006}
+.restaurant-refresh .tipo-btn.selected{background:#e5efd8;border-color:#72b01d;color:#373d20}
+.restaurant-refresh .sign-face,.restaurant-refresh .cardapio-box-title{background:#eff1edf5;color:#373d20;border-color:#d8ddcf}
+.restaurant-refresh .footer-wordmark,.restaurant-refresh .footer-wordmark em,.restaurant-refresh .stitch-footer-grid h3,.restaurant-refresh .stitch-footer-grid p,.restaurant-refresh .stitch-footer-grid strong,.restaurant-refresh .stitch-footer-grid li a,.restaurant-refresh .footer-contact,.restaurant-refresh .footer-closed,.restaurant-refresh .stitch-footer-bottom{color:#373d20}
+.restaurant-refresh .footer-social a{background:#eff1ed;color:#373d20}.restaurant-refresh .footer-social a:hover{background:#72b01d;color:#172006}
+.restaurant-refresh .stitch-footer,.restaurant-refresh .stitch-footer-bottom{border-color:#cfd6c6}
+.restaurant-refresh .house-value svg{color:#373d20}
+/* Fachada inteira, com proporção natural em qualquer tela. */
+.restaurant-refresh #localizacao .loc-mapa{min-width:0;width:100%}
+.restaurant-refresh #localizacao .loc-mapa-foto{height:auto;aspect-ratio:auto;overflow:hidden;background:#eff1ed}
+.restaurant-refresh #localizacao .loc-mapa-foto img{display:block;width:100%;height:auto;max-width:100%;aspect-ratio:2048/925;object-fit:contain;object-position:center}
+/* Textura de trama fina: leve, local e sem imagens externas. */
+.restaurant-refresh .hero{background-color:#eff1ed;background-image:repeating-linear-gradient(0deg,rgba(55,61,32,.035) 0,rgba(55,61,32,.035) 1px,transparent 1px,transparent 5px),repeating-linear-gradient(90deg,rgba(55,61,32,.025) 0,rgba(55,61,32,.025) 1px,transparent 1px,transparent 6px),radial-gradient(ellipse at 80% 20%,rgba(114,176,29,.09),transparent 65%);background-size:auto;background-repeat:repeat;border-radius:0}
+.restaurant-refresh .hero::before{content:none}
+/* Hero de ponta a ponta, com textura em toda a largura. */
+.restaurant-refresh #inicio{max-width:none;width:100%;padding:0}
+.restaurant-refresh #inicio .hero{max-width:none;width:100%;box-sizing:border-box;margin:0;padding-left:max(24px,calc((100vw - 1180px)/2 + 24px));padding-right:max(24px,calc((100vw - 1180px)/2 + 24px))}
+/* Contorno externo nos cartões, mantendo os valores sem caixas. */
+.restaurant-refresh .price-board .price-group,
+.restaurant-refresh .price-board .price-group:nth-child(2){border:2px solid #72b01d}
+/* Ilustrações vetoriais decorativas de mesa posta. */
+.restaurant-refresh .hero{position:relative;isolation:isolate}
+.restaurant-refresh .hero::after{content:'';position:absolute;z-index:-1;left:2%;bottom:20px;width:140px;height:140px;opacity:.1;pointer-events:none;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140' fill='none' stroke='%23373d20' stroke-width='2'%3E%3Ccircle cx='70' cy='70' r='42'/%3E%3Ccircle cx='70' cy='70' r='32'/%3E%3Cpath d='M12 26v30q0 9 8 9V114M20 26v39M28 26v30q0 9-8 9M125 26v88M125 26q-17 10-12 42h12'/%3E%3C/svg%3E")}
+.restaurant-refresh #cardapio-dia-sec>h2::before,
+.restaurant-refresh #precos .buffet-home-title::before{content:'';display:block;width:44px;height:44px;margin:0 auto 14px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23607739' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='24' cy='25' r='14'/%3E%3Ccircle cx='24' cy='25' r='10'/%3E%3Cpath d='M3 9v10q0 5 3 5v17M6 9v15M9 9v10q0 5-3 5M45 9v32M45 9q-7 6-5 18h5'/%3E%3C/svg%3E")}
+@media(max-width:760px){.restaurant-refresh #inicio .hero{padding-left:22px;padding-right:22px}.restaurant-refresh .hero::after{width:95px;height:95px;bottom:8px;left:auto;right:8px}.restaurant-refresh .price-group .buffet-price,.restaurant-refresh .price-group .preco-card-valor{padding:6px 9px}}
+/* Fachada em toda a abertura e cabeçalho transparente sobre a foto. */
+.restaurant-refresh header{position:absolute;inset:0 0 auto;z-index:100;background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.restaurant-refresh .new-header{max-width:none;padding-left:clamp(22px,4vw,64px);padding-right:clamp(22px,4vw,64px)}
+.restaurant-refresh .new-header button{background:rgba(239,241,237,.92);color:#373d20}
+.restaurant-refresh #inicio .hero{max-width:none;width:100%;min-height:100vh;min-height:100svh;box-sizing:border-box;padding-top:150px;padding-bottom:72px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(220px,.7fr);gap:48px;background:linear-gradient(90deg,rgba(20,28,14,.84),rgba(20,28,14,.60) 55%,rgba(20,28,14,.38)),url('hero-restaurante.jpeg') center center/cover no-repeat}
+.restaurant-refresh #inicio .hero::before,.restaurant-refresh #inicio .hero::after{content:none}
+.restaurant-refresh #inicio .hero-title{color:#eff1ed}.restaurant-refresh #inicio .hero-title em{color:#b8df86}
+.restaurant-refresh #inicio .hero-lead{color:#eff1ed}.restaurant-refresh #inicio .hero-kicker{color:#eff1ed;background:rgba(55,61,32,.65)}
+.restaurant-refresh #inicio .hero>.wood-sign{position:relative;inset:auto;grid-row:auto;width:260px;height:170px;max-width:100%;margin:0;justify-self:center}
+.restaurant-refresh #siteMenu{background:#eff1ed;border:1px solid #d8ddcf;box-shadow:0 15px 40px #0003}
+@media(max-width:760px){
+ .restaurant-refresh #inicio .hero{grid-template-columns:1fr;gap:28px;padding-top:116px;padding-bottom:48px;background-position:center;min-height:100svh}
+ .restaurant-refresh #inicio .hero>.wood-sign{grid-row:1;width:220px;height:135px}
+ .restaurant-refresh #inicio .hero>.hero-inner{grid-row:2}
+}
+/* Header acompanha a rolagem; marca integrada à abertura. */
+.restaurant-refresh header{position:fixed;top:0;left:0;right:0;bottom:auto;background:transparent;pointer-events:none}
+.restaurant-refresh header button,.restaurant-refresh header nav{pointer-events:auto}
+.restaurant-refresh .new-header{display:flex;justify-content:space-between;align-items:center;height:80px}
+.restaurant-refresh .hero-brand-logo{display:block;width:clamp(125px,14vw,180px);height:auto;margin:0 auto 22px;border-radius:16px;box-shadow:0 5px 20px #0002}
+.restaurant-refresh #inicio .hero{padding-top:112px}
+.restaurant-refresh .wood-sign .badge-horario.badge-aberto,
+.restaurant-refresh .wood-sign .badge-horario.badge-pedidos{display:inline-block;background:#e2f2d3;color:#28590d;border:1px solid #72b01d;border-radius:9px;padding:9px 14px}
+.restaurant-refresh .wood-sign .badge-horario.badge-fechado{display:inline-block;background:#fce7e7;color:#a51c24;border:1px solid #cd3841;border-radius:9px;padding:9px 14px}
+.restaurant-refresh .house-strip{padding:36px max(24px,calc((100vw - 1180px)/2 + 24px));gap:22px;align-items:stretch}
+.restaurant-refresh .house-value{width:auto;max-width:none;margin:0;min-height:108px;box-sizing:border-box;justify-content:flex-start;padding:24px;gap:16px}
+.restaurant-refresh #siteMenu{max-height:calc(100dvh - 96px);overflow-y:auto}
+@media(max-width:760px){.restaurant-refresh .house-strip{padding:28px 22px;gap:14px}.restaurant-refresh .house-value{min-height:90px;padding:20px}.restaurant-refresh .hero-brand-logo{width:135px;margin-bottom:20px}.restaurant-refresh #inicio .hero{padding-top:104px}}
+/* Status compacto no header e horários em popup acessível. */
+.restaurant-refresh .new-header{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:12px}
+.restaurant-refresh .new-header .header-status{justify-self:center;width:auto;max-width:100%;height:auto;min-height:44px;padding:0;border-radius:12px;background:#eff1ed}
+.restaurant-refresh .header-status .badge-horario{white-space:normal;display:block;font:800 .9rem/1.3 var(--fonte-corpo);padding:12px 18px;margin:0;border:1px solid #d8ddcf;border-radius:12px}
+.restaurant-refresh .header-status .badge-aberto,.restaurant-refresh .header-status .badge-pedidos{background:#e2f2d3;color:#28590d;border-color:#72b01d}
+.restaurant-refresh .header-status .badge-fechado{background:#fce7e7;color:#a51c24;border-color:#cd3841}
+.hero-logo-place{justify-self:center;width:min(100%,320px)}.hero-logo-place img{display:block;width:100%;height:auto;border-radius:20px}
+.hours-dialog{box-sizing:border-box;width:min(460px,calc(100% - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #d8ddcf;border-radius:20px;padding:34px 28px;background:#eff1ed;color:#373d20;margin:auto;box-shadow:0 24px 80px #0004;font-family:var(--fonte-corpo)}
+.hours-dialog::backdrop{background:#17200699;backdrop-filter:blur(3px)}
+.hours-dialog h2{font:700 1.8rem/1.2 var(--fonte-display);margin:8px 0 12px}.hours-days{font-weight:700;margin-bottom:20px}.hours-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:16px 0;border-bottom:1px solid #cfd6c6}.hours-note{font-size:.85rem;line-height:1.6}.hours-close{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;background:transparent;font-size:28px;color:#373d20;cursor:pointer}.hours-ok{width:100%;padding:13px;background:#72b01d;color:#172006;font:800 1rem var(--fonte-corpo);border:0;border-radius:10px;cursor:pointer;margin-top:12px}
+@media(max-width:760px){.restaurant-refresh #inicio .hero>.hero-logo-place{grid-row:1;width:clamp(150px,45vw,180px)}.restaurant-refresh .new-header{gap:8px;padding-left:14px;padding-right:14px}.restaurant-refresh .header-status .badge-horario{font-size:.75rem;padding:10px}.restaurant-refresh #inicio .hero>.hero-inner{grid-row:2}}
+/* Um único contorno no status, sem fundo externo aparecendo. */
+.restaurant-refresh .new-header .header-status{background:transparent;border:0;box-shadow:none;padding:0;min-height:0;overflow:visible;line-height:1}
+.restaurant-refresh .header-status .badge-horario{display:block;margin:0;box-sizing:border-box;box-shadow:none}
+@media(max-width:760px){
+ .restaurant-refresh #inicio .hero>.hero-logo-place{width:clamp(150px,45vw,180px)}
+ .restaurant-refresh .hero-logo-place img{border-radius:10px}
+}
+
+/* Logo interativa: mantém a rolagem natural no celular. */
+button.hero-logo-place{display:block;padding:0;border:0;background:transparent;cursor:pointer;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+button.hero-logo-place:focus-visible{outline:3px solid #72b01d;outline-offset:6px;border-radius:20px}
+.hero-logo-place img{pointer-events:none;user-select:none}
+
+/* Duas faces legíveis, com giro no eixo vertical. */
+button.hero-logo-place{perspective:1000px}
+.logo-coin{display:grid;width:100%;transform-style:preserve-3d;pointer-events:none}
+.hero-logo-place .logo-coin img{grid-area:1 / 1;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.logo-coin .logo-front{transform:rotateY(0deg)}
+.logo-coin .logo-back{transform:rotateY(180deg)}
+
+/* Carrinho e confirmação alinhados à identidade visual do site. */
+.restaurant-refresh .cart-panel{width:min(480px,100vw);background:#eff1ed;color:#373d20;font-family:var(--fonte-corpo);border-left:1px solid #d7ddcf;box-shadow:-16px 0 50px #20271326}
+.restaurant-refresh .cart-header{background:#eff1ed;color:#373d20;padding:24px;border-bottom:1px solid #d7ddcf;flex-shrink:0}
+.restaurant-refresh .cart-header:after{display:none}
+.restaurant-refresh .cart-header h2{font-family:var(--fonte-display);font-size:1.7rem;font-weight:700;color:#373d20;letter-spacing:-.035em}
+.restaurant-refresh .close-cart{background:#fff;border:1px solid #d7ddcf;color:#373d20;border-radius:12px;cursor:pointer;flex-shrink:0}
+.restaurant-refresh .close-cart:hover{background:#e2ecd7}
+.restaurant-refresh .cart-items{min-height:0;overscroll-behavior:contain;padding:24px;gap:14px}
+.restaurant-refresh .cart-empty{background:#fff;border:1px dashed #c5cfba;border-radius:18px;padding:40px 20px;color:#626957;line-height:1.6}
+.restaurant-refresh .cart-item{background:#fff;border:1px solid #d7ddcf;border-radius:18px;padding:20px 64px 20px 20px;box-shadow:0 3px 12px #373d2005;flex-shrink:0;overflow-wrap:anywhere}
+.restaurant-refresh .cart-item-title{color:#373d20;font-size:1.05rem;font-weight:800}
+.restaurant-refresh .cart-item-desc{color:#626957;font-size:.9rem;line-height:1.65}
+.restaurant-refresh .cart-item-price,.restaurant-refresh .cart-item-price-pesar{color:#373d20;font-size:1.05rem;margin-top:12px}
+.restaurant-refresh .cart-item-nome{background:#eff1ed;color:#373d20;border:1px solid #d7ddcf;border-radius:8px}
+.restaurant-refresh .remove-item{width:44px;height:44px;background:#fff1ef;color:#ad3027;border:1px solid #f0d5d0;border-radius:12px;cursor:pointer}
+.restaurant-refresh .remove-item:hover{background:#f9ded9}
+.restaurant-refresh .cart-footer{background:#fff;border-top:1px solid #d7ddcf;padding:22px 24px calc(22px + env(safe-area-inset-bottom));flex-shrink:0}
+.restaurant-refresh .cart-total{color:#373d20;flex-wrap:wrap;gap:8px 16px}
+.restaurant-refresh .cart-total>span:last-child{color:#373d20;font-family:var(--fonte-display);font-size:1.8rem;flex-wrap:wrap;max-width:100%}
+.restaurant-refresh .cart-total .total-pesar-inline{color:#626957;white-space:normal}
+.restaurant-refresh .cart-footer .pagamentos{color:#626957;font-size:.8rem;padding:12px 0;margin:0 0 12px;border-top:1px solid #eff1ed}
+.restaurant-refresh .cart-footer .pagamentos strong{color:#373d20;font-size:.75rem;letter-spacing:.04em}
+.restaurant-refresh .total-pesar-aviso{background:#eff1ed;color:#373d20;border-color:#d7ddcf}
+.restaurant-refresh .whatsapp-btn,.restaurant-refresh .modal-btn-confirmar{background:#72b01d;color:#23300f;border-radius:12px;font-family:var(--fonte-corpo);font-weight:800;min-height:50px}
+.restaurant-refresh .whatsapp-btn:hover,.restaurant-refresh .modal-btn-confirmar:hover{background:#86c333;box-shadow:0 4px 16px #373d2012}
+.restaurant-refresh .modal-nome{background:#eff1ed;border:1px solid #d7ddcf;border-radius:22px;color:#373d20;font-family:var(--fonte-corpo);box-shadow:0 24px 60px #20271333}
+.restaurant-refresh .modal-nome h3{font-family:var(--fonte-display);color:#373d20;font-size:1.55rem;letter-spacing:-.025em}
+.restaurant-refresh .modal-nome p{color:#626957}.restaurant-refresh .modal-nome input{background:#fff;color:#373d20;border:1px solid #c5cfba;border-radius:12px;font-family:inherit}
+.restaurant-refresh .modal-nome input:focus{outline:2px solid #527b16;outline-offset:2px}
+.restaurant-refresh .modal-btn-cancelar{background:#fff;color:#373d20;border:1px solid #d7ddcf;border-radius:12px;font-family:inherit;min-height:50px}
+.restaurant-refresh .modal-btn-cancelar:hover{background:#e2ecd7}
+@media(max-width:600px){.restaurant-refresh .cart-panel{border-left:0}.restaurant-refresh .cart-header{padding:16px 18px}.restaurant-refresh .cart-header h2{font-size:1.5rem}.restaurant-refresh .cart-items{padding:16px;gap:12px}.restaurant-refresh .cart-item{padding:16px 60px 16px 16px}.restaurant-refresh .cart-footer{padding:16px 18px calc(16px + env(safe-area-inset-bottom))}.restaurant-refresh .cart-total>span:last-child{font-size:1.5rem}.restaurant-refresh .modal-btns{flex-wrap:wrap}.restaurant-refresh .modal-btns button{flex:1;min-width:110px}}
+@media(max-height:520px){.restaurant-refresh .cart-panel{overflow-y:auto}.restaurant-refresh .cart-items{flex:1 0 auto;overflow-y:visible}}
+#meusPedidos{width:min(680px,calc(100vw - 28px));max-height:85dvh;overflow:auto;margin:auto;padding:24px;border:1px solid #d7ddcf;border-radius:22px;background:#eff1ed;color:#373d20;font-family:var(--fonte-corpo)}
+#meusPedidos::backdrop{background:#20271399}#meusPedidos h2,#meusPedidos h3{font-family:var(--fonte-display)}
+.order-card{background:white;border:1px solid #d7ddcf;border-radius:16px;padding:18px;margin-top:16px;overflow-wrap:anywhere}.order-card h3{font-size:1rem}.order-card p{margin:10px 0}.order-status{font-weight:800;color:#46691a}.order-warning{color:#9d3a22}
+.order-actions{display:flex;gap:8px;flex-wrap:wrap}.order-action{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;min-height:44px;border:1px solid #c5cfba;border-radius:10px;background:white;color:#373d20;font:700 .88rem var(--fonte-corpo);text-decoration:none;cursor:pointer}.order-action:hover{background:#e2ecd7}#openMyOrders{width:100%;margin-bottom:14px}#closeMyOrders{float:right}
+#meusPedidos{box-sizing:border-box;width:min(960px,94vw);height:min(760px,88dvh);max-height:94dvh;padding:clamp(20px,4vw,44px)}
+#meusPedidos .order-card{padding:clamp(16px,3vw,28px)}
+#meusPedidos .order-status{font-size:clamp(1.15rem,3vw,1.55rem);line-height:1.3}
+#meusPedidos details summary{cursor:pointer;padding:12px 0;font-weight:700}
+#pedidoEnviado{margin:auto;text-align:center;width:min(410px,90vw);box-sizing:border-box;border:0;border-radius:22px;padding:32px 20px;background:#eff1ed;color:#373d20}
+#pedidoEnviado::backdrop{background:#202713aa}
+#pedidoEnviado button{margin-top:16px}
+.send-arrow{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#72b01d;color:#23300f;font:700 2.4rem/1 sans-serif}
+#pedidoEnviado[open] .send-arrow{animation:send-direction .7s ease-in-out alternate 2}
+@keyframes send-direction{from{transform:translateX(-8px)}to{transform:translateX(8px)}}
+@media(max-width:600px){#meusPedidos{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0;padding:24px 18px calc(24px + env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){#pedidoEnviado[open] .send-arrow{animation:none}}
+.restaurant-refresh .whatsapp-optin{display:flex;align-items:flex-start;gap:10px;margin:18px 0;font-size:.95rem;cursor:pointer}
+.restaurant-refresh .whatsapp-optin input{width:20px;height:20px;flex:0 0 20px;margin:2px 0;accent-color:#527b16}
+#whatsappPhoneField label,#whatsappPhoneField small{display:block;margin:6px 0}#whatsappValidation{color:#a32e25}
+#pedidoEnviado{width:min(760px,94vw);min-height:460px;padding:28px}
+#pedidoEnviado .progress-content{padding:36px 12px}#pedidoEnviado h2{font:700 clamp(1.6rem,4vw,2.2rem) var(--fonte-display);margin:24px 0 12px}
+#pedidoEnviado p{font:400 1.05rem/1.65 var(--fonte-corpo)}
+#closeProgress{display:block;margin-left:auto}
+.order-steps{list-style:none;padding:0;display:flex;gap:20px;justify-content:center;margin:30px 0}
+.order-steps li{color:#626957;border-top:4px solid #d7ddcf;padding-top:12px;flex:1;max-width:240px}
+.order-steps .complete{color:#373d20;border-color:#72b01d;font-weight:800}
+#pedidoEnviado[data-state="waiting"] .send-arrow{animation:send-direction 1s ease-in-out alternate 2}
+#pedidoEnviado[data-state="sending"] .send-arrow{animation:send-direction .7s ease-in-out alternate infinite}
+#pedidoEnviado[data-state="confirmed"] .send-arrow,#pedidoEnviado[data-state="error"] .send-arrow{animation:none}
+@media(max-width:600px){#pedidoEnviado{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){#pedidoEnviado .send-arrow{animation:none!important}}
+
+/* Contorno da faixa de pagamentos acompanha os cartões de preços. */
+.restaurant-refresh .payment-prices{border:2px solid #72b01d}
+
+/* Acesso permanente aos horários e ações principais maiores. */
+.restaurant-refresh .header-status .badge-horario{background:#eff1ed;color:#373d20;border:1px solid #72b01d}
+.restaurant-refresh #inicio .hero-actions{display:flex;flex-wrap:wrap;gap:16px}
+.restaurant-refresh #inicio .hero-actions>button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:68px;padding:20px 32px;font:800 clamp(1.08rem,1.5vw,1.2rem)/1.3 var(--fonte-corpo);border-radius:14px;text-align:center;max-width:100%;white-space:normal;flex:1 1 250px}
+@media(max-width:760px){.restaurant-refresh #inicio .hero-actions{width:100%;gap:14px}.restaurant-refresh #inicio .hero-actions>button{flex-basis:100%;width:100%;min-height:64px;padding:18px 22px}}
