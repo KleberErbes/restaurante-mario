@@ -1,4 +1,4 @@
-/* Pedido web: confirmação humana independente da impressão. */
+/* Pedido web: recibo de envio; impressão independente. */
 (() => {
  let operationPaused=false;
  const pauseNotice=document.createElement('p');pauseNotice.setAttribute('role','status');pauseNotice.style.cssText='padding:16px;text-align:center;color:#8a3416;font-weight:bold';pauseNotice.hidden=true;
@@ -16,7 +16,8 @@
  try { records=JSON.parse(localStorage.getItem(KEY)||'[]'); if(!Array.isArray(records)) records=[]; } catch {}
  const panel=document.getElementById('meusPedidos');
  const list=document.getElementById('meusPedidosLista');
- function save(){localStorage.setItem(KEY,JSON.stringify(records));}
+ function save(){records=records.filter(r=>r.created>Date.now()-30*86400000);localStorage.setItem(KEY,JSON.stringify(records));}
+ records=records.filter(r=>r.created>Date.now()-30*86400000); try{save();}catch{}
  function persist(){try{save();return true;}catch{UI.showToast('Não foi possível salvar o acompanhamento neste navegador. Libere o armazenamento antes de enviar.','aviso',8000);return false;}}
  function random(){return Array.from(crypto.getRandomValues(new Uint8Array(32)),n=>n.toString(16).padStart(2,'0')).join('');}
  const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
@@ -51,22 +52,15 @@
  function updateProgress() {
   const record = records.find(item => item.payload.pedidoId === activeOrderId);
   if (!record) return;
-  const confirmed = !record.cancelado_em && !!record.confirmado_em;
   const received = !!record.recebido_em;
   const whatsappAction = document.getElementById('sendOrderWhatsApp');
   whatsappAction.hidden = !received;
   if(received) whatsappAction.href = whatsappOrderUrl(record);
-  sent.dataset.state = confirmed ? 'confirmed' : received ? 'waiting' : record.lastError ? 'error' : 'sending';
-  progressTitle.textContent = confirmed ? 'Pedido confirmado!' : received ? 'Pedido enviado!' : record.lastError ? 'Ainda não confirmamos o envio' : 'Enviando seu pedido…';
-  progressText.textContent = confirmed
-   ? 'A cozinha confirmou seu pedido. Retirada no balcão.'
-   : received ? 'Aguardando confirmação da cozinha. Você pode acompanhar por aqui.'
-   : record.lastError ? 'Confira a conexão e consulte seu pedido antes de tentar novamente.'
-   : 'Estamos recebendo seu pedido. Aguarde um instante.';
-  document.getElementById('stepSent').classList.toggle('complete', received);
-  document.getElementById('stepConfirmed').classList.toggle('complete', confirmed);
-  sent.querySelector('.send-arrow').textContent = confirmed ? '✓' : '→';
-  if(record.cancelado_em){sent.dataset.state='error';progressTitle.textContent='Pedido cancelado';progressText.textContent=record.cancelamento_motivo||'Entre em contato com o restaurante.';sent.querySelector('.send-arrow').textContent='×';whatsappAction.hidden=true;}
+  sent.dataset.state = received ? 'confirmed' : record.lastError ? 'error' : 'sending';
+  progressTitle.textContent = received ? 'Pedido enviado!' : record.lastError ? 'Não foi possível confirmar o envio' : 'Enviando seu pedido…';
+  progressText.hidden = received;
+  progressText.textContent = record.lastError ? 'Seu carrinho foi mantido. Consulte ou tente novamente em Meus pedidos.' : 'Aguarde um instante.';
+  sent.querySelector('.send-arrow').textContent = received ? '✓' : '→';
  }
  document.getElementById('closeProgress').onclick = () => sent.close();
  document.getElementById('verAgora').onclick = () => { sent.close(); open(); };
@@ -82,7 +76,7 @@
   [...records].reverse().forEach((r,i)=>{
    const card=el('article',undefined,'order-card');
    card.append(el('h3',i===0?'Último pedido':'Pedido anterior'));
-   card.append(el('p',r.cancelado_em?'Pedido cancelado — '+r.cancelamento_motivo:r.confirmado_em?'Pedido confirmado':r.recebido_em?'Recebido — aguardando confirmação da equipe':'Envio não confirmado — consulte ou tente novamente','order-status'));
+   card.append(el('p',r.recebido_em?'Pedido enviado!':'Envio não confirmado — consulte ou tente novamente','order-status'));
    card.append(el('p',new Date(r.created).toLocaleString('pt-BR')));
    const details=el('details');
    details.dataset.order=r.payload.pedidoId;
@@ -90,16 +84,9 @@
    details.append(el('summary','Itens e opções do pedido'));
    for(const item of r.items) details.append(el('p',`${item.qty||1}× ${item.tipo} · ${item.desc}`));
    if(r.lastError)card.append(el('p','Não foi possível atualizar agora. A informação acima é a última disponível.','order-warning'));
-   if(!r.cancelado_em&&!r.confirmado_em&&r.recebido_em&&Date.now()-Date.parse(r.recebido_em)>5*60000)card.append(el('p','A confirmação está demorando. Você pode entrar em contato com o restaurante.'));
    const actions=el('div',undefined,'order-actions');
    if(!r.recebido_em)card.append(button('Tentar novamente',()=>send(r)));
-   actions.append(button('Acompanhar pedido',()=>showProgress(r)));
    if(i===0&&r.recebido_em)actions.append(button('Repetir último pedido',()=>repeat(r)));
-   actions.append(button('Atualizar status',refresh));
-   actions.append(button('Copiar link de acompanhamento',async()=>{
-    const url=new URL(location.href);url.hash='acompanhar='+r.payload.pedidoId+'.'+r.token;
-    try{await navigator.clipboard.writeText(url.href);UI.showToast('Link copiado. Guarde-o: quem possui este link pode consultar seu pedido.','sucesso',7000);}catch{window.prompt('Copie e guarde seu link privado:',url.href);}
-   }));
    const wa=el('a','Enviar pedido pelo WhatsApp (opcional)','order-action');wa.href=whatsappOrderUrl(r);wa.target='_blank';wa.rel='noopener';actions.append(wa);
    details.append(actions);card.append(details);list.append(card);
   });
@@ -107,7 +94,7 @@
  async function refresh(){
   if(checking)return;checking=true;
   try{for(const r of records){
-   if(r.cancelado_em || (r.confirmado_em && Date.now()-Date.parse(r.recebido_em)>7*86400000))continue;
+   if(r.recebido_em)continue;
    try{const {data,error}=await sbCardapio.rpc('rdm_consultar',{p_id:r.payload.pedidoId,p_token:r.token});if(error)throw error;
     if(data){Object.assign(r,data);settle(r);}r.lastError=false;
    }catch{r.lastError=true;}
@@ -187,7 +174,7 @@
  }
  window.addEventListener('online',refresh);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
- setInterval(()=>{if(!document.hidden&&records.some(r=>!r.cancelado_em))refresh();},15000);
+ setInterval(()=>{if(!document.hidden&&records.some(r=>!r.recebido_em))refresh();},15000);
  document.addEventListener('DOMContentLoaded',async()=>{
   const match=location.hash.match(/^#acompanhar=([0-9a-f-]{36})\.([0-9a-f]{64})$/);
   if(match){

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Crediário — Restaurante do Mário</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="crediario-api.js"></script>
@@ -46,7 +47,7 @@ label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;lett
 
 #login{position:fixed;inset:0;background:var(--preto);display:flex;align-items:center;justify-content:center;z-index:200}
 #login .box{background:var(--carta);padding:36px;border-radius:12px;width:340px}
-#login h1{font-size:22px;margin-bottom:4px}
+#login :is(h1,h2){font-size:22px;margin-bottom:4px}
 #login p{font-size:13px;color:var(--tinta);margin-bottom:22px}
 
 header{
@@ -119,44 +120,39 @@ mark{background:#ffe9a8;color:inherit;padding:0 1px;border-radius:2px}
 .acoes{display:flex;gap:6px;flex-wrap:wrap}
 h4.sub{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta);margin:20px 0 10px;font-weight:700}
 </style>
-<link rel="stylesheet" href="painel-complementar.css"></head>
-<body>
-
-<div id="login">
-  <div class="box">
-    <img src="logo.jpeg" alt="Restaurante do Mário" class="logo">
-    <h1>Crediário</h1>
-    <p>Restaurante do Mário</p>
-    <form autocomplete="off" onsubmit="return false">
-      <div class="campo">
-        <label>Email</label>
-        <input type="email" id="email" autocomplete="username" name="crediario-email"
-               onkeydown="if(event.key==='Enter'){event.preventDefault();$('senha').focus()}">
-      </div>
-      <div class="campo">
-        <label>Senha</label>
-        <input type="password" id="senha" autocomplete="current-password" name="crediario-acesso"
-               onkeydown="if(event.key==='Enter'){event.preventDefault();entrar()}">
-      </div>
-      <div id="loginErro"></div>
-      <button type="button" class="btn" style="width:100%" onclick="entrar()">Entrar</button>
-    </form>
-  </div>
+<link href="painel-complementar.css" rel="stylesheet"/><link href="semantica.css" rel="stylesheet"/></head>
+<body><a class="skip-link" href="#app">Pular para o conteúdo</a>
+<section aria-label="Acesso ao painel" id="login">
+<div class="box">
+<img alt="Restaurante do Mário" class="logo" src="logo.jpeg"/>
+<h2>Crediário</h2>
+<p>Restaurante do Mário</p>
+<form aria-label="Entrar no painel" autocomplete="off" onsubmit="return false">
+<div class="campo">
+<label for="email">Email</label>
+<input autocomplete="username" id="email" name="crediario-email" onkeydown="if(event.key==='Enter'){event.preventDefault();$('senha').focus()}" type="email"/>
 </div>
-
+<div class="campo">
+<label for="senha">Senha</label>
+<input autocomplete="current-password" id="senha" name="crediario-acesso" onkeydown="if(event.key==='Enter'){event.preventDefault();entrar()}" type="password"/>
+</div>
+<div id="loginErro" role="alert"></div>
+<button class="btn" onclick="entrar()" style="width:100%" type="button">Entrar</button>
+</form>
+</div>
+</section>
 <header>
-  <img src="logo.jpeg" alt="Restaurante do Mário" class="logo">
-  <h1>Crediário</h1>
-  <nav>
-    <button id="nav-painel"  class="on" onclick="ir('painel')">Painel</button>
-    <button id="nav-clientes"        onclick="ir('clientes')">Clientes</button>
-    <button id="nav-fechamentos"     onclick="ir('fechamentos')">Fechamentos</button>
-    <button id="nav-sair" class="btn-2" onclick="sairDoSistema()">Sair</button>
-  </nav>
+<img alt="Restaurante do Mário" class="logo" src="logo.jpeg"/>
+<h1>Crediário</h1>
+<nav aria-label="Seções do crediário">
+<button class="on" id="nav-painel" onclick="ir('painel')" type="button">Painel</button>
+<button id="nav-clientes" onclick="ir('clientes')" type="button">Clientes</button>
+<button id="nav-fechamentos" onclick="ir('fechamentos')" type="button">Fechamentos</button>
+<button class="btn-2" id="nav-sair" onclick="sairDoSistema()" type="button">Sair</button>
+</nav>
 </header>
-
-<main id="app"><div class="carregando">Carregando…</div></main>
-<div id="toast"></div>
+<main id="app" tabindex="-1"><div class="carregando">Carregando…</div></main>
+<div id="toast" role="status"></div>
 <div id="overlay"><div class="cx"><div class="roda"></div><span id="overlayMsg">Salvando…</span></div></div>
 <script>
 /* ================= ESTADO ================= */
@@ -422,18 +418,18 @@ function telaPainel(){
 
   <div class="cartao">
     <div class="barra">
-      <input type="search" id="buscaPainel" placeholder="Buscar cliente… (ignora acento e maiúscula)"
+      <input aria-label="Buscar cliente no painel" type="search" id="buscaPainel" placeholder="Buscar cliente… (ignora acento e maiúscula)"
              value="${esc(BUSCA)}" oninput="BUSCA=this.value;filtrarPainel()">
       <button class="btn" onclick="modalLancamento()">+ Lançamento</button>
       <button class="btn-2" onclick="modalPagamento()">Registrar pagamento</button>
     </div>
     ${devedores.length===0 ? '<div class="vazio">Nenhum cliente devendo. 🎉</div>' : `
-    <table>
+    <table><caption class="sr-only">Saldos dos clientes</caption>
       <thead><tr>
-        <th>Cliente</th><th>Tipo</th>
-        <th class="num">Não faturado</th>
-        <th class="num">Saldo devedor</th>
-        <th></th>
+        <th scope="col">Cliente</th><th scope="col">Tipo</th>
+        <th scope="col" class="num">Não faturado</th>
+        <th scope="col" class="num">Saldo devedor</th>
+        <th scope="col"><span class="sr-only">Ações</span></th>
       </tr></thead>
       <tbody id="corpoPainel"></tbody>
     </table>
@@ -466,7 +462,7 @@ function telaClientes(){
   return `
   <div class="cartao">
     <div class="barra">
-      <input type="search" id="buscaClientes" placeholder="Buscar pelo nome ou sobrenome… (ignora acento e maiúscula)"
+      <input aria-label="Buscar cliente pelo nome" type="search" id="buscaClientes" placeholder="Buscar pelo nome ou sobrenome… (ignora acento e maiúscula)"
              value="${esc(BUSCA)}" oninput="BUSCA=this.value;filtrarClientes()">
       <label style="display:flex;align-items:center;gap:6px;margin:0;text-transform:none;font-size:13px;white-space:nowrap">
         <input type="checkbox" style="width:auto" ${MOSTRAR_INATIVOS?'checked':''}
@@ -474,10 +470,10 @@ function telaClientes(){
       </label>
       <button class="btn" onclick="modalCliente()">+ Novo cliente</button>
     </div>
-    <table>
+    <table><caption class="sr-only">Cadastro de clientes</caption>
       <thead><tr>
-        <th>Nome</th><th>Tipo</th><th>Telefone</th>
-        <th class="num">Saldo</th><th></th>
+        <th scope="col">Nome</th><th scope="col">Tipo</th><th scope="col">Telefone</th>
+        <th scope="col" class="num">Saldo</th><th scope="col"><span class="sr-only">Ações</span></th>
       </tr></thead>
       <tbody id="corpoClientes"></tbody>
     </table>
@@ -564,8 +560,8 @@ function telaCliente(){
   ${fechs.length ? `
   <div class="cartao">
     <h2>Fechamentos</h2>
-    <table>
-      <thead><tr><th>Período</th><th>Vencimento</th><th class="num">Total</th><th>Status</th><th></th></tr></thead>
+    <table><caption class="sr-only">Fechamentos do cliente</caption>
+      <thead><tr><th scope="col">Período</th><th scope="col">Vencimento</th><th scope="col" class="num">Total</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
       <tbody>
         ${fechs.map(f => {
           const venc = f.status==='ABERTO' && String(f.vencimento) < hoje();
@@ -591,11 +587,11 @@ function telaCliente(){
   <div class="cartao">
     <h2>Extrato</h2>
     ${extrato.length===0 ? '<div class="vazio">Nenhuma movimentação.</div>' : `
-    <table>
+    <table><caption class="sr-only">Extrato do cliente</caption>
       <thead><tr>
-        <th>Data</th><th>Descrição</th>
-        ${c.tipo==='PJ' ? '<th>Funcionário</th>' : ''}
-        <th class="num">Débito</th><th class="num">Crédito</th><th>Situação</th><th></th>
+        <th scope="col">Data</th><th scope="col">Descrição</th>
+        ${c.tipo==='PJ' ? '<th scope="col">Funcionário</th>' : ''}
+        <th scope="col" class="num">Débito</th><th scope="col" class="num">Crédito</th><th scope="col">Situação</th><th scope="col"><span class="sr-only">Ações</span></th>
       </tr></thead>
       <tbody>
         ${extrato.map(e => {
@@ -652,10 +648,10 @@ function telaFechamentos(){
       <button class="btn" style="margin-left:auto" onclick="modalFecharLote()">Fechar mês (todos)</button>
     </div>
     ${fechs.length===0 ? '<div class="vazio">Nenhum fechamento gerado.</div>' : `
-    <table>
+    <table><caption class="sr-only">Todos os fechamentos</caption>
       <thead><tr>
-        <th>Cliente</th><th>Período</th><th>Vencimento</th>
-        <th class="num">Total</th><th class="num">Pago</th><th class="num">Falta</th><th>Status</th><th></th>
+        <th scope="col">Cliente</th><th scope="col">Período</th><th scope="col">Vencimento</th>
+        <th scope="col" class="num">Total</th><th scope="col" class="num">Pago</th><th scope="col" class="num">Falta</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Ações</span></th>
       </tr></thead>
       <tbody>
         ${fechs.map(f => {
@@ -701,7 +697,7 @@ function abrirModal(html, larga){
     setTimeout(()=>j.classList.remove('chacoalha'), 320);
     toast('Use "Cancelar" para fechar.');
   };
-  d.innerHTML = `<div class="janela ${larga?'larga':''}">${html}</div>`;
+  d.innerHTML = `<div role="dialog" aria-modal="true" aria-label="Formulário do crediário" class="janela ${larga?'larga':''}">${html}</div>`;
   document.body.appendChild(d);
 }
 
@@ -716,33 +712,33 @@ function modalCliente(id){
     <div id="erroC"></div>
     <div class="grade g2">
       <div class="campo">
-        <label>Tipo</label>
+        <label for="cTipo">Tipo</label>
         <select id="cTipo">
           <option value="PF" ${c.tipo==='PF'?'selected':''}>Pessoa Física</option>
           <option value="PJ" ${c.tipo==='PJ'?'selected':''}>Empresa</option>
         </select>
       </div>
       <div class="campo">
-        <label>Telefone</label>
+        <label for="cTel">Telefone</label>
         <input id="cTel" value="${esc(c.telefone||'')}">
       </div>
     </div>
     <div class="campo">
-      <label>Nome *</label>
+      <label for="cNome">Nome *</label>
       <input id="cNome" value="${esc(c.nome||'')}" oninput="checarDuplicado(${id?`'${id}'`:'null'})">
     </div>
     <div id="avisoDup"></div>
 
     <h4 class="sub">Tabela de preços deste cliente</h4>
     <div class="grade g3">
-      <div class="campo"><label>Marmita média</label><input type="number" step="0.01" id="pMedia" value="${c.preco_media||0}"></div>
-      <div class="campo"><label>Marmita grande</label><input type="number" step="0.01" id="pGrande" value="${c.preco_grande||0}"></div>
-      <div class="campo"><label>Refeição no local</label><input type="number" step="0.01" id="pRef" value="${c.preco_refeicao||0}"></div>
-      <div class="campo"><label>Personalizada</label><input type="number" step="0.01" id="pPers" value="${c.preco_personalizada||0}"></div>
-      <div class="campo"><label>Limite de crédito</label><input type="number" step="0.01" id="cLim" value="${c.limite||0}"></div>
+      <div class="campo"><label for="pMedia">Marmita média</label><input type="number" step="0.01" id="pMedia" value="${c.preco_media||0}"></div>
+      <div class="campo"><label for="pGrande">Marmita grande</label><input type="number" step="0.01" id="pGrande" value="${c.preco_grande||0}"></div>
+      <div class="campo"><label for="pRef">Refeição no local</label><input type="number" step="0.01" id="pRef" value="${c.preco_refeicao||0}"></div>
+      <div class="campo"><label for="pPers">Personalizada</label><input type="number" step="0.01" id="pPers" value="${c.preco_personalizada||0}"></div>
+      <div class="campo"><label for="cLim">Limite de crédito</label><input type="number" step="0.01" id="cLim" value="${c.limite||0}"></div>
     </div>
     <div class="campo">
-      <label>Observação</label>
+      <label for="cObs">Observação</label>
       <input id="cObs" value="${esc(c.obs||'')}">
     </div>
     <div class="rodape">
@@ -882,14 +878,14 @@ function modalLancamento(lancId, clienteId){
 
     <div class="grade g2">
       <div class="campo">
-        <label>Cliente *</label>
+        <label for="lCli">Cliente *</label>
         <select id="lCli" onchange="atualizaPreco()" ${lancId?'disabled':''}>
           <option value="">Selecione…</option>
           ${ativos.map(c => `<option value="${c.id}" ${String(c.id)===String(cid)?'selected':''}>${esc(c.nome)} (${c.tipo})</option>`).join('')}
         </select>
       </div>
       <div class="campo">
-        <label>Data</label>
+        <label for="lData">Data</label>
         <input type="date" id="lData" value="${l?l.data:hoje()}">
       </div>
     </div>
@@ -902,27 +898,27 @@ function modalLancamento(lancId, clienteId){
     <div id="blocoItens">
       <h4 class="sub">Itens</h4>
       <div class="grade g4">
-        <div class="campo"><label>Média</label><input type="number" min="0" inputmode="numeric" id="qMedia" value="${l && Number(l.qtd_media) ? l.qtd_media : ''}" placeholder="0" oninput="atualizaPreco()"></div>
-        <div class="campo"><label>Grande</label><input type="number" min="0" inputmode="numeric" id="qGrande" value="${l && Number(l.qtd_grande) ? l.qtd_grande : ''}" placeholder="0" oninput="atualizaPreco()"></div>
-        <div class="campo"><label>Refeição</label><input type="number" min="0" inputmode="numeric" id="qRef" value="${l && Number(l.qtd_refeicao) ? l.qtd_refeicao : ''}" placeholder="0" oninput="atualizaPreco()"></div>
-        <div class="campo"><label>Personalizada</label><input type="number" min="0" inputmode="numeric" id="qPers" value="${l && Number(l.qtd_personalizada) ? l.qtd_personalizada : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label for="qMedia">Média</label><input type="number" min="0" inputmode="numeric" id="qMedia" value="${l && Number(l.qtd_media) ? l.qtd_media : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label for="qGrande">Grande</label><input type="number" min="0" inputmode="numeric" id="qGrande" value="${l && Number(l.qtd_grande) ? l.qtd_grande : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label for="qRef">Refeição</label><input type="number" min="0" inputmode="numeric" id="qRef" value="${l && Number(l.qtd_refeicao) ? l.qtd_refeicao : ''}" placeholder="0" oninput="atualizaPreco()"></div>
+        <div class="campo"><label for="qPers">Personalizada</label><input type="number" min="0" inputmode="numeric" id="qPers" value="${l && Number(l.qtd_personalizada) ? l.qtd_personalizada : ''}" placeholder="0" oninput="atualizaPreco()"></div>
       </div>
-      <div class="campo"><label>Valor extra (R$) — bebida, sobremesa, etc.</label><input type="number" step="0.01" min="0" inputmode="decimal" id="lExtra" value="${l && Number(l.valor_extra) ? l.valor_extra : ''}" placeholder="0,00" oninput="atualizaPreco()"></div>
+      <div class="campo"><label for="lExtra">Valor extra (R$) — bebida, sobremesa, etc.</label><input type="number" step="0.01" min="0" inputmode="decimal" id="lExtra" value="${l && Number(l.valor_extra) ? l.valor_extra : ''}" placeholder="0,00" oninput="atualizaPreco()"></div>
     </div>
 
     <div class="grade g2">
       <div class="campo">
-        <label id="rotDesc">Descrição (opcional)</label>
+        <label for="lDesc" id="rotDesc">Descrição (opcional)</label>
         <input id="lDesc" value="${esc(l?l.descricao:'')}" placeholder="Ex: refrigerante, sobremesa…">
       </div>
       <div class="campo" id="boxFunc">
-        <label>Funcionário (opcional)</label>
+        <label for="lFunc">Funcionário (opcional)</label>
         <input id="lFunc" value="${esc(l?l.funcionario:'')}" placeholder="Quem consumiu">
       </div>
     </div>
 
     <div class="campo">
-      <label>Total a cobrar (R$) *</label>
+      <label for="lTotal">Total a cobrar (R$) *</label>
       <input type="number" step="0.01" min="0" id="lTotal"
              value="${l?Number(l.valor).toFixed(2):''}"
              oninput="totalMexido()"
@@ -1135,24 +1131,24 @@ function modalPagamento(pagId, clienteId){
     <h3>${pagId?'Editar pagamento':'Registrar pagamento'}</h3>
     <div id="erroP"></div>
     <div class="campo">
-      <label>Cliente *</label>
+      <label for="pCli">Cliente *</label>
       <select id="pCli" onchange="mostraSaldo()" ${pagId?'disabled':''}>
         <option value="">Selecione…</option>
         ${devedores.map(c => `<option value="${c.id}" ${String(c.id)===String(cid)?'selected':''}>${esc(c.nome)} — deve ${brl(c.saldo)}</option>`).join('')}
       </select>
     </div>
     <div class="grade g3">
-      <div class="campo"><label>Data</label><input type="date" id="pData" value="${p?p.data:hoje()}"></div>
-      <div class="campo"><label>Valor *</label><input type="number" step="0.01" min="0.01" id="pValor" value="${p?p.valor:''}" oninput="mostraSaldo()"></div>
+      <div class="campo"><label for="pData">Data</label><input type="date" id="pData" value="${p?p.data:hoje()}"></div>
+      <div class="campo"><label for="pValor">Valor *</label><input type="number" step="0.01" min="0.01" id="pValor" value="${p?p.valor:''}" oninput="mostraSaldo()"></div>
       <div class="campo">
-        <label>Forma</label>
+        <label for="pForma">Forma</label>
         <select id="pForma">
           ${['Dinheiro','PIX','Cartão','Transferência','Outro'].map(f =>
             `<option ${p&&p.forma===f?'selected':''}>${f}</option>`).join('')}
         </select>
       </div>
     </div>
-    <div class="campo"><label>Observação</label><input id="pObs" value="${esc(p?p.obs:'')}"></div>
+    <div class="campo"><label for="pObs">Observação</label><input id="pObs" value="${esc(p?p.obs:'')}"></div>
     <div class="aviso info" id="previaP">Pagamento parcial é aceito — o saldo restante continua no crediário.</div>
     <div class="rodape">
       <button class="btn-2" onclick="fecharModal()">Cancelar</button>
@@ -1223,8 +1219,8 @@ function modalFechar(clienteId){
       Os lançamentos do período serão travados (não poderão mais ser editados).
     </div>
     <div class="grade g2">
-      <div class="campo"><label>Início</label><input type="date" id="fIni" value="${p.ini}" onchange="previaFech('${clienteId}')"></div>
-      <div class="campo"><label>Fim</label><input type="date" id="fFim" value="${p.fim}" onchange="previaFech('${clienteId}')"></div>
+      <div class="campo"><label for="fIni">Início</label><input type="date" id="fIni" value="${p.ini}" onchange="previaFech('${clienteId}')"></div>
+      <div class="campo"><label for="fFim">Fim</label><input type="date" id="fFim" value="${p.fim}" onchange="previaFech('${clienteId}')"></div>
     </div>
     <div id="previaF"></div>
     <div class="rodape">
@@ -1243,8 +1239,8 @@ function previaFech(clienteId){
 
   $('previaF').innerHTML = itens.length===0
     ? '<div class="aviso erro">Nenhum lançamento em aberto neste período.</div>'
-    : `<table>
-        <thead><tr><th>Data</th><th>Descrição</th>${c.tipo==='PJ'?'<th>Funcionário</th>':''}<th class="num">Valor</th></tr></thead>
+    : `<table><caption class="sr-only">Prévia do fechamento</caption>
+        <thead><tr><th scope="col">Data</th><th scope="col">Descrição</th>${c.tipo==='PJ'?'<th scope="col">Funcionário</th>':''}<th scope="col" class="num">Valor</th></tr></thead>
         <tbody>
           ${itens.map(l => `<tr>
             <td>${dbr(l.data)}</td><td>${esc(descLanc(l))}</td>
@@ -1285,13 +1281,13 @@ function modalFecharLote(){
     <h3>Fechar mês — todos os clientes</h3>
     <div id="erroFL"></div>
     <div class="grade g2">
-      <div class="campo"><label>Início</label><input type="date" id="flIni" value="${p.ini}"></div>
-      <div class="campo"><label>Fim</label><input type="date" id="flFim" value="${p.fim}"></div>
+      <div class="campo"><label for="flIni">Início</label><input type="date" id="flIni" value="${p.ini}"></div>
+      <div class="campo"><label for="flFim">Fim</label><input type="date" id="flFim" value="${p.fim}"></div>
     </div>
     ${candidatos.length===0 ? '<div class="aviso erro">Nenhum cliente com lançamentos em aberto neste período.</div>' : `
     <div class="aviso info">${candidatos.length} cliente(s) serão fechados. Um PDF será gerado para cada um.</div>
-    <table>
-      <thead><tr><th>Cliente</th><th class="num">A faturar</th></tr></thead>
+    <table><caption class="sr-only">Prévia do fechamento em lote</caption>
+      <thead><tr><th scope="col">Cliente</th><th scope="col" class="num">A faturar</th></tr></thead>
       <tbody>
         ${candidatos.map(c => {
           const t = lancsDe(c.id, true).filter(l => l.data >= p.ini && l.data <= p.fim)

@@ -1,0 +1,3 @@
+[functions.confirmacao-whatsapp]
+verify_jwt = false
+# A função valida x-worker-secret antes de acessar a fila.

@@ -1,7 +1,0 @@
-Atualização visual do Restaurante do Mário
-
-Faça backup da pasta atual. Copie os arquivos deste pacote para a mesma pasta do site, incluindo refresh.css e refresh.js. Preserve outros arquivos da hospedagem.
-
-O script.js original foi preservado byte a byte. Não é necessário substituir o programa da impressora nem alterar o Supabase. Horários e preços continuam sendo recebidos do painel.
-
-Verificado: sintaxe JavaScript, IDs existentes preservados, ausência de IDs duplicados e arquivos referenciados no HTML. Não houve teste em navegador, pedido real ou impressão física. Antes de colocar em produção, confira no celular e computador: placa, menu, montagem da marmita, carrinho e um pedido acompanhado até a impressão.

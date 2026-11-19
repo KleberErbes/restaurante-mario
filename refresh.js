@@ -2,7 +2,7 @@
  const toggle=document.getElementById('menuToggle'), menu=document.getElementById('siteMenu');
  function close(){menu.hidden=true;toggle.setAttribute('aria-expanded','false');}
  toggle.addEventListener('click',()=>{menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));});
- menu.addEventListener('click',e=>{if(e.target.closest('button'))close();});
+ menu.addEventListener('click',e=>{if(e.target.closest('button,a[href]'))close();});
  document.addEventListener('click',e=>{if(!e.target.closest('header'))close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){close();toggle.focus();}});
  const trigger=document.getElementById('hoursToggle'), dialog=document.getElementById('hoursDialog');

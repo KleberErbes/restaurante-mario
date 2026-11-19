@@ -1,0 +1,14 @@
+/* Apoio à estrutura semântica sem alterar a identidade visual. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+a.skip-link{position:fixed;top:8px;left:-10000px;z-index:10000;padding:12px 18px;background:#fff;color:#373d20;border:2px solid #373d20;border-radius:8px;font-weight:700}
+a.skip-link:focus{left:8px}
+main:focus{outline:none}
+#siteMenu a,.hero-actions a{box-sizing:border-box;text-decoration:none}
+#precos{max-width:none}
+.cardapio-box-title,.pedido-cliente{margin:0}
+address.loc-value{font-style:normal}
+.hist-topo{cursor:pointer;list-style:none}
+.hist-topo::-webkit-details-marker{display:none}
+.hist-topo:focus-visible{outline:3px solid #72b01d;outline-offset:4px;border-radius:8px}
+button.opt{width:100%;font:inherit;text-align:left;color:inherit}
+button.nome{font:inherit;color:inherit;text-align:left;border:0;background:transparent;cursor:pointer}

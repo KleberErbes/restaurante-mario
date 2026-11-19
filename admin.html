@@ -1,15 +1,16 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Restaurante do Mário</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
-  <script type="module">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin — Restaurante do Mário</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&amp;family=Atkinson+Hyperlegible:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<script type="module">
     import { Document, Packer, Paragraph, TextRun } from 'https://esm.sh/docx@8.5.0';
     window.docxLib = { Document, Packer, Paragraph, TextRun };
   </script>
-  <style>
+<style>
 
     :root {
       --verde-900: #14350f;
@@ -651,136 +652,117 @@
       table.hist td.dia { font-size: 0.72rem; }
     }
   </style>
-<link href="https://fonts.googleapis.com/css2?family=Literata:wght@600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin-interface.css">
-</head>
-<body>
-
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@600;700&amp;family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="admin-interface.css" rel="stylesheet"/>
+<link href="semantica.css" rel="stylesheet"/></head>
+<body><a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
 <!-- ===== TELA DE LOGIN ===== -->
-<div id="telaLogin">
-  <div class="login-box">
-    <div class="login-logo">Restaurante do Mário</div>
-    <div class="login-sub">PAINEL ADMINISTRATIVO</div>
-    <input type="email" id="inputUsuario" placeholder="Email" autocomplete="username"
-      autocapitalize="off" autocorrect="off" spellcheck="false"
-      onkeydown="if(event.key==='Enter') document.getElementById('inputSenha').focus()">
-    <input type="password" id="inputSenha" placeholder="Senha" autocomplete="current-password"
-      autocapitalize="off" autocorrect="off" spellcheck="false"
-      onkeydown="if(event.key==='Enter') fazerLogin()">
-    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
-    <div class="login-erro" id="loginErro"></div>
-  </div>
-</div>
-
+<section aria-label="Acesso ao painel" id="telaLogin">
+<div class="login-box"><form aria-label="Entrar no painel" onsubmit="event.preventDefault()">
+<div class="login-logo">Restaurante do Mário</div>
+<div class="login-sub">PAINEL ADMINISTRATIVO</div>
+<input aria-label="E-mail" autocapitalize="off" autocomplete="username" autocorrect="off" id="inputUsuario" onkeydown="if(event.key==='Enter') document.getElementById('inputSenha').focus()" placeholder="Email" spellcheck="false" type="email"/>
+<input aria-label="Senha" autocapitalize="off" autocomplete="current-password" autocorrect="off" id="inputSenha" onkeydown="if(event.key==='Enter') fazerLogin()" placeholder="Senha" spellcheck="false" type="password"/>
+<button class="login-btn" onclick="fazerLogin()" type="button">Entrar</button>
+<div class="login-erro" id="loginErro" role="alert"></div>
+</form></div>
+</section>
 <!-- ===== PAINEL ADMIN ===== -->
 <div id="telaAdmin">
-<div class="admin-mobile-bar"><button id="adminMenuToggle" aria-label="Abrir menu" aria-controls="adminSidebar" aria-expanded="false"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><strong>Painel do restaurante</strong></div>
-<button class="admin-menu-backdrop" id="adminMenuBackdrop" aria-label="Fechar menu" tabindex="-1" hidden></button>
-
-
-<aside class="admin-sidebar" id="adminSidebar"><button class="admin-menu-close" id="adminMenuClose" aria-label="Fechar menu">×</button>
-<a class="sidebar-brand sidebar-logo" href="admin.html" aria-label="Restaurante do Mário — painel administrativo"><img src="logo.png" alt="Restaurante do Mário"></a>
+<header class="admin-mobile-bar"><button aria-controls="adminSidebar" aria-expanded="false" aria-label="Abrir menu" id="adminMenuToggle" type="button"><svg aria-hidden="true" fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></button><strong>Painel do restaurante</strong></header>
+<button aria-label="Fechar menu" class="admin-menu-backdrop" hidden="" id="adminMenuBackdrop" tabindex="-1" type="button"></button>
+<aside aria-label="Menu administrativo" class="admin-sidebar" id="adminSidebar"><button aria-label="Fechar menu" class="admin-menu-close" id="adminMenuClose" type="button">×</button>
+<a aria-label="Restaurante do Mário — painel administrativo" class="sidebar-brand sidebar-logo" href="admin.html"><img alt="Restaurante do Mário" src="logo.png"/></a>
 <div class="sidebar-count"><span class="sidebar-total-label">TOTAL DE PEDIDOS DO DIA</span><span class="badge-total" id="badgeTotal">0 pedidos</span></div>
-<nav class="admin-tabs" aria-label="Seções do painel">
+<nav aria-label="Seções do painel" class="admin-tabs">
 <a class="sidebar-action" href="cardapio.html">Ir para cardápio</a>
-<button class="admin-tab active" data-tab="confirmar" onclick="trocarTab('confirmar')" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l2 2 4-4 M5 3h14v18H5z"/></svg><span>Pedidos a confirmar</span></button>
-<button class="admin-tab" data-tab="pedidos" onclick="trocarTab('pedidos')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"/></svg><span>Pedidos do dia</span></button>
-<button class="admin-tab" data-tab="historico" onclick="trocarTab('historico')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-7 M3 3v5h5 M12 7v5l3 2"/></svg><span>Histórico de pedidos</span></button>
-<button class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10h4v10 M10 20V4h4v16 M16 20v-7h4v7"/></svg><span>Resumo</span></button>
-<button class="admin-tab" data-tab="config" onclick="trocarTab('config')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z M12 9v6 M10 10h4 M10 14h4"/></svg><span>Preços</span></button>
-<button class="admin-tab" data-tab="horarios" onclick="trocarTab('horarios')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg><span>Horários</span></button>
-<button class="admin-tab" data-tab="avisos" onclick="trocarTab('avisos')" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v12H9l-5 4z M8 9h8 M8 13h5"/></svg><span>Quadro de avisos</span></button>
-<button class="sidebar-action sidebar-download" onclick="gerarWord()">Baixar pedidos do dia</button>
-<button class="sidebar-action" onclick="sair()">Sair da conta</button>
+<button aria-pressed="true" class="admin-tab active" data-tab="pedidos" onclick="trocarTab('pedidos')" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"></path></svg><span>Pedidos do dia</span></button>
+<button aria-pressed="false" class="admin-tab" data-tab="historico" onclick="trocarTab('historico')" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-7 M3 3v5h5 M12 7v5l3 2"></path></svg><span>Histórico de pedidos</span></button>
+<button aria-pressed="false" class="admin-tab" data-tab="resumo" onclick="trocarTab('resumo')" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24"><path d="M4 20V10h4v10 M10 20V4h4v16 M16 20v-7h4v7"></path></svg><span>Resumo</span></button>
+<button aria-pressed="false" class="admin-tab" data-tab="config" onclick="trocarTab('config')" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24"><path d="M4 6h16v12H4z M12 9v6 M10 10h4 M10 14h4"></path></svg><span>Preços</span></button>
+<button aria-pressed="false" class="admin-tab" data-tab="horarios" onclick="trocarTab('horarios')" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24"><path d="M12 8v5l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"></path></svg><span>Horários</span></button>
+<button aria-pressed="false" class="admin-tab" data-tab="avisos" onclick="trocarTab('avisos')" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24"><path d="M4 5h16v12H9l-5 4z M8 9h8 M8 13h5"></path></svg><span>Quadro de avisos</span></button>
+<button class="sidebar-action sidebar-download" onclick="gerarWord()" type="button">Baixar pedidos do dia</button>
+<button class="sidebar-action" onclick="sair()" type="button">Sair da conta</button>
 </nav></aside>
-  <div class="admin-body"><div class="tab-panel active" id="tab-confirmar"></div>
-    <!-- ===== ABA: PEDIDOS DO DIA ===== -->
-    <div class="tab-panel" id="tab-pedidos">
-      <div class="admin-info-bar">
-        <h2>Pedidos do Dia</h2>
-        <div class="status-atualizacao">
-          <div class="dot-animado"></div>
-          <span id="statusAtualizacao">Atualizando em 30s...</span>
-        </div>
-      </div>
-
-      <div id="listaPedidos">
-        <div class="loading-spinner">
-          <div class="spinner"></div>
-          <div>Carregando pedidos...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== ABA: RESUMO & HISTÓRICO ===== -->
-    <!-- ===== ABA: HISTÓRICO ===== -->
-    <div class="tab-panel" id="tab-historico">
-      <div class="admin-info-bar"><h2>Histórico de Pedidos</h2></div>
-
-      <div class="hist-filtros">
-        <div class="hf-campo">
-          <label>De</label>
-          <input type="date" id="hDe">
-        </div>
-        <div class="hf-campo">
-          <label>Até</label>
-          <input type="date" id="hAte">
-        </div>
-        <div class="hf-campo cresce">
-          <label>Cliente</label>
-          <input type="text" id="hBusca" placeholder="Buscar pelo nome…" autocomplete="off"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();buscarHistorico(0)}">
-        </div>
-        <div class="hf-campo">
-          <label>Origem</label>
-          <select id="hOrigem">
-            <option value="">Site e balcão</option>
-            <option value="site">Só site</option>
-            <option value="balcao">Só balcão</option>
-          </select>
-        </div>
-        <button class="btn-salvar" onclick="buscarHistorico(0)">Buscar</button>
-      </div>
-
-      <div class="hist-atalhos">
-        <button onclick="periodoRapido(0)">Hoje</button>
-        <button onclick="periodoRapido(6)">7 dias</button>
-        <button onclick="periodoRapido(29)">30 dias</button>
-        <button onclick="periodoMes()">Este mês</button>
-      </div>
-
-      <div id="histResumo"></div>
-      <div id="histConteudo">
-        <div class="pedido-vazio">Escolha um período e clique em Buscar.</div>
-      </div>
-      <div id="histPaginacao"></div>
-    </div>
-
-    <!-- ===== ABA: AVISOS ===== -->
-    <div class="tab-panel" id="tab-avisos">
-      <div class="admin-info-bar"><h2>Avisos ao cliente</h2></div>
-      <div id="avisosConteudo">
-        <div class="carregando-box"><div class="spinner"></div>Carregando…</div>
-      </div>
-    </div>
-
-    <!-- ===== ABA: PREÇOS E HORÁRIOS ===== -->
-    <div class="tab-panel" id="tab-config">
-      <div class="admin-info-bar"><h2 id="configTitulo">Preços</h2></div>
-      <div id="configConteudo">
-        <div class="carregando-box"><div class="spinner"></div>Carregando…</div>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="tab-resumo">
-      <div class="admin-info-bar"><h2>Resumo &amp; Histórico</h2></div>
-      <div id="resumoConteudo">
-        <div class="carregando-box"><div class="spinner"></div>Carregando resumo…</div>
-      </div>
-    </div>
-  </div>
+<main class="admin-body" id="conteudo-principal" tabindex="-1"><h1 class="sr-only">Painel administrativo do Restaurante do Mário</h1>
+<!-- ===== ABA: PEDIDOS DO DIA ===== -->
+<section aria-labelledby="titulo-painel-0" class="tab-panel active" id="tab-pedidos">
+<div class="admin-info-bar">
+<h2 id="titulo-painel-0">Pedidos do Dia</h2>
+<div class="status-atualizacao">
+<div class="dot-animado"></div>
+<span id="statusAtualizacao" role="status">Atualizando em 30s...</span>
 </div>
-
+</div>
+<div id="listaPedidos">
+<div class="loading-spinner">
+<div class="spinner"></div>
+<div>Carregando pedidos...</div>
+</div>
+</div>
+</section>
+<!-- ===== ABA: RESUMO & HISTÓRICO ===== -->
+<!-- ===== ABA: HISTÓRICO ===== -->
+<section aria-labelledby="titulo-painel-1" class="tab-panel" id="tab-historico">
+<div class="admin-info-bar"><h2 id="titulo-painel-1">Histórico de Pedidos</h2></div>
+<div class="hist-filtros">
+<div class="hf-campo">
+<label for="hDe">De</label>
+<input id="hDe" type="date"/>
+</div>
+<div class="hf-campo">
+<label for="hAte">Até</label>
+<input id="hAte" type="date"/>
+</div>
+<div class="hf-campo cresce">
+<label for="hBusca">Cliente</label>
+<input autocomplete="off" id="hBusca" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarHistorico(0)}" placeholder="Buscar pelo nome…" type="text"/>
+</div>
+<div class="hf-campo">
+<label for="hOrigem">Origem</label>
+<select id="hOrigem">
+<option value="">Site e balcão</option>
+<option value="site">Só site</option>
+<option value="balcao">Só balcão</option>
+</select>
+</div>
+<button class="btn-salvar" onclick="buscarHistorico(0)" type="button">Buscar</button>
+</div>
+<div class="hist-atalhos">
+<button onclick="periodoRapido(0)" type="button">Hoje</button>
+<button onclick="periodoRapido(6)" type="button">7 dias</button>
+<button onclick="periodoRapido(29)" type="button">30 dias</button>
+<button onclick="periodoMes()" type="button">Este mês</button>
+</div>
+<div id="histResumo"></div>
+<div id="histConteudo">
+<div class="pedido-vazio">Escolha um período e clique em Buscar.</div>
+</div>
+<nav aria-label="Páginas do histórico" id="histPaginacao"></nav>
+</section>
+<!-- ===== ABA: AVISOS ===== -->
+<section aria-labelledby="titulo-painel-2" class="tab-panel" id="tab-avisos">
+<div class="admin-info-bar"><h2 id="titulo-painel-2">Avisos ao cliente</h2></div>
+<div id="avisosConteudo">
+<div class="carregando-box"><div class="spinner"></div>Carregando…</div>
+</div>
+</section>
+<!-- ===== ABA: PREÇOS E HORÁRIOS ===== -->
+<section aria-labelledby="configTitulo" class="tab-panel" id="tab-config">
+<div class="admin-info-bar"><h2 id="configTitulo">Preços</h2></div>
+<div id="configConteudo">
+<div class="carregando-box"><div class="spinner"></div>Carregando…</div>
+</div>
+</section>
+<section aria-labelledby="titulo-painel-4" class="tab-panel" id="tab-resumo">
+<div class="admin-info-bar"><h2 id="titulo-painel-4">Resumo &amp; Histórico</h2></div>
+<div id="resumoConteudo">
+<div class="carregando-box"><div class="spinner"></div>Carregando resumo…</div>
+</div>
+</section>
+</main>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ========== CONFIGURAÇÕES ==========
@@ -965,19 +947,19 @@ function renderFormAviso() {
         </div>
       </div>
 
-      <label>Título (opcional)</label>
+      <label for="avTitulo">Título (opcional)</label>
       <input type="text" id="avTitulo" maxlength="80" value="${escaparHTML(a.titulo)}">
 
-      <label>Mensagem (opcional)</label>
+      <label for="avMsg">Mensagem (opcional)</label>
       <textarea id="avMsg" maxlength="400">${escaparHTML(a.mensagem)}</textarea>
 
       <div class="av-duas">
         <div>
-          <label>Aparece a partir de</label>
+          <label for="avInicio">Aparece a partir de</label>
           <input type="date" id="avInicio" value="${a.inicio}">
         </div>
         <div>
-          <label>Até</label>
+          <label for="avFim">Até</label>
           <input type="date" id="avFim" value="${a.fim}">
         </div>
       </div>
@@ -1173,20 +1155,20 @@ function renderHistorico() {
         <span>${marm} marmita${marm === 1 ? '' : 's'} · ${brl(val)}</span>
       </div>
       ${lista.map(p => `
-        <div class="hist-item" onclick="this.querySelector('.hist-det')?.toggleAttribute('hidden')">
-          <div class="hist-topo">
+        <details class="hist-item">
+          <summary class="hist-topo">
             <span class="hist-hora">${p.hora}</span>
             <span class="nome">${escaparHTML(p.nome)}</span>
             <span class="hist-selo ${p.origem}">${p.origem === 'balcao' ? 'Balcão' : 'Site'}</span>
             ${p.tem_pesar ? '<span class="hist-selo pesar">A pesar</span>' : ''}
             <span class="hist-valor">${p.total_marmitas}x · ${p.tem_pesar && !Number(p.valor_total) ? '—' : brl(p.valor_total)}</span>
-          </div>
-          <div class="hist-det" hidden>
+          </summary>
+          <div class="hist-det">
             ${agruparMarmitas(p.marmitas || []).map(m => `
               <div class="m"><b>${m.qty > 1 ? m.qty + 'x ' : ''}${escaparHTML(m.tipo || '')}</b>
                 ${m.itens ? ' — ' + escaparHTML(m.itens) : ''}</div>`).join('')}
           </div>
-        </div>`).join('')}`;
+        </details>`).join('')}`;
   }).join('');
 
   // Paginação
@@ -1282,11 +1264,11 @@ function renderConfig() {
       <div class="sub">Aparece no topo do site.</div>
 
       <div class="cfg-linha">
-        <label>Segunda a sexta (R$)</label>
+        <label for="p_bufsem">Segunda a sexta (R$)</label>
         <input type="number" step="0.01" min="0" id="p_bufsem" value="${Number(p.buffet_semana ?? 39).toFixed(2)}">
       </div>
       <div class="cfg-linha">
-        <label>Sábado (R$)</label>
+        <label for="p_bufsab">Sábado (R$)</label>
         <input type="number" step="0.01" min="0" id="p_bufsab" value="${Number(p.buffet_sabado ?? 42).toFixed(2)}">
       </div>
     </div>
@@ -1296,12 +1278,12 @@ function renderConfig() {
       <div class="sub">É o preço que aparece no site.</div>
 
       <div class="cfg-linha">
-        <label>Média (R$)
+        <label for="p_media">Média (R$)
           <small>aprox. 750g</small></label>
         <input type="number" step="0.01" min="0" id="p_media" value="${Number(p.padrao_media).toFixed(2)}">
       </div>
       <div class="cfg-linha">
-        <label>Grande (R$)
+        <label for="p_grande">Grande (R$)
           <small>aprox. 900g</small></label>
         <input type="number" step="0.01" min="0" id="p_grande" value="${Number(p.padrao_grande).toFixed(2)}">
       </div>
@@ -1310,15 +1292,15 @@ function renderConfig() {
       <div class="sub">Os valores do quadro "Valores da marmita por quilo", na área de pedidos.</div>
 
       <div class="cfg-linha">
-        <label>Acompanhamento + carne + salada (R$/kg)</label>
+        <label for="p_kgcomp">Acompanhamento + carne + salada (R$/kg)</label>
         <input type="number" step="0.01" min="0" id="p_kgcomp" value="${Number(p.kg_completo ?? 62.9).toFixed(2)}">
       </div>
       <div class="cfg-linha">
-        <label>Somente carne (R$/kg)</label>
+        <label for="p_kgcarne">Somente carne (R$/kg)</label>
         <input type="number" step="0.01" min="0" id="p_kgcarne" value="${Number(p.kg_carne ?? 79.9).toFixed(2)}">
       </div>
       <div class="cfg-linha">
-        <label>Somente salada (R$/kg)</label>
+        <label for="p_kgsalada">Somente salada (R$/kg)</label>
         <input type="number" step="0.01" min="0" id="p_kgsalada" value="${Number(p.kg_salada ?? 44.9).toFixed(2)}">
       </div>
 
@@ -1326,7 +1308,7 @@ function renderConfig() {
       <div class="sub">Quando a marmita fecha exatamente em 4 acompanhamentos e 3 carnes, cada salada soma este valor. Fora disso a marmita é pesada.</div>
 
       <div class="cfg-linha">
-        <label>Valor por salada (R$)</label>
+        <label for="p_salada">Valor por salada (R$)</label>
         <input type="number" step="0.01" min="0" id="p_salada" value="${Number(p.salada_valor).toFixed(2)}">
       </div>
 
@@ -1382,10 +1364,10 @@ async function salvarPrecos() {
   avisar('avisoPre', 'Preços salvos. O site já está usando.');
 }
 
-// ========== BUSCAR PEDIDOS DO GOOGLE SHEETS ==========
+// ========== BUSCAR PEDIDOS DO DIA ==========
 async function buscarPedidos() {
   try {
-    const { data, error } = await sb.rpc('fn_pedidos_do_dia');
+    const { data, error } = await sb.rpc('rdm_historico_dia');
 
     if (error) {
       const m = error.message || '';
@@ -1398,7 +1380,12 @@ async function buscarPedidos() {
     }
 
     if (Array.isArray(data)) {
-      pedidos = data;
+      pedidos = data.map(pedido => ({
+        ...pedido,
+        hora: new Date(pedido.criado_em).toLocaleTimeString('pt-BR', {
+          timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit'
+        })
+      }));
       renderizarPedidos();
     }
   } catch (e) {
@@ -1444,7 +1431,7 @@ function renderizarPedidos() {
   const maisRecentes = pedidos.map((pedido, indice) => ({ pedido, indice }))
     .sort((a, b) => horarioEmSegundos(b.pedido) - horarioEmSegundos(a.pedido) || b.indice - a.indice);
   maisRecentes.forEach(({ pedido }) => {
-    const card = document.createElement('div');
+    const card = document.createElement('article');
     card.className = 'pedido-card';
 
     // Agrupar marmitas iguais
@@ -1468,7 +1455,7 @@ function renderizarPedidos() {
 
     card.innerHTML = `
       <div class="pedido-header">
-        <div class="pedido-cliente">${escaparHTML(pedido.nome)}</div>
+        <h3 class="pedido-cliente">${escaparHTML(pedido.nome)}</h3>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span class="pedido-hora">${pedido.hora || ''}</span>
           <span class="pedido-total-tag">Total: ${totalMarmitas} marmita${totalMarmitas !== 1 ? 's' : ''}</span>
@@ -1476,6 +1463,7 @@ function renderizarPedidos() {
       </div>
       ${marmitasHTML}
     `;
+    window.RDMReimpressao.adicionar(card, pedido);
     container.appendChild(card);
   });
 }
@@ -1696,8 +1684,8 @@ async function carregarResumo() {
     if (ant.length === 0) {
       tabela = '<div class="pedido-vazio">Nenhum dia anterior registrado ainda.</div>';
     } else {
-      tabela = `<table class="hist"><thead><tr>
-        <th style="text-align:left;">Dia</th><th>Média</th><th>Grande</th><th>Total</th><th>Valor</th>
+      tabela = `<table class="hist"><caption class="sr-only">Resumo dos pedidos por dia</caption><thead><tr>
+        <th scope="col" style="text-align:left;">Dia</th><th scope="col">Média</th><th scope="col">Grande</th><th scope="col">Total</th><th scope="col">Valor</th>
       </tr></thead><tbody>` +
       ant.map(x => `<tr>
         <td class="dia">${x.diaSemana.slice(0,3)} ${fmtDataBR(x.data)}</td>

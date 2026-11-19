@@ -214,7 +214,7 @@ const UI = {
       total += item.preco;
       if (item.aPesar) temAPesar = true;
 
-      const div = document.createElement('div');
+      const div = document.createElement('article');
       div.className = 'cart-item';
       const precoHTML = item.aPesar
         ? '<span class="cart-item-price-pesar">A pesar</span>'
@@ -1150,23 +1150,18 @@ function scrollToSection(id) {
 
 function atualizarNavAtiva() {
   const headerH = dom.header?.offsetHeight || 120;
-  const secoes = [
-    { id: 'inicio', navIdx: 0 },
-    { id: 'cardapio-dia-sec', navIdx: 1 },
-    { id: 'pedidos', navIdx: 2 },
-    { id: 'localizacao', navIdx: 3 },
-  ];
-
-  let ativa = 0;
-  secoes.forEach(({ id, navIdx }) => {
+  const links = [...document.querySelectorAll('#siteMenu a[href^="#"]')];
+  const secoes = ['inicio','cardapio-dia-sec','precos','pedidos','localizacao'];
+  let ativa = 'inicio';
+  secoes.forEach(id => {
     const el = document.getElementById(id);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.top <= headerH + 10) ativa = navIdx;
+    if (el && el.getBoundingClientRect().top <= headerH + 10) ativa = id;
   });
-
-  document.querySelectorAll('nav button').forEach((btn, i) => {
-    btn.classList.toggle('active', i === ativa);
+  links.forEach(link => {
+    const selected = link.getAttribute('href') === '#' + ativa;
+    link.classList.toggle('active', selected);
+    if (selected) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
   });
 
   const pedidosEl = document.getElementById('pedidos');

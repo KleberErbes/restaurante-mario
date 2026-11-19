@@ -108,3 +108,12 @@ button:focus-visible,a:focus-visible{outline:3px solid #72b01d;outline-offset:4p
 .hr-card{background:#fff;color:#373d20}
 .hr-card .v{color:#373d20}
 .hr-card .r{color:#626957;opacity:1}
+
+/* Reimpressão junto de cada pedido, usando a fila já existente. */
+.pedido-acoes{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid #d7ddcf}
+.btn-reimprimir{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 18px;border:1px solid #72b01d;border-radius:12px;background:#eff1ed;color:#373d20;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer}
+.btn-reimprimir:hover:not(:disabled){background:#e2ecd7}
+.btn-reimprimir:disabled{cursor:default;opacity:.65}
+.pedido-impressao-status{margin:0;flex:1 1 240px;color:#626957;font-size:.9rem;line-height:1.5}
+.pedido-impressao-status:empty{display:none}
+@media(max-width:600px){.pedido-acoes{align-items:stretch}.btn-reimprimir{width:100%}}
